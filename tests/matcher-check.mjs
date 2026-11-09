@@ -175,8 +175,8 @@ function matcherWith(sockets = []) {
 
 // Optional bot code stays small and clamps every response to ten words.
 {
-  const reply = clampBotReply('One two three four five six seven eight nine ten eleven twelve');
-  if (reply.split(/\s+/).length !== 10) throw new Error('Nerukko Bot replies must be limited to ten words');
+  const reply = clampBotReply('One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty');
+  if (reply.split(/\s+/).length !== 18) throw new Error('Nerukko Bot replies must be limited to eighteen words');
   if (clampBotReply('  hello\nthere  ') !== 'hello there') throw new Error('Nerukko Bot output should be a single clean line');
 }
 

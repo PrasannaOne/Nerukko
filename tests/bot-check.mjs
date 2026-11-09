@@ -3,8 +3,8 @@ import { Matchmaker } from "../src/worker.js";
 import { buildGeminiContents, clampBotReply, generateNerukkoBotReply } from "../src/nerukko-bot.js";
 
 assert.equal(
-  clampBotReply("One two three four five six seven eight nine ten eleven"),
-  "One two three four five six seven eight nine ten"
+  clampBotReply("One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty"),
+  "One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen"
 );
 
 const firstUserTurn = buildGeminiContents([
