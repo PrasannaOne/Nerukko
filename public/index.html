@@ -44,7 +44,14 @@
     .top-actions { display: flex; align-items: center; gap: 5px; flex: 0 0 auto; }
     .icon-button { position: relative; flex: 0 0 40px; width: 40px; min-width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 11px; background: transparent; color: var(--text); }
     .icon-button:active { background: var(--surface-2); }
-    #shareButton { background:var(--surface-2); border:1px solid var(--line); }
+    #shareButton:not([hidden]) {
+      display: inline-flex; visibility: visible; opacity: 1;
+      flex: 0 0 66px; width: 66px; min-width: 66px; height: 38px;
+      align-items: center; justify-content: center; gap: 6px; padding: 0 9px;
+      background: var(--surface-2); border: 1px solid var(--line); color: var(--text);
+      font-size: 11px; font-weight: 750; letter-spacing: .1px;
+    }
+    #shareButton svg { flex: none; display: block; width: 17px; height: 17px; }
     .icon-button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
     .more-dots { font-size: 25px; font-weight: 800; line-height: 1; transform: translateY(-2px); letter-spacing: 1px; }
     .request-dot { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; display: grid; place-items: center; padding: 0 4px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 800; }
@@ -180,8 +187,9 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             <span class="request-dot" id="requestDot" hidden>0</span>
           </button>
-          <button class="icon-button" id="shareButton" type="button" aria-label="Share Nerukko" title="Share">
+          <button class="icon-button" id="shareButton" type="button" aria-label="Share Nerukko" title="Share Nerukko">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.7 10.6 15.3 6.4M8.7 13.4 15.3 17.6"/></svg>
+            <span>Share</span>
           </button>
           <button class="icon-button" id="moreButton" type="button" aria-label="More options" aria-expanded="false" title="More">
             <span class="more-dots" aria-hidden="true">⋮</span>
@@ -281,14 +289,13 @@
     <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
       <div class="modal-head"><h2 id="aboutTitle">About Nerukko</h2><button class="close-button" id="closeAbout" type="button" aria-label="Close About">×</button></div>
       <div class="setting-section">
-        <p class="setting-copy"><strong>Closer, together.</strong><br>Meet people nearby in small, anonymous conversations. No account, no profile to build, no pressure. Just drop in and say hello.</p>
-        <p class="setting-copy">Your browser keeps a random participant ID and nickname. The matchmaking server handles room presence and connection setup. Text and image messages are sent directly between browsers over encrypted WebRTC data channels when a peer connection is available. Nerukko does not store chat messages on its server.</p>
-        <p class="setting-copy">Approximate location is optional and used only for matching. It is never shown to other members. Without location, we prioritise rooms with others who made the same choice.</p>
-        <p class="setting-copy">Private conversations move both people out of the group. Images, GIFs and stickers are available only in private chats. The Black Cat sticker pack is bundled with Nerukko; recipients receive the selected sticker image directly and do not need the pack.</p>
-        <p class="setting-copy">Nerukko Bot may appear when you are alone in a group. Messages in Bot conversations are sent to Google Gemini to generate replies. Chat content is not saved in Nerukko's server storage, but Google processes those prompts under its API terms.</p>
-        <p class="setting-copy">Pending messages stay in the sender's browser and are sent directly when both people reconnect. Nerukko's server routes only the temporary connection setup, not the message text.</p>
-        <p class="setting-copy">Two independent reports can trigger a five-minute cooldown. Direct connections may not work on every network because this launch uses STUN without a TURN relay.</p>
-        <p class="setting-copy">Questions or feedback? <a class="about-link" href="https://t.me/prasannaone" target="_blank" rel="noopener noreferrer">@prasannaone</a></p>
+        <p class="setting-copy"><strong>Nerukko · Closer, together.</strong><br>A small place for easy conversations. Join without an account, meet a few people, and leave whenever you like.</p>
+        <p class="setting-copy"><strong>How it works</strong><br>Groups hold up to five people. Your browser keeps a random participant ID and nickname. Optional approximate location helps matchmaking; it is never shown to other members.</p>
+        <p class="setting-copy"><strong>Messages and privacy</strong><br>People chat directly over encrypted WebRTC data channels when a connection is available. Nerukko's server coordinates rooms and connection setup; it does not store ordinary chat messages. Pending offline messages remain in your browser until delivery or expiry.</p>
+        <p class="setting-copy"><strong>Private chats and media</strong><br>Accepting a private request moves both people into a one-to-one chat. Images and GIFs are private-chat-only. The bundled Black Cat stickers work in both group and private chats. Stickers are sent as image files, so recipients do not need the sticker pack.</p>
+        <p class="setting-copy"><strong>Nerukko Bot</strong><br>When you are alone in a group, Nerukko Bot may join as an AI conversation partner. Messages and recent Bot conversation context are sent to Google Gemini to generate replies. The Bot is not a human, and its replies may be imperfect. Bot usage is capped and may pause when its limit is reached.</p>
+        <p class="setting-copy"><strong>Safety and connection</strong><br>Two independent reports can trigger a temporary five-minute cooldown. Direct peer connections use STUN without a TURN relay, so some restrictive networks may not connect reliably.</p>
+        <div class="setting-copy"><strong>Crafted by Prasanna ❤️</strong><br><span>Questions, feedback or just saying hi:</span> <a class="about-link" href="https://t.me/prasannaone" target="_blank" rel="noopener noreferrer">✈️ Telegram · @prasannaone</a></div>
       </div>
     </section>
   </div>
@@ -478,12 +485,12 @@
     }
   }
 
-  function addMediaMessage(name, peerId, blob, mine = false) {
+  function addMediaMessage(name, peerId, blob, mine = false, mediaKind = 'image') {
     $('emptyState')?.remove();
     const article = document.createElement('article'); article.className = 'message' + (mine ? ' mine' : '');
     article.append(messageAuthor(name, peerId || (mine ? state.id : null)));
     const image = document.createElement('img'); image.className = 'message-media';
-    const url = URL.createObjectURL(blob); state.mediaUrls.push(url); image.src = url; image.alt = 'Shared image'; image.loading = 'lazy';
+    const url = URL.createObjectURL(blob); state.mediaUrls.push(url); image.src = url; image.alt = mediaKind === 'sticker' ? 'Sticker' : 'Shared image'; image.loading = 'lazy';
     image.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
     article.append(image); $('messages').append(article); $('messages').scrollTop = $('messages').scrollHeight;
   }
@@ -542,7 +549,7 @@
       $('privateAvatar').textContent = initial(state.activePrivate.name);
     }
     $('attachButton').hidden = state.mode !== 'private';
-    $('stickerButton').hidden = state.mode !== 'private';
+    $('stickerButton').hidden = false;
     const count = state.privateRequests.size;
     $('requestDot').hidden = count === 0;
     $('requestDot').textContent = count > 9 ? '9+' : String(count);
@@ -619,7 +626,7 @@
         clearTimeout(transfer.timer);
         const blob = new Blob(transfer.chunks, { type: transfer.mime });
         state.incomingMedia.delete(transferKey);
-        addMediaMessage(peer.name || 'Guest', peer.id, blob, false);
+        addMediaMessage(peer.name || 'Guest', peer.id, blob, false, transfer.kind);
       }
       return;
     }
@@ -635,9 +642,9 @@
       }
       if (packet.type === 'delivery-ack' && typeof packet.deliveryId === 'string') removePendingRecipient(packet.deliveryId, peer.id);
       const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
-      if (packet.type === 'media-start' && typeof packet.transferId === 'string' && allowedMedia.includes(String(packet.mime)) && Number(packet.size) > 0 && Number(packet.size) <= MAX_MEDIA_BYTES) {
+      if (packet.type === 'media-start' && (state.mode === 'private' || (packet.kind === 'sticker' && packet.mime === 'image/webp')) && typeof packet.transferId === 'string' && allowedMedia.includes(String(packet.mime)) && Number(packet.size) > 0 && Number(packet.size) <= MAX_MEDIA_BYTES) {
         const transferKey = `${peer.id}:${packet.transferId}`;
-        const transfer = { size: Number(packet.size), mime: String(packet.mime), chunks: [], received: 0, timer: null };
+        const transfer = { size: Number(packet.size), mime: String(packet.mime), kind: packet.kind === 'sticker' ? 'sticker' : 'image', chunks: [], received: 0, timer: null };
         transfer.timer = setTimeout(() => state.incomingMedia.delete(transferKey), 60_000);
         state.incomingMedia.set(transferKey, transfer);
       }
@@ -893,8 +900,8 @@
     if (waits >= 400 || channel.readyState !== 'open') throw new Error('Media channel stopped accepting data.');
   }
 
-  async function sendMedia(file) {
-    if (state.mode !== 'private') return showToast('Media sharing is available in private chats.');
+  async function sendMedia(file, { sticker = false } = {}) {
+    if (state.mode !== 'private' && !sticker) return showToast('Images and GIFs are available in private chats.');
     const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
     if (!file || !allowedMedia.includes(file.type)) return showToast('Choose a GIF, PNG, JPG or WebP image.');
     if (file.size > MAX_MEDIA_BYTES) return showToast('Keep images and GIFs under 2 MB for now.');
@@ -904,12 +911,12 @@
     const buffer = await file.arrayBuffer();
     const transferId = crypto.randomUUID();
     const preview = new Blob([buffer], { type: mime });
-    addMediaMessage(state.name, state.id, preview, true);
+    addMediaMessage(state.name, state.id, preview, true, sticker ? 'sticker' : 'image');
     const bytes = new Uint8Array(buffer);
     const transferHeader = new TextEncoder().encode(transferId);
     for (const [peerId, channel] of channels) {
       try {
-        channel.send(JSON.stringify({ type: 'media-start', transferId, name: file.name || 'image', mime, size: buffer.byteLength }));
+        channel.send(JSON.stringify({ type: 'media-start', transferId, name: file.name || 'image', mime, size: buffer.byteLength, kind: sticker ? 'sticker' : 'image' }));
         for (let offset = 0; offset < bytes.length; offset += MEDIA_CHUNK_BYTES) {
           await waitForChannel(channel);
           if (channel.readyState !== 'open') break;
@@ -933,7 +940,7 @@
     }
   }
 
-  const STICKER_ZIP_URL = '/Stickers/blackcat.zip';
+  const STICKER_ZIP_URL = '/Stickers/blackcat.zip?v=1';
   let stickerPackPromise = null;
   let stickerObjectUrls = [];
 
@@ -977,7 +984,7 @@
   }
 
   async function openStickerPicker() {
-    if (state.mode !== 'private') return showToast('Stickers are available in private chats.');
+    if ($('chatView').hidden) return;
     $('stickerBackdrop').hidden = false;
     const grid = $('stickerGrid');
     if (grid.dataset.loaded === 'yes') return;
@@ -993,7 +1000,7 @@
         button.append(image);
         button.addEventListener('click', async () => {
           const file = new File([sticker.blob], sticker.name || 'black-cat.webp', { type:'image/webp' });
-          await sendMedia(file); closeStickerPicker();
+          await sendMedia(file, { sticker:true }); closeStickerPicker();
         });
         grid.append(button);
       }
@@ -1126,7 +1133,11 @@
     if (state.ws?.readyState === WebSocket.OPEN) { try { state.ws.close(1000, 'Page closed'); } catch {} }
   });
 
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js').catch(error => console.warn('Offline app shell is unavailable.', error)));
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' })
+      .then(registration => registration.update())
+      .catch(error => console.warn('Offline app shell is unavailable.', error));
+  });
   applyTheme(localStorage.getItem(STORAGE.theme) || 'dark');
   const savedName = localStorage.getItem(STORAGE.name) || '';
   $('nameInput').value = savedName; $('settingsName').value = savedName;
