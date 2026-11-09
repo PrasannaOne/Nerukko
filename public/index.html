@@ -2,7 +2,13 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-content">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <meta name="theme-color" content="#111116">
   <meta name="description" content="Meet people nearby in small, anonymous group chats. No account, no pressure. Just say hello on Nerukko.">
   <title>Nerukko · Closer, together</title>
@@ -20,21 +26,25 @@
       --bubble: #eeecf2; --mine: #e8def8; --danger: #b42336; --shadow: 0 18px 55px #25203918;
     }
     * { box-sizing: border-box; }
-    html, body { width: 100%; min-height: 100%; margin: 0; }
-    body { min-height: 100svh; background: var(--bg); color: var(--text); font: 15px/1.48 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; transition: background .18s ease,color .18s ease; }
+    html, body { width: 100%; height: 100%; min-height: 100%; margin: 0; overscroll-behavior: none; }
+    body { height: 100%; min-height: 100svh; min-height: 100dvh; overflow: hidden; background: var(--bg); color: var(--text); font: 15px/1.48 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; transition: background .18s ease,color .18s ease; }
     button, input { font: inherit; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { -webkit-tap-highlight-color: transparent; }
+    .topbar, .drawer, .modal-panel, .media-panel { overscroll-behavior: contain; }
     button { color: inherit; cursor: pointer; }
     button:disabled { opacity: .48; cursor: not-allowed; }
     [hidden] { display: none !important; }
-    .app-shell { width: min(760px,100%); min-height: 100svh; margin: 0 auto; padding: 0 17px max(10px,env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
+    .app-shell { width: min(760px,100%); height: 100svh; height: 100dvh; min-height: 0; margin: 0 auto; padding: 0 17px max(4px,env(safe-area-inset-bottom)); display: flex; flex-direction: column; overflow: hidden; }
 
     /* Fixed-feeling compact header: wordmark, drawer, share, and overflow menu. */
     .topbar { position: sticky; top: 0; z-index: 20; padding: max(8px,env(safe-area-inset-top)) 0 8px; background: var(--bg); }
     .topbar-inner { position: relative; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 11px 0 15px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: 0 5px 20px #0000000a; }
-    .brand { color: var(--text); text-decoration: none; font-size: 20px; font-weight: 760; letter-spacing: -.8px; }
-    .top-actions { display: flex; align-items: center; gap: 5px; }
-    .icon-button { position: relative; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 11px; background: transparent; color: var(--text); }
+    .brand { flex: 0 0 auto; color: var(--text); text-decoration: none; font-size: 20px; font-weight: 760; letter-spacing: -.8px; }
+    .top-actions { display: flex; align-items: center; gap: 5px; flex: 0 0 auto; }
+    .icon-button { position: relative; flex: 0 0 40px; width: 40px; min-width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 11px; background: transparent; color: var(--text); }
     .icon-button:active { background: var(--surface-2); }
+    #shareButton { background:var(--surface-2); border:1px solid var(--line); }
     .icon-button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
     .more-dots { font-size: 25px; font-weight: 800; line-height: 1; transform: translateY(-2px); letter-spacing: 1px; }
     .request-dot { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; display: grid; place-items: center; padding: 0 4px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 800; }
@@ -50,8 +60,8 @@
     .text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb,var(--accent) 17%,transparent); }
     .primary-button { min-height: 49px; border: 0; border-radius: 14px; padding: 12px 18px; background: var(--accent); color: var(--accent-ink); font-weight: 750; }
     .entry-state { min-height: 20px; margin-top: 13px; color: var(--muted); font-size: 12px; text-align: center; }
-    .chat-view { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; padding-top: 3px; }
-    .messages { flex: 1; min-height: 240px; max-height: calc(100svh - 150px); overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px 1px 18px; overscroll-behavior: contain; }
+    .chat-view { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; padding-top: 3px; overflow: hidden; }
+    .messages { flex: 1; min-height: 0; max-height: none; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px 1px 18px; overscroll-behavior: contain; }
     .empty-state { margin: auto; padding: 30px 14px; color: var(--muted); text-align: center; font-size: 13px; }
     .message { max-width: min(86%,520px); align-self: flex-start; min-width: 82px; background: var(--bubble); border: 1px solid var(--line); border-radius: 16px 16px 16px 5px; padding: 8px 11px 9px; overflow-wrap: anywhere; }
     .message.mine { align-self: flex-end; background: var(--mine); border-color: color-mix(in srgb,var(--accent) 23%,var(--line)); border-radius: 16px 16px 5px 16px; }
@@ -60,7 +70,18 @@
     .message-body { margin-top: 2px; white-space: pre-wrap; line-height: 1.45; }
     .message-media { display: block; width: auto; max-width: min(260px,65vw); max-height: 300px; margin-top: 5px; border-radius: 10px; object-fit: contain; background: #0001; }
     .message-time { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; text-align: right; }
-    .composer { display: flex; align-items: flex-end; gap: 7px; padding: 10px 0 max(4px,env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--bg); }
+    .quoted-message { margin: 1px 0 7px; padding: 6px 8px; border-left: 3px solid var(--accent); border-radius: 6px; background: color-mix(in srgb,var(--accent) 10%,var(--surface-2)); color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .quoted-message strong { display:block; color:var(--accent); font-size:10px; margin-bottom:2px; }
+    .pending-note { display:block; margin-top:5px; color:var(--muted); font-size:9px; line-height:1.2; }
+    .reply-preview { display:flex; align-items:center; gap:8px; padding:7px 9px; border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:10px; background:var(--surface); }
+    .reply-preview-copy { flex:1; min-width:0; }
+    .reply-preview-copy strong { display:block; color:var(--accent); font-size:10px; }
+    .reply-preview-copy span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:11px; }
+    .reply-cancel { flex:none; width:27px; height:27px; border:0; border-radius:8px; background:var(--surface-2); color:var(--text); }
+    .message { touch-action: pan-y; transition: transform .12s ease; }
+    .message.swiping { transition:none; }
+    .composer { flex: 0 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: 7px; padding: 8px 0 max(4px,env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--bg); }
+    .composer-row { display:flex; align-items:flex-end; gap:7px; width:100%; }
     .attach-button { flex: none; width: 43px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); color: var(--text); }
     .attach-button svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .composer-editor { flex: 1; min-width: 0; min-height: 44px; max-height: 120px; overflow-y: auto; border: 1px solid var(--line); border-radius: 13px; padding: 11px 13px; background: var(--surface); color: var(--text); outline: none; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.35; }
@@ -114,12 +135,35 @@
     .setting-copy strong { color: var(--text); }
     .about-link { color: var(--accent); text-decoration: none; font-weight: 750; }
     .menu-backdrop { position: fixed; inset: 0; z-index: 24; }
+    .media-backdrop { position:fixed; inset:0; z-index:60; display:grid; place-items:end center; padding:10px; background:#0009; }
+    .media-panel { width:min(520px,100%); max-height:min(74dvh,620px); display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:var(--shadow); }
+    .media-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 14px 8px; }
+    .media-head strong { font-size:14px; }
+    .media-tabs { display:flex; gap:6px; padding:4px 12px 10px; }
+    .media-tab { border:1px solid var(--line); border-radius:999px; padding:7px 12px; background:var(--surface-2); color:var(--text); font-size:11px; font-weight:700; }
+    .media-tab.active { border-color:var(--accent); color:var(--accent); }
+    .media-search { margin:0 12px 10px; width:calc(100% - 24px); padding:10px 12px; border:1px solid var(--line); border-radius:11px; background:var(--surface-2); color:var(--text); outline:none; }
+    .media-grid { flex:1; min-height:180px; overflow:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; padding:0 12px 12px; align-content:start; }
+    .media-result { position:relative; aspect-ratio:1; overflow:hidden; border:0; border-radius:10px; padding:0; background:var(--surface-2); }
+    .media-result img { width:100%; height:100%; object-fit:cover; display:block; }
+    .media-empty { grid-column:1/-1; padding:28px 12px; text-align:center; color:var(--muted); font-size:12px; }
+    .media-upload { margin:0 12px 12px; min-height:40px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--text); font-size:12px; }
+    .sticker-button { flex:none; width:43px; height:44px; display:grid; place-items:center; border:1px solid var(--line); border-radius:13px; background:var(--surface); color:var(--text); }
+    .sticker-button svg { width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .sticker-result { aspect-ratio:1; display:grid; place-items:center; border:1px solid transparent; border-radius:12px; padding:5px; background:var(--surface-2); }
+    .sticker-result:active { border-color:var(--accent); transform:scale(.97); }
+    .sticker-result img { width:100%; height:100%; object-fit:contain; }
+    .sticker-result:disabled { opacity:.55; }
 
     @media (max-width:520px) {
       .app-shell { padding-left: 12px; padding-right: 12px; }
       .topbar-inner { min-height: 53px; padding-left: 13px; }
       .brand { font-size: 19px; }
-      .messages { max-height: calc(100svh - 138px); }
+      .app-shell { padding-left: 10px; padding-right: 10px; }
+      .topbar-inner { gap: 6px; padding-right: 7px; }
+      .top-actions { gap: 2px; }
+      .icon-button { flex-basis:36px; width:36px; min-width:36px; }
+      .brand { font-size:18px; }
       .modal-backdrop { padding: 10px; }
       .modal-panel { border-radius: 17px; }
     }
@@ -130,14 +174,14 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="topbar-inner">
-        <a class="brand" href="/" aria-label="Nerukko home">nerukko</a>
+        <a class="brand" href="/" aria-label="Nerukko home">Nerukko</a>
         <div class="top-actions">
           <button class="icon-button" id="drawerButton" type="button" aria-label="Open navigation drawer" title="Menu">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             <span class="request-dot" id="requestDot" hidden>0</span>
           </button>
           <button class="icon-button" id="shareButton" type="button" aria-label="Share Nerukko" title="Share">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.6 6.6-4.2M8.7 13.4l6.6 4.2"/></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.7 10.6 15.3 6.4M8.7 13.4 15.3 17.6"/></svg>
           </button>
           <button class="icon-button" id="moreButton" type="button" aria-label="More options" aria-expanded="false" title="More">
             <span class="more-dots" aria-hidden="true">⋮</span>
@@ -164,12 +208,21 @@
           <div class="empty-state" id="emptyState">Say hello to someone nearby.</div>
         </div>
         <form class="composer" id="sendForm">
-          <button class="attach-button" id="attachButton" type="button" aria-label="Attach an image, GIF or sticker" title="Attach image or GIF">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-          </button>
-          <input id="mediaInput" type="file" accept="image/*,.gif" hidden>
-          <div class="composer-editor" id="messageEditor" contenteditable="true" role="textbox" aria-label="Message" aria-multiline="true" data-placeholder="Message…" spellcheck="true"></div>
-          <button class="send-button" type="submit">Send</button>
+          <div class="reply-preview" id="replyPreview" hidden>
+            <div class="reply-preview-copy"><strong id="replyName">Replying</strong><span id="replyText"></span></div>
+            <button class="reply-cancel" id="cancelReply" type="button" aria-label="Cancel reply">×</button>
+          </div>
+          <div class="composer-row">
+            <button class="attach-button" id="attachButton" type="button" aria-label="Upload image or GIF" title="Upload image or GIF" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="sticker-button" id="stickerButton" type="button" aria-label="Open stickers" title="Stickers" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6"/><path d="M14 20v-4a2 2 0 0 1 2-2h4"/><path d="M14 20l6-6"/><path d="M8 9h8M8 13h4"/></svg>
+            </button>
+            <input id="mediaInput" type="file" accept="image/*,.gif" hidden>
+            <div class="composer-editor" id="messageEditor" contenteditable="true" role="textbox" aria-label="Message" aria-multiline="true" data-placeholder="Message…" spellcheck="true"></div>
+            <button class="send-button" type="submit">Send</button>
+          </div>
         </form>
       </section>
     </main>
@@ -231,9 +284,27 @@
         <p class="setting-copy"><strong>Closer, together.</strong><br>Meet people nearby in small, anonymous conversations. No account, no profile to build, no pressure. Just drop in and say hello.</p>
         <p class="setting-copy">Your browser keeps a random participant ID and nickname. The matchmaking server handles room presence and connection setup. Text and image messages are sent directly between browsers over encrypted WebRTC data channels when a peer connection is available. Nerukko does not store chat messages on its server.</p>
         <p class="setting-copy">Approximate location is optional and used only for matching. It is never shown to other members. Without location, we prioritise rooms with others who made the same choice.</p>
-        <p class="setting-copy">Private conversations move both people out of the group. Two independent reports can trigger a five-minute cooldown. Direct connections may not work on every network because this launch uses STUN without a TURN relay.</p>
+        <p class="setting-copy">Private conversations move both people out of the group. Images, GIFs and stickers are available only in private chats. The Black Cat sticker pack is bundled with Nerukko; recipients receive the selected sticker image directly and do not need the pack.</p>
+        <p class="setting-copy">Nerukko Bot may appear when you are alone in a group. Messages in Bot conversations are sent to Google Gemini to generate replies. Chat content is not saved in Nerukko's server storage, but Google processes those prompts under its API terms.</p>
+        <p class="setting-copy">Pending messages stay in the sender's browser and are sent directly when both people reconnect. Nerukko's server routes only the temporary connection setup, not the message text.</p>
+        <p class="setting-copy">Two independent reports can trigger a five-minute cooldown. Direct connections may not work on every network because this launch uses STUN without a TURN relay.</p>
         <p class="setting-copy">Questions or feedback? <a class="about-link" href="https://t.me/prasannaone" target="_blank" rel="noopener noreferrer">@prasannaone</a></p>
       </div>
+    </section>
+  </div>
+
+  <div class="media-backdrop" id="mediaBackdrop" hidden>
+    <section class="media-panel" role="dialog" aria-modal="true" aria-labelledby="mediaTitle">
+      <div class="media-head"><strong id="mediaTitle">Upload media</strong><button class="close-button" id="closeMedia" type="button" aria-label="Close media picker">×</button></div>
+      <div class="media-grid" id="mediaGrid"><div class="media-empty">Choose an image or GIF from your phone.</div></div>
+      <button class="media-upload" id="uploadMedia" type="button">Choose from device</button>
+    </section>
+  </div>
+
+  <div class="media-backdrop" id="stickerBackdrop" hidden>
+    <section class="media-panel" role="dialog" aria-modal="true" aria-labelledby="stickerTitle">
+      <div class="media-head"><strong id="stickerTitle">Black Cat</strong><button class="close-button" id="closeStickers" type="button" aria-label="Close stickers">×</button></div>
+      <div class="media-grid" id="stickerGrid"><div class="media-empty">Loading stickers…</div></div>
     </section>
   </div>
 
@@ -243,7 +314,7 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const STORAGE = { id: 'nerukko_pid', name: 'nerukko_name', theme: 'nerukko_theme', location: 'nerukko_location_preference' };
+  const STORAGE = { id: 'nerukko_pid', name: 'nerukko_name', theme: 'nerukko_theme', location: 'nerukko_location_preference', pending: 'nerukko_pending_delivery', received: 'nerukko_received_delivery_ids' };
   const MAX_MEDIA_BYTES = 2 * 1024 * 1024;
   const MEDIA_CHUNK_BYTES = 12 * 1024;
   const state = {
@@ -251,7 +322,10 @@
     locationAllowed: false, peers: new Map(), remotePeers: new Map(), channels: new Map(),
     pendingCandidates: new Map(), incomingMedia: new Map(), mediaUrls: [], privateRequests: new Map(),
     outgoingRequests: new Map(), activePrivate: null, selectedProfile: null,
-    heartbeat: null, locationRefresh: null, lastLocationUpdate: 0, cooldownUntil: 0
+    offlinePeers: new Map(), deliveryPeers: new Set(), pendingDeliveries: loadPendingDeliveries(),
+    replyTarget: null, botActive: false, botHistory: [], botNudges: 0, botNudgeTimer: null,
+    autoReconnect: false, reconnectTimer: null, reconnectAttempt: 0,
+    heartbeat: null, locationRefresh: null, deliveryTimer: null, lastLocationUpdate: 0, cooldownUntil: 0
   };
 
   function getOrCreateId() {
@@ -302,12 +376,106 @@
     return author;
   }
 
-  function addMessage(name, text, mine = false, peerId = null) {
+  function loadPendingDeliveries() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE.pending) || '[]');
+      return Array.isArray(saved) ? saved.filter(item => item && item.id && typeof item.text === 'string' && Array.isArray(item.recipients) && Date.now() - Number(item.createdAt || 0) < 7 * 86400000).slice(-100) : [];
+    } catch { return []; }
+  }
+  function savePendingDeliveries() { localStorage.setItem(STORAGE.pending, JSON.stringify(state.pendingDeliveries.slice(-100))); updatePendingNote(); }
+  function updatePendingNote() {
+    document.querySelectorAll('.pending-note').forEach(node => node.remove());
+    const pendingIds = new Set(state.pendingDeliveries.map(item => item.id));
+    const articles = [...$('messages').querySelectorAll('.message[data-message-id]')].filter(node => pendingIds.has(node.dataset.messageId));
+    const last = articles.at(-1);
+    if (last) { const note = document.createElement('small'); note.className = 'pending-note'; note.textContent = "Pending · Will send when they're online"; last.append(note); }
+  }
+  function clearReply() { state.replyTarget = null; $('replyPreview').hidden = true; }
+  function setReplyTarget(target) {
+    state.replyTarget = target;
+    $('replyName').textContent = `Replying to ${target.name || 'Guest'}`;
+    $('replyText').textContent = target.text;
+    $('replyPreview').hidden = false;
+    $('messageEditor').focus();
+  }
+  function quoteBlock(replyTo) {
+    if (!replyTo || typeof replyTo.text !== 'string') return null;
+    const quote = document.createElement('div'); quote.className = 'quoted-message';
+    const author = document.createElement('strong'); author.textContent = String(replyTo.name || 'Guest').slice(0, 24);
+    const preview = document.createElement('span'); preview.textContent = replyTo.text.slice(0, 180);
+    quote.append(author, preview); return quote;
+  }
+  function enableSwipeReply(article, target) {
+    let start = null;
+    article.addEventListener('pointerdown', event => {
+      if (event.target.closest('button,a,img') || event.button !== 0) return;
+      start = { id:event.pointerId, x:event.clientX, y:event.clientY };
+    });
+    article.addEventListener('pointermove', event => {
+      if (!start || event.pointerId !== start.id) return;
+      const dx = event.clientX - start.x, dy = event.clientY - start.y;
+      if (dx > 0 && Math.abs(dy) < Math.max(18, dx * .55)) {
+        article.classList.add('swiping'); article.style.transform = `translateX(${Math.min(dx,58)}px)`;
+      }
+    });
+    const finish = event => {
+      if (!start || event.pointerId !== start.id) return;
+      const dx = event.clientX - start.x;
+      article.classList.remove('swiping'); article.style.transform = '';
+      if (dx >= 54) { setReplyTarget(target); if (navigator.vibrate) navigator.vibrate(12); }
+      start = null;
+    };
+    article.addEventListener('pointerup', finish);
+    article.addEventListener('pointercancel', () => { start=null; article.classList.remove('swiping'); article.style.transform=''; });
+  }
+  function addMessage(name, text, mine = false, peerId = null, options = {}) {
     $('emptyState')?.remove();
+    const messageId = String(options.messageId || crypto.randomUUID());
     const article = document.createElement('article'); article.className = 'message' + (mine ? ' mine' : '');
+    article.dataset.messageId = messageId;
     article.append(messageAuthor(name, peerId || (mine ? state.id : null)));
+    const quote = quoteBlock(options.replyTo); if (quote) article.append(quote);
     const body = document.createElement('div'); body.className = 'message-body'; body.textContent = text;
-    article.append(body); $('messages').append(article); $('messages').scrollTop = $('messages').scrollHeight;
+    article.append(body); $('messages').append(article);
+    enableSwipeReply(article, { id:messageId, name:String(name || 'Guest'), text:String(text).slice(0,1000) });
+    $('messages').scrollTop = $('messages').scrollHeight;
+    if (options.pending) updatePendingNote();
+    return article;
+  }
+  function restorePendingMessages() {
+    const existing = new Set([...$('messages').querySelectorAll('.message[data-message-id]')].map(node => node.dataset.messageId));
+    for (const item of state.pendingDeliveries) if (!existing.has(item.id)) {
+      addMessage(item.name || state.name, item.text, true, state.id, { messageId:item.id, replyTo:item.replyTo, pending:true });
+    }
+    updatePendingNote();
+  }
+  function queueOfflineMessage(text, messageId, replyTo, recipients) {
+    if (!recipients.length) return false;
+    state.pendingDeliveries.push({ id:messageId, name:state.name, text, replyTo, recipients, createdAt:Date.now() });
+    state.pendingDeliveries = state.pendingDeliveries.slice(-100);
+    savePendingDeliveries();
+    return true;
+  }
+  function removePendingRecipient(messageId, peerId) {
+    const item = state.pendingDeliveries.find(entry => entry.id === messageId);
+    if (!item) return;
+    item.recipients = item.recipients.filter(person => person.id !== peerId);
+    if (!item.recipients.length) state.pendingDeliveries = state.pendingDeliveries.filter(entry => entry.id !== messageId);
+    savePendingDeliveries();
+  }
+  function sendDeliveryInvites() {
+    if (state.ws?.readyState !== WebSocket.OPEN) return;
+    const ids = new Set(state.pendingDeliveries.flatMap(item => item.recipients.map(person => person.id)));
+    for (const targetId of ids) sendServer({ type:'delivery-invite', to:targetId });
+  }
+  function flushDeliveryQueue(peerId) {
+    const channel = state.channels.get(peerId);
+    if (!channel || channel.readyState !== 'open') return;
+    const items = state.pendingDeliveries.filter(item => item.recipients.some(person => person.id === peerId));
+    for (const item of items) {
+      try { channel.send(JSON.stringify({ type:'chat', name:item.name, text:item.text, messageId:item.id, replyTo:item.replyTo || null, deliveryId:item.id })); }
+      catch (error) { console.warn('Pending message could not be handed off.', error); }
+    }
   }
 
   function addMediaMessage(name, peerId, blob, mine = false) {
@@ -373,6 +541,8 @@
       $('privateName').textContent = state.activePrivate.name || 'Private chat';
       $('privateAvatar').textContent = initial(state.activePrivate.name);
     }
+    $('attachButton').hidden = state.mode !== 'private';
+    $('stickerButton').hidden = state.mode !== 'private';
     const count = state.privateRequests.size;
     $('requestDot').hidden = count === 0;
     $('requestDot').textContent = count > 9 ? '9+' : String(count);
@@ -427,7 +597,7 @@
 
   function attachChannel(peer, channel) {
     state.channels.set(peer.id, channel); channel.binaryType = 'arraybuffer';
-    channel.onopen = () => {};
+    channel.onopen = () => { if (state.deliveryPeers.has(peer.id)) flushDeliveryQueue(peer.id); };
     channel.onclose = () => { if (state.channels.get(peer.id) === channel) state.channels.delete(peer.id); };
     channel.onerror = () => {};
     channel.onmessage = event => handlePeerData(peer, event.data);
@@ -455,7 +625,15 @@
     }
     try {
       const packet = JSON.parse(data);
-      if (packet.type === 'chat' && typeof packet.text === 'string') addMessage(String(packet.name || peer.name || 'Guest').slice(0, 24), packet.text.slice(0, 1000), false, peer.id);
+      if (packet.type === 'chat' && typeof packet.text === 'string') {
+        const seen = packet.deliveryId ? new Set(JSON.parse(localStorage.getItem(STORAGE.received) || '[]')) : null;
+        if (!packet.deliveryId || !seen.has(packet.deliveryId)) {
+          addMessage(String(packet.name || peer.name || 'Guest').slice(0, 24), packet.text.slice(0, 1000), false, peer.id, { messageId:packet.messageId, replyTo:packet.replyTo || null });
+          if (packet.deliveryId && seen) { seen.add(packet.deliveryId); localStorage.setItem(STORAGE.received, JSON.stringify([...seen].slice(-200))); }
+        }
+        if (packet.deliveryId) state.channels.get(peer.id)?.send(JSON.stringify({ type:'delivery-ack', deliveryId:packet.deliveryId }));
+      }
+      if (packet.type === 'delivery-ack' && typeof packet.deliveryId === 'string') removePendingRecipient(packet.deliveryId, peer.id);
       const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
       if (packet.type === 'media-start' && typeof packet.transferId === 'string' && allowedMedia.includes(String(packet.mime)) && Number(packet.size) > 0 && Number(packet.size) <= MAX_MEDIA_BYTES) {
         const transferKey = `${peer.id}:${packet.transferId}`;
@@ -511,10 +689,10 @@
       case 'joined':
         state.roomId = data.roomId; state.mode = 'group'; state.activePrivate = null;
         syncPeers(data.peers || [], 'group', data.roomId);
-        $('entryView').hidden = true; $('chatView').hidden = false; break;
+        $('entryView').hidden = true; $('chatView').hidden = false; restorePendingMessages(); sendDeliveryInvites(); break;
       case 'peer-joined':
         if (data.peer?.id && !state.remotePeers.has(data.peer.id)) {
-          state.remotePeers.set(data.peer.id, data.peer); updateDrawer(); makePeer(data.peer);
+          state.remotePeers.set(data.peer.id, data.peer); state.offlinePeers.delete(data.peer.id); updateDrawer(); makePeer(data.peer);
         }
         break;
       case 'peer-renamed': {
@@ -524,7 +702,15 @@
       }
       case 'peer-left':
         state.remotePeers.delete(data.id); state.peers.get(data.id)?.close(); state.peers.delete(data.id);
-        state.channels.delete(data.id); state.pendingCandidates.delete(data.id); state.incomingMedia.delete(data.id); updateDrawer(); break;
+        state.channels.delete(data.id); state.pendingCandidates.delete(data.id); state.incomingMedia.delete(data.id); state.offlinePeers.delete(data.id); updateDrawer(); break;
+      case 'peer-offline':
+        if (data.peer?.id) { state.remotePeers.delete(data.peer.id); state.offlinePeers.set(data.peer.id, data.peer); state.peers.get(data.peer.id)?.close(); state.peers.delete(data.peer.id); state.channels.delete(data.peer.id); updateDrawer(); }
+        break;
+      case 'delivery-ready':
+      case 'delivery-invite':
+        if (data.peer?.id) { state.offlinePeers.delete(data.peer.id); state.deliveryPeers.add(data.peer.id); makePeer({ ...data.peer, delivery:true }); flushDeliveryQueue(data.peer.id); }
+        break;
+      case 'delivery-expired': showToast('A pending message expired before they returned.'); break;
       case 'signal': handleSignal(data.from, data.payload || {}).catch(error => console.warn('Signalling failed.', error)); break;
       case 'room-reset':
         syncPeers(data.peers || [], data.mode, data.roomId);
@@ -560,6 +746,18 @@
         showToast('You have been paused from Nerukko for five minutes.');
         break;
       case 'error': showToast(data.message || 'Something went wrong.'); break;
+      case 'bot-start':
+        state.botActive = true; state.botHistory = []; state.botNudges = 0; scheduleBotNudge(); break;
+      case 'bot-stop':
+        state.botActive = false; state.botHistory = []; state.botNudges = 0; clearTimeout(state.botNudgeTimer); state.botNudgeTimer = null; break;
+      case 'bot-message':
+        if (state.botActive && typeof data.text === 'string') {
+          addMessage('Nerukko Bot', data.text, false, null, { messageId:data.messageId || crypto.randomUUID() });
+          if (data.kind !== 'reply') state.botNudges++;
+          state.botHistory.push({ role:'model', text:data.text }); state.botHistory = state.botHistory.slice(-12); scheduleBotNudge();
+        }
+        break;
+      case 'bot-unavailable': showToast(data.message || 'Nerukko Bot is taking a break.'); break;
       case 'pong': break;
     }
   }
@@ -582,17 +780,33 @@
 
   function startPresence() {
     clearInterval(state.heartbeat); state.heartbeat = setInterval(() => sendServer({ type: 'ping' }), 45_000);
-    clearInterval(state.locationRefresh);
+    clearInterval(state.locationRefresh); clearInterval(state.deliveryTimer);
     if (state.locationAllowed) state.locationRefresh = setInterval(refreshLocation, 300_000);
+    state.deliveryTimer = setInterval(sendDeliveryInvites, 12_000); sendDeliveryInvites();
   }
   async function refreshLocation() {
     if (!state.locationAllowed || document.visibilityState !== 'visible' || state.ws?.readyState !== WebSocket.OPEN) return;
     const location = await getPosition({ promptUser: false, maximumAge: 60_000 });
     if (location) sendServer({ type: 'location-update', location });
   }
-  function stopPresence() { clearInterval(state.heartbeat); clearInterval(state.locationRefresh); state.heartbeat = state.locationRefresh = null; }
+  function stopPresence() { clearInterval(state.heartbeat); clearInterval(state.locationRefresh); clearInterval(state.deliveryTimer); state.heartbeat = state.locationRefresh = state.deliveryTimer = null; }
+
+  function scheduleReconnect() {
+    if (!state.autoReconnect || state.reconnectTimer) return;
+    const delay = Math.min(1200 * (2 ** Math.min(state.reconnectAttempt, 4)), 18_000);
+    state.reconnectAttempt++;
+    showToast('Connection lost. Reconnecting…');
+    state.reconnectTimer = setTimeout(() => {
+      state.reconnectTimer = null;
+      if (!state.autoReconnect) return;
+      if (navigator.onLine) joinChat({ automatic:true });
+      else scheduleReconnect();
+    }, delay);
+  }
 
   async function joinChat({ automatic = false } = {}) {
+    state.autoReconnect = true;
+    clearTimeout(state.reconnectTimer); state.reconnectTimer = null;
     if (state.ws && state.ws.readyState !== WebSocket.CLOSED) return;
     const name = ($('nameInput').value || localStorage.getItem(STORAGE.name) || '').trim().slice(0, 24);
     if (!name) { $('nameInput').focus(); return; }
@@ -603,39 +817,72 @@
     const url = new URL('/api/ws', window.location.href); url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     try {
       const ws = new WebSocket(url); state.ws = ws;
-      ws.onopen = () => { ws.send(JSON.stringify({ type: 'join', id: state.id, name: state.name, location })); startPresence(); };
+      ws.onopen = () => { state.reconnectAttempt = 0; ws.send(JSON.stringify({ type: 'join', id: state.id, name: state.name, location })); startPresence(); };
       ws.onmessage = event => { try { handleServerMessage(JSON.parse(event.data)); } catch (error) { console.warn('Ignored an unreadable server message.', error); } };
       ws.onerror = () => showToast('Connection problem. Please try again.');
       ws.onclose = event => {
-        stopPresence(); state.peers.forEach(pc => pc.close()); state.peers.clear(); state.channels.clear();
+        stopPresence();
+        for (const person of state.remotePeers.values()) state.offlinePeers.set(person.id, person);
+        state.peers.forEach(pc => pc.close()); state.peers.clear(); state.channels.clear();
         state.pendingCandidates.clear(); state.incomingMedia.clear(); state.remotePeers.clear(); state.roomId = null; state.ws = null; updateDrawer();
-        $('chatView').hidden = true; $('entryView').hidden = false;
         if (event.code === 4003 || state.cooldownUntil > Date.now()) {
+          state.autoReconnect = false; clearTimeout(state.reconnectTimer); state.reconnectTimer = null;
+          $('chatView').hidden = true; $('entryView').hidden = false;
           const left = Math.max(1, Math.ceil((state.cooldownUntil - Date.now()) / 60_000));
           $('entryState').textContent = `Temporarily paused. Try again in about ${left} minute${left === 1 ? '' : 's'}.`;
           $('joinButton').disabled = true;
           setTimeout(() => { $('joinButton').disabled = false; $('entryState').textContent = 'You can try again now.'; }, Math.max(0, state.cooldownUntil - Date.now()));
+        } else if (state.autoReconnect) {
+          $('chatView').hidden = false; $('entryView').hidden = true; scheduleReconnect();
         } else {
+          $('chatView').hidden = true; $('entryView').hidden = false;
           $('entryState').textContent = 'Connection ended. Tap Enter chat to reconnect.'; $('joinButton').disabled = false;
         }
       };
     } catch (error) {
       console.error(error); $('chatView').hidden = true; $('entryView').hidden = false;
-      $('entryState').textContent = 'Could not connect. Try again.'; $('joinButton').disabled = false;
+      if (state.autoReconnect) { $('chatView').hidden = false; $('entryView').hidden = true; scheduleReconnect(); } else { $('entryState').textContent = 'Could not connect. Try again.'; $('joinButton').disabled = false; }
     }
+  }
+
+  function scheduleBotNudge() {
+    clearTimeout(state.botNudgeTimer);
+    if (!state.botActive || state.botNudges >= 2) return;
+    state.botNudgeTimer = setTimeout(() => {
+      if (state.botActive && state.mode === 'group' && !state.remotePeers.size) sendServer({ type:'bot-nudge', history:state.botHistory.slice(-12) });
+    }, 45_000);
   }
 
   function submitTextMessage() {
     const editor = $('messageEditor');
     const text = editor.innerText.replace(/\u00a0/g, ' ').trim().slice(0, 1000);
     if (!text) return;
-    const packet = JSON.stringify({ type: 'chat', name: state.name, text });
-    let sent = 0;
-    for (const channel of state.channels.values()) {
-      if (channel.readyState === 'open') { try { channel.send(packet); sent++; } catch (error) { console.warn('Could not send text.', error); } }
+    const messageId = crypto.randomUUID();
+    const replyTo = state.replyTarget ? { id:state.replyTarget.id, name:state.replyTarget.name, text:state.replyTarget.text.slice(0,180) } : null;
+
+    if (state.mode === 'group' && state.botActive && !state.remotePeers.size) {
+      addMessage(state.name, text, true, state.id, { messageId, replyTo });
+      state.botHistory.push({ role:'user', text }); state.botHistory = state.botHistory.slice(-12);
+      sendServer({ type:'bot-chat', text, history:state.botHistory.slice(-12) });
+      editor.replaceChildren(); clearReply(); scheduleBotNudge(); return;
     }
-    if (sent) { addMessage(state.name, text, true, state.id); editor.replaceChildren(); }
-    else showToast('Still connecting. Try again in a moment.');
+
+    const packet = JSON.stringify({ type:'chat', name:state.name, text, messageId, replyTo });
+    const activeChannels = [...state.channels.entries()].filter(([peerId,channel]) => channel.readyState === 'open' && state.remotePeers.has(peerId));
+    let sent = 0;
+    for (const [,channel] of activeChannels) {
+      try { channel.send(packet); sent++; }
+      catch (error) { console.warn('Could not send text.', error); }
+    }
+    const offlineRecipients = state.mode === 'group' ? [...state.offlinePeers.values()].map(peer => ({ id:peer.id, name:peer.name })) : [];
+    const queued = queueOfflineMessage(text, messageId, replyTo, offlineRecipients);
+    if (sent || queued) {
+      addMessage(state.name, text, true, state.id, { messageId, replyTo, pending:queued });
+      editor.replaceChildren(); clearReply();
+      if (!sent && !queued) showToast('Still connecting. Try again in a moment.');
+      return;
+    }
+    showToast('Still connecting. Try again in a moment.');
   }
 
   async function waitForChannel(channel) {
@@ -647,6 +894,7 @@
   }
 
   async function sendMedia(file) {
+    if (state.mode !== 'private') return showToast('Media sharing is available in private chats.');
     const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
     if (!file || !allowedMedia.includes(file.type)) return showToast('Choose a GIF, PNG, JPG or WebP image.');
     if (file.size > MAX_MEDIA_BYTES) return showToast('Keep images and GIFs under 2 MB for now.');
@@ -685,6 +933,83 @@
     }
   }
 
+  const STICKER_ZIP_URL = '/Stickers/blackcat.zip';
+  let stickerPackPromise = null;
+  let stickerObjectUrls = [];
+
+  async function readStoredZip(blob) {
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const decoder = new TextDecoder();
+    const files = [];
+    let offset = 0;
+    // The bundled ZIP is intentionally ZIP_STORED, so no third-party unzip library is needed.
+    while (offset + 30 <= bytes.length) {
+      if (view.getUint32(offset, true) !== 0x04034b50) break;
+      const method = view.getUint16(offset + 8, true);
+      const compressedSize = view.getUint32(offset + 18, true);
+      const nameLength = view.getUint16(offset + 26, true);
+      const extraLength = view.getUint16(offset + 28, true);
+      const nameStart = offset + 30;
+      const dataStart = nameStart + nameLength + extraLength;
+      const name = decoder.decode(bytes.subarray(nameStart, nameStart + nameLength));
+      const dataEnd = dataStart + compressedSize;
+      if (dataEnd > bytes.length) throw new Error('The sticker ZIP is incomplete.');
+      if (method !== 0) throw new Error('This sticker ZIP uses an unsupported compression method.');
+      if (name.toLowerCase().endsWith('.webp') && !name.includes('..') && !name.startsWith('/')) {
+        files.push({ name: name.split('/').pop(), blob: new Blob([bytes.slice(dataStart, dataEnd)], { type:'image/webp' }) });
+      }
+      offset = dataEnd;
+    }
+    if (!files.length) throw new Error('No WebP stickers were found in the pack.');
+    return files;
+  }
+
+  async function getBlackCatStickers() {
+    if (!stickerPackPromise) {
+      stickerPackPromise = (async () => {
+        const response = await fetch(STICKER_ZIP_URL, { cache:'force-cache' });
+        if (!response.ok) throw new Error('Could not load Black Cat stickers.');
+        return readStoredZip(await response.blob());
+      })().catch(error => { stickerPackPromise = null; throw error; });
+    }
+    return stickerPackPromise;
+  }
+
+  async function openStickerPicker() {
+    if (state.mode !== 'private') return showToast('Stickers are available in private chats.');
+    $('stickerBackdrop').hidden = false;
+    const grid = $('stickerGrid');
+    if (grid.dataset.loaded === 'yes') return;
+    grid.replaceChildren();
+    const loading = document.createElement('div'); loading.className='media-empty'; loading.textContent='Loading Black Cat…'; grid.append(loading);
+    try {
+      const stickers = await getBlackCatStickers();
+      grid.replaceChildren();
+      for (const sticker of stickers) {
+        const url = URL.createObjectURL(sticker.blob); stickerObjectUrls.push(url);
+        const button = document.createElement('button'); button.className='sticker-result'; button.type='button'; button.title='Send sticker'; button.setAttribute('aria-label','Send sticker');
+        const image = document.createElement('img'); image.src=url; image.alt='Black Cat sticker'; image.loading='lazy';
+        button.append(image);
+        button.addEventListener('click', async () => {
+          const file = new File([sticker.blob], sticker.name || 'black-cat.webp', { type:'image/webp' });
+          await sendMedia(file); closeStickerPicker();
+        });
+        grid.append(button);
+      }
+      grid.dataset.loaded='yes';
+    } catch (error) {
+      grid.replaceChildren(); const empty=document.createElement('div'); empty.className='media-empty'; empty.textContent=error.message || 'Could not load stickers.'; grid.append(empty);
+    }
+  }
+  function closeStickerPicker() { $('stickerBackdrop').hidden=true; }
+
+  function openMediaPicker() {
+    if (state.mode !== 'private') return showToast('Media sharing is available in private chats.');
+    $('mediaBackdrop').hidden=false;
+  }
+  function closeMediaPicker() { $('mediaBackdrop').hidden=true; }
+
   function respondPrivate(requestId, accept) { sendServer({ type: 'private-respond', requestId, accept }); state.privateRequests.delete(requestId); updateDrawer(); }
 
   function requestPrivate() {
@@ -719,14 +1044,21 @@
   $('messageEditor').addEventListener('paste', event => {
     const items = [...(event.clipboardData?.items || [])];
     const imageItem = items.find(item => item.type.startsWith('image/'));
-    if (imageItem) { const file = imageItem.getAsFile(); if (file) { event.preventDefault(); sendMedia(file); } }
+    if (imageItem) { event.preventDefault(); const file = imageItem.getAsFile(); if (state.mode === 'private' && file) sendMedia(file); else showToast('Media sharing is available in private chats.'); }
   });
   $('messageEditor').addEventListener('drop', event => {
     const file = [...(event.dataTransfer?.files || [])].find(item => item.type.startsWith('image/'));
-    if (file) { event.preventDefault(); sendMedia(file); }
+    if (file) { event.preventDefault(); if (state.mode === 'private') sendMedia(file); else showToast('Media sharing is available in private chats.'); }
   });
   $('messageEditor').addEventListener('input', processEditorImages);
-  $('attachButton').addEventListener('click', () => $('mediaInput').click());
+  $('attachButton').addEventListener('click', openMediaPicker);
+  $('stickerButton').addEventListener('click', openStickerPicker);
+  $('closeStickers').addEventListener('click', closeStickerPicker);
+  $('stickerBackdrop').addEventListener('click', event => { if (event.target === $('stickerBackdrop')) closeStickerPicker(); });
+  $('cancelReply').addEventListener('click', clearReply);
+  $('closeMedia').addEventListener('click', closeMediaPicker);
+  $('mediaBackdrop').addEventListener('click', event => { if (event.target === $('mediaBackdrop')) closeMediaPicker(); });
+  $('uploadMedia').addEventListener('click', () => { closeMediaPicker(); $('mediaInput').click(); });
   $('mediaInput').addEventListener('change', async event => {
     const file = event.target.files?.[0]; if (file) await sendMedia(file); event.target.value = '';
   });
@@ -752,7 +1084,7 @@
   $('closeAbout').addEventListener('click', () => closeModal('aboutBackdrop'));
   $('settingsBackdrop').addEventListener('click', event => { if (event.target === $('settingsBackdrop')) closeModal('settingsBackdrop'); });
   $('aboutBackdrop').addEventListener('click', event => { if (event.target === $('aboutBackdrop')) closeModal('aboutBackdrop'); });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeMenu(); closeDrawer(); closeModal('settingsBackdrop'); closeModal('aboutBackdrop'); } });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeMenu(); closeDrawer(); closeModal('settingsBackdrop'); closeModal('aboutBackdrop'); closeStickerPicker(); closeMediaPicker(); } });
   document.querySelectorAll('[data-theme-choice]').forEach(button => button.addEventListener('click', () => applyTheme(button.dataset.themeChoice)));
 
   $('saveNameButton').addEventListener('click', () => {
@@ -783,14 +1115,18 @@
     swipeStart = null;
   }, { passive: true });
 
+  window.addEventListener('online', () => { if (state.autoReconnect && !state.ws) { clearTimeout(state.reconnectTimer); state.reconnectTimer = null; joinChat({ automatic:true }); } });
+
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && Date.now() - state.lastLocationUpdate > 300_000) refreshLocation();
   });
   window.addEventListener('pagehide', () => {
+    state.autoReconnect = false; clearTimeout(state.reconnectTimer); state.reconnectTimer = null;
     stopPresence();
-    if (state.ws?.readyState === WebSocket.OPEN) { try { state.ws.send(JSON.stringify({ type: 'leave' })); state.ws.close(); } catch {} }
+    if (state.ws?.readyState === WebSocket.OPEN) { try { state.ws.close(1000, 'Page closed'); } catch {} }
   });
 
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js').catch(error => console.warn('Offline app shell is unavailable.', error)));
   applyTheme(localStorage.getItem(STORAGE.theme) || 'dark');
   const savedName = localStorage.getItem(STORAGE.name) || '';
   $('nameInput').value = savedName; $('settingsName').value = savedName;
