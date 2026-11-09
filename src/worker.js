@@ -88,7 +88,7 @@ export class Matchmaker {
   }
 
   webSocketMessage(ws, message) {
-    if (typeof message === "string") {
+    if (typeof message === "string" && message.length <= MAX_SIGNAL_MESSAGE) {
       try {
         const packet = JSON.parse(message);
         if (packet?.type === "bot-chat" || packet?.type === "bot-nudge") {
@@ -242,7 +242,11 @@ export class Matchmaker {
     const rooms = [...this.roomMap("group").keys()];
     const liveRooms = new Set(rooms);
     for (const roomId of [...this.botRooms]) {
-      if (!liveRooms.has(roomId)) this.botRooms.delete(roomId);
+      if (!liveRooms.has(roomId)) {
+        this.botRooms.delete(roomId);
+        this.botRequestsByRoom.delete(roomId);
+        this.botLastRequest.delete(roomId);
+      }
     }
     for (const roomId of rooms) await this.updateBotForRoom(roomId);
   }
@@ -252,7 +256,9 @@ export class Matchmaker {
     const wasActive = this.botRooms.has(roomId);
     const shouldRun = !!this.env.GEMINI_API_KEY && members.length === 1;
     if (!shouldRun) {
-      if (wasActive) for (const ws of members) this.send(ws, { type: "bot-stop" });
+      // Re-send bot-stop even after a Durable Object restart: in-memory Bot
+      // state can be lost while the accepted WebSockets remain connected.
+      for (const ws of members) this.send(ws, { type: "bot-stop" });
       this.botRooms.delete(roomId);
       return;
     }
@@ -280,7 +286,9 @@ export class Matchmaker {
     const member = this.attachment(ws);
     if (!member.id || member.mode !== "group" || !member.roomId || !this.env.GEMINI_API_KEY) return;
     const members = this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group");
-    if (members.length !== 1 || members[0] !== ws || !this.botRooms.has(member.roomId)) return;
+    // Membership is authoritative. Do not depend on botRooms, which is only
+    // an in-memory cache and may be empty after Durable Object hibernation.
+    if (members.length !== 1 || members[0] !== ws) return;
     const now = Date.now();
     const last = this.botLastRequest.get(member.roomId) || 0;
     if (now - last < BOT_COOLDOWN_MS) return;
@@ -297,10 +305,9 @@ export class Matchmaker {
     }
     const prompt = data.type === "bot-chat"
       ? ""
-      : String(data.prompt || "Continue naturally. Offer a fresh topic or a tiny game.").slice(0, 700);
-    if (!prompt.trim()) return;
+      : String(data.prompt || "Continue naturally. Offer a fresh topic or a tiny game.").slice(0, 700).trim();
     const reply = await generateNerukkoBotReply(this.env.GEMINI_API_KEY, history, prompt);
-    const stillAlone = this.botRooms.has(member.roomId) && this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group").length === 1 && this.attachment(ws).id === member.id;
+    const stillAlone = this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group").length === 1 && this.attachment(ws).id === member.id;
     if (!stillAlone) return;
     this.send(ws, { type: "bot-message", kind: data.type === "bot-chat" ? "reply" : (history.length ? "nudge" : "greeting"), text: reply, messageId: crypto.randomUUID() });
   }
@@ -569,7 +576,7 @@ export class Matchmaker {
     if (reporter.mode !== "group" || !targetId || targetId === reporter.id) return;
     const targetSocket = this.members(reporter.roomId).find(peer => this.attachment(peer).id === targetId);
     if (!targetSocket) return;
-    const key = targetId;
+    const key = `${reporter.roomId}:${targetId}`;
     const now = Date.now();
     for (const [reportKey, report] of this.reports.entries()) {
       if (now > report.expires) this.reports.delete(reportKey);
@@ -632,7 +639,7 @@ export class Matchmaker {
       }
     }
     if (rebalance) await this.rebalanceGroupRooms();
-    if (!wasPrivate) await this.refreshBotRooms();
+    await this.refreshBotRooms();
   }
 
   webSocketClose(ws) { return this.runSerial(() => this.remove(ws, { offline: true })); }
