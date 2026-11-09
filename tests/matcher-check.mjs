@@ -105,6 +105,20 @@ function matcherWith(sockets = []) {
 }
 
 
+// Reports from different rooms must never combine into one threshold.
+{
+  const reporterA = socket('6'.repeat(32), 'room-a', null, 'group', 'A');
+  const reporterB = socket('7'.repeat(32), 'room-b', null, 'group', 'B');
+  const target = socket('8'.repeat(32), 'room-a', null, 'group', 'Target');
+  const { matcher, store } = matcherWith([reporterA, reporterB, target]);
+  const targetId = target.a.id;
+  await matcher.reportMember(reporterA, targetId);
+  target.serializeAttachment({ ...target.a, roomId: 'room-b' });
+  await matcher.reportMember(reporterB, targetId);
+  if (store.has(`cooldown:${targetId}`)) throw new Error('Reports from separate rooms must not combine');
+  if (!target.a.id) throw new Error('A cross-room report pair must not remove the target');
+}
+
 // The Durable Object serialises room-affecting socket work so two simultaneous
 // joins cannot both claim the same final seat.
 {
