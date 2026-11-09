@@ -10,7 +10,14 @@ export default {
       const id = env.MATCHMAKER.idFromName("global-lobby");
       return env.MATCHMAKER.get(id).fetch(request);
     }
-    return env.ASSETS.fetch(request);
+    const response = await env.ASSETS.fetch(request);
+    if (request.method === "GET" && ["/", "/index.html", "/service-worker.js"].includes(url.pathname) && response.ok) {
+      const headers = new Headers(response.headers);
+      headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+      headers.set("Pragma", "no-cache");
+      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    }
+    return response;
   }
 };
 
