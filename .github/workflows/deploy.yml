@@ -23,7 +23,7 @@ jobs:
       - name: Prepare bundled sticker assets
         run: |
           mkdir -p public/Stickers
-          cp Stickers/blackcat.zip public/Stickers/blackcat.zip
+          cp Stickers/*.zip public/Stickers/
 
       - name: Upload Gemini API key to Worker secret
         env:
