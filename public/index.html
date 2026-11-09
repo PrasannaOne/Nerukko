@@ -1,81 +1,731 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#101018">
-  <meta name="description" content="Nerukko connects you with people nearby.">
+  <meta name="theme-color" content="#111116">
+  <meta name="description" content="Nerukko. Closer, together.">
   <title>Nerukko · Closer, together</title>
   <style>
-    :root{color-scheme:dark;--bg:#101018;--panel:#191923;--panel2:#222230;--line:#303040;--text:#f5f3fb;--muted:#a5a2b4;--accent:#a78bfa;--accent2:#7c5ce0;--good:#77d6a2;--danger:#ff8c9b}
-    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#292044 0,transparent 48%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100svh}
-    button,input{font:inherit}button{cursor:pointer;border:0;border-radius:13px;padding:12px 16px;background:var(--accent);color:#171321;font-weight:750}button:disabled{opacity:.45;cursor:not-allowed}.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
-    .wrap{width:min(720px,100%);margin:auto;padding:24px 16px 40px}.brand{display:flex;align-items:center;gap:11px;margin:12px 0 28px}.mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#c4b5fd,#7957db);display:grid;place-items:center;color:#171321;font-size:23px;font-weight:900}.brand h1{font-size:23px;letter-spacing:-.7px;margin:0}.brand p{margin:0;color:var(--muted);font-size:12px}.card{background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 18px 60px #0003}.intro h2{font-size:clamp(25px,6vw,34px);line-height:1.12;letter-spacing:-1px;margin:0 0 9px}.intro p{color:var(--muted);margin:0 0 20px}.field{display:grid;gap:7px;margin:14px 0}.field label{font-size:13px;color:var(--muted)}input{width:100%;background:#11111a;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:13px 14px;outline:none}input:focus{border-color:var(--accent)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.actions button{flex:1;min-width:130px}.hint{font-size:12px;color:var(--muted);margin:13px 0 0}.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-top:16px}.dot{width:8px;height:8px;border-radius:50%;background:#777}.dot.live{background:var(--good);box-shadow:0 0 0 4px #77d6a21c}.chat{display:none;margin-top:16px;overflow:hidden;padding:0}.chat-head{padding:15px 17px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}.room-title{font-weight:750}.room-sub{font-size:12px;color:var(--muted)}.people{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line)}.person{font-size:12px;padding:6px 9px;border-radius:999px;background:var(--panel2);color:#ded9ef}.messages{height:min(48svh,430px);min-height:230px;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}.empty{color:var(--muted);text-align:center;margin:auto;font-size:13px}.msg{max-width:86%;align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:15px 15px 15px 5px;padding:9px 12px;overflow-wrap:anywhere}.msg.mine{align-self:flex-end;background:#392d5b;border-color:#55427e;border-radius:15px 15px 5px 15px}.msg .who{font-size:11px;color:#c7b8f4;margin-bottom:3px;font-weight:700}.composer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}.composer input{min-width:0}.composer button{padding:0 18px}.small{font-size:11px;color:var(--muted);padding:0 16px 13px}.notice{font-size:12px;color:var(--muted);line-height:1.5;margin-top:18px}.hidden{display:none!important}
-    @media(min-width:600px){.wrap{padding-top:42px}.card{padding:24px}.chat{padding:0}}
+    :root {
+      color-scheme: dark;
+      --bg: #111116;
+      --surface: #1b1b22;
+      --surface-2: #24242d;
+      --line: #32323c;
+      --text: #f5f4f7;
+      --muted: #a3a1ad;
+      --accent: #c4a7ff;
+      --accent-ink: #1b1428;
+      --bubble: #25242e;
+      --mine: #382d4d;
+      --good: #83d6ac;
+      --shadow: 0 22px 70px #0003;
+    }
+    html[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f6f5f8;
+      --surface: #ffffff;
+      --surface-2: #f0eef4;
+      --line: #e2dfe8;
+      --text: #24212b;
+      --muted: #77727f;
+      --accent: #7650bd;
+      --accent-ink: #ffffff;
+      --bubble: #f0eef4;
+      --mine: #e9e0f7;
+      --good: #278b5e;
+      --shadow: 0 18px 55px #25203912;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100svh;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition: background .18s ease, color .18s ease;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .55; }
+    [hidden] { display: none !important; }
+
+    .app-shell { width: min(760px, 100%); min-height: 100svh; margin: 0 auto; padding: 0 18px 24px; display: flex; flex-direction: column; }
+    .topbar { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .brand { color: var(--text); text-decoration: none; font-size: 23px; font-weight: 780; letter-spacing: -1.1px; }
+    .top-actions { display: flex; gap: 8px; }
+    .quiet-button, .icon-button, .leave-button {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .quiet-button:active, .icon-button:active, .leave-button:active { transform: translateY(1px); }
+    main { flex: 1; display: flex; flex-direction: column; }
+
+    .entry-view { width: 100%; max-width: 430px; margin: auto; padding: 34px 0 80px; }
+    .entry-form { display: grid; gap: 11px; }
+    .text-input {
+      width: 100%; min-width: 0; border: 1px solid var(--line); outline: none;
+      border-radius: 14px; padding: 15px 16px; background: var(--surface); color: var(--text);
+    }
+    .text-input::placeholder { color: var(--muted); opacity: .8; }
+    .text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 17%, transparent); }
+    .primary-button {
+      min-height: 49px; border: 0; border-radius: 14px; padding: 12px 18px;
+      background: var(--accent); color: var(--accent-ink); font-weight: 750;
+    }
+    .entry-state { min-height: 19px; text-align: center; color: var(--muted); font-size: 12px; margin-top: 13px; }
+
+    .chat-view { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px 0 0; }
+    .room-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding: 6px 0 15px; }
+    .room-heading { min-width: 0; }
+    .room-title { font-weight: 760; font-size: 16px; letter-spacing: -.2px; }
+    .room-subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .room-actions { display: flex; align-items: center; gap: 8px; }
+    .match-badge { flex: none; border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+    .match-badge.nearby { color: var(--good); border-color: color-mix(in srgb, var(--good) 34%, var(--line)); }
+    .leave-button { padding: 7px 10px; }
+    .people { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; padding: 12px 0; min-height: 48px; }
+    .person { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 5px 9px 5px 6px; font-size: 11px; max-width: 150px; }
+    .person-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .person-initial { width: 21px; height: 21px; display: grid; place-items: center; border-radius: 50%; background: var(--surface-2); color: var(--text); font-size: 10px; font-weight: 750; }
+    .messages { flex: 1; min-height: 240px; max-height: calc(100svh - 250px); overflow: auto; display: flex; flex-direction: column; gap: 9px; padding: 10px 0 18px; overscroll-behavior: contain; }
+    .empty-state { margin: auto; padding: 30px 14px; color: var(--muted); text-align: center; font-size: 13px; }
+    .message { max-width: min(84%, 500px); align-self: flex-start; background: var(--bubble); border: 1px solid var(--line); border-radius: 16px 16px 16px 5px; padding: 9px 12px; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .message.mine { align-self: flex-end; background: var(--mine); border-color: color-mix(in srgb, var(--accent) 23%, var(--line)); border-radius: 16px 16px 5px 16px; }
+    .message-who { font-size: 10px; color: var(--muted); font-weight: 750; margin-bottom: 3px; }
+    .message.mine .message-who { color: var(--accent); }
+    .composer { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding: 12px 0 max(4px, env(safe-area-inset-bottom)); }
+    .composer .text-input { flex: 1; padding: 13px 14px; }
+    .send-button { flex: none; min-height: 46px; padding: 0 17px; border: 0; border-radius: 13px; background: var(--accent); color: var(--accent-ink); font-weight: 750; }
+    .toast { position: fixed; z-index: 20; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translate(-50%, 10px); opacity: 0; pointer-events: none; background: var(--text); color: var(--bg); padding: 10px 14px; border-radius: 999px; font-size: 12px; box-shadow: var(--shadow); transition: opacity .2s ease, transform .2s ease; max-width: calc(100vw - 32px); text-align: center; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: end center; padding: 18px; background: #0008; }
+    .settings-panel { width: min(480px, 100%); max-height: min(82svh, 720px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 19px; box-shadow: var(--shadow); }
+    .settings-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 17px; }
+    .settings-head h2 { margin: 0; font-size: 17px; letter-spacing: -.3px; }
+    .close-button { border: 1px solid var(--line); width: 34px; height: 34px; border-radius: 11px; background: var(--surface-2); color: var(--text); font-size: 18px; }
+    .setting-section { padding: 13px 0; border-top: 1px solid var(--line); }
+    .setting-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 9px; }
+    .theme-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .theme-choice { border: 1px solid var(--line); background: var(--surface-2); color: var(--text); border-radius: 12px; padding: 11px; font-weight: 650; }
+    .theme-choice.active { border-color: var(--accent); color: var(--accent); }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .setting-copy { color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .setting-copy strong { color: var(--text); font-weight: 650; }
+    .setting-action { border: 1px solid var(--line); background: var(--surface-2); color: var(--text); border-radius: 11px; padding: 9px 11px; font-size: 12px; font-weight: 650; white-space: nowrap; }
+    .about-link { color: var(--accent); text-decoration: none; font-weight: 700; }
+
+    @media (max-width: 520px) {
+      .app-shell { padding-left: 15px; padding-right: 15px; }
+      .topbar { min-height: 68px; }
+      .brand { font-size: 21px; }
+      .quiet-button { padding: 8px 10px; }
+      .room-head { align-items: flex-start; }
+      .room-actions { gap: 6px; }
+      .match-badge { margin-top: 2px; }
+      .messages { max-height: calc(100svh - 225px); }
+      .modal-backdrop { padding: 10px; }
+      .settings-panel { border-radius: 19px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <header class="brand"><div class="mark">N</div><div><h1>nerukko</h1><p>Closer, together.</p></div></header>
-    <section class="card intro" id="entry">
-      <h2>Your next conversation<br>could be nearby.</h2>
-      <p>Drop in, meet up to four other people, and talk. No account. No chat history.</p>
-      <div class="field"><label for="username">Your username</label><input id="username" maxlength="24" autocomplete="nickname" placeholder="Pick a name" /></div>
-      <div class="actions"><button id="join">Find my group</button><button class="ghost" id="locationBtn">Enable nearby matching</button></div>
-      <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Not connected</span></div>
-      <p class="hint">Your browser creates a participant ID. Your precise location is never shown to other people.</p>
-    </section>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Nerukko home">nerukko</a>
+      <div class="top-actions">
+        <button class="quiet-button" id="shareButton" type="button">Share</button>
+        <button class="quiet-button" id="settingsButton" type="button">Settings</button>
+      </div>
+    </header>
 
-    <section class="card chat" id="chat">
-      <div class="chat-head"><div><div class="room-title">Your Nerukko room</div><div class="room-sub" id="roomStatus">Connecting peers…</div></div><button class="ghost" id="leave">Leave</button></div>
-      <div class="people" id="people"></div>
-      <div class="messages" id="messages"><div class="empty">You're here. Waiting for someone to join…</div></div>
-      <form class="composer" id="sendForm"><input id="messageInput" maxlength="1000" placeholder="Say hello…" autocomplete="off"><button type="submit">Send</button></form>
-      <div class="small">Messages travel directly between connected browsers and aren't saved by Nerukko.</div>
+    <main>
+      <section class="entry-view" id="entryView">
+        <form class="entry-form" id="entryForm">
+          <input class="text-input" id="nameInput" maxlength="24" autocomplete="nickname" placeholder="Choose a nickname" aria-label="Choose a nickname" required>
+          <button class="primary-button" id="joinButton" type="submit">Enter chat</button>
+        </form>
+        <div class="entry-state" id="entryState" aria-live="polite"></div>
+      </section>
+
+      <section class="chat-view" id="chatView" hidden>
+        <div class="room-head">
+          <div class="room-heading">
+            <div class="room-title">Your circle</div>
+            <div class="room-subtitle" id="roomCount">Connecting…</div>
+          </div>
+          <div class="room-actions">
+            <span class="match-badge" id="matchBadge" title="Matching status">Connecting</span>
+            <button class="leave-button" id="leaveButton" type="button">Leave</button>
+          </div>
+        </div>
+        <div class="people" id="people" aria-label="People in this circle"></div>
+        <div class="messages" id="messages" aria-live="polite" aria-relevant="additions">
+          <div class="empty-state" id="emptyState">Waiting for someone to join…</div>
+        </div>
+        <form class="composer" id="sendForm">
+          <input class="text-input" id="messageInput" maxlength="1000" autocomplete="off" placeholder="Message…" aria-label="Message">
+          <button class="send-button" type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal-backdrop" id="settingsBackdrop" hidden>
+    <section class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="settings-head">
+        <h2 id="settingsTitle">Settings</h2>
+        <button class="close-button" id="closeSettings" type="button" aria-label="Close settings">×</button>
+      </div>
+
+      <div class="setting-section">
+        <span class="setting-label">Appearance</span>
+        <div class="theme-options">
+          <button class="theme-choice" type="button" data-theme-choice="dark">Dark</button>
+          <button class="theme-choice" type="button" data-theme-choice="light">Light</button>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <label class="setting-label" for="settingsName">Your nickname</label>
+        <div class="setting-row">
+          <input class="text-input" id="settingsName" maxlength="24" autocomplete="nickname" aria-label="Your nickname">
+          <button class="setting-action" id="saveNameButton" type="button">Save</button>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <div class="setting-row">
+          <div>
+            <span class="setting-label">Nearby matching</span>
+            <div class="setting-copy">Share approximate location for room matching. It is never shown to other members.</div>
+          </div>
+          <button class="setting-action" id="locationButton" type="button">Enable</button>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <span class="setting-label">About Nerukko</span>
+        <p class="setting-copy"><strong>Closer, together.</strong><br>Chat messages travel directly between browsers when a peer connection is available. The matchmaking server handles room presence and connection setup, not message storage. Approximate location is used for matching only and is not shared with other members. When enabled, it refreshes about every five minutes while the chat is open.</p>
+        <p class="setting-copy">Built with care. Questions or feedback? <a class="about-link" href="https://t.me/prasannaone" target="_blank" rel="noopener noreferrer">@prasannaone</a></p>
+      </div>
     </section>
-    <p class="notice">Early preview · Use a nickname. Don't share personal details. WebRTC connections may fail on some networks until a TURN relay is added.</p>
-  </main>
+  </div>
+
 <script>
 (() => {
+  'use strict';
+
   const $ = id => document.getElementById(id);
-  const state = { id: getId(), name: '', ws: null, roomId: null, peers: new Map(), channels: new Map(), location: null, connected: false };
-  function getId(){let id=localStorage.getItem('nerukko_pid');if(!id){id=crypto.randomUUID();localStorage.setItem('nerukko_pid',id)}return id}
-  $('username').value = localStorage.getItem('nerukko_name') || '';
-  function status(text,live=false){$('statusText').textContent=text;$('statusDot').classList.toggle('live',live)}
-  function addMessage(name,text,mine=false){const empty=$('messages').querySelector('.empty');if(empty)empty.remove();const el=document.createElement('div');el.className='msg'+(mine?' mine':'');const who=document.createElement('div');who.className='who';who.textContent=name;const body=document.createElement('div');body.textContent=text;el.append(who,body);$('messages').append(el);$('messages').scrollTop=$('messages').scrollHeight}
-  function renderPeople(list){$('people').replaceChildren();list.forEach(p=>{const el=document.createElement('span');el.className='person';el.textContent=p.name+(p.id===state.id?' · you':'');$('people').append(el)});$('roomStatus').textContent=list.length+' / 5 participants'}
-  function sendSignal(to,payload){if(state.ws?.readyState===WebSocket.OPEN)state.ws.send(JSON.stringify({type:'signal',to,payload}))}
-  function makePeer(peer){if(peer.id===state.id||state.peers.has(peer.id))return;const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});state.peers.set(peer.id,pc);
-    pc.onicecandidate=e=>{if(e.candidate)sendSignal(peer.id,{candidate:e.candidate})};
-    pc.onconnectionstatechange=()=>{if(['failed','closed','disconnected'].includes(pc.connectionState)){state.peers.delete(peer.id);state.channels.delete(peer.id)}};
-    pc.ondatachannel=e=>attachChannel(peer,e.channel);
-    if(state.id.localeCompare(peer.id)<0){const ch=pc.createDataChannel('nerukko-chat');attachChannel(peer,ch);pc.createOffer().then(o=>pc.setLocalDescription(o)).then(()=>sendSignal(peer.id,{description:pc.localDescription})).catch(console.error)}
+  const STORAGE = {
+    id: 'nerukko_pid',
+    name: 'nerukko_name',
+    theme: 'nerukko_theme',
+    location: 'nerukko_location_preference'
+  };
+  const state = {
+    id: getOrCreateId(),
+    name: '',
+    ws: null,
+    roomId: null,
+    location: null,
+    locationAllowed: false,
+    peers: new Map(),
+    remotePeers: new Map(),
+    channels: new Map(),
+    pendingCandidates: new Map(),
+    heartbeat: null,
+    locationRefresh: null,
+    lastLocationUpdate: 0,
+    manualLeave: false,
+    reconnecting: false
+  };
+
+  function getOrCreateId() {
+    let id = localStorage.getItem(STORAGE.id);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(STORAGE.id, id);
+    }
+    return id;
+  }
+
+  function applyTheme(theme) {
+    const safeTheme = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = safeTheme;
+    localStorage.setItem(STORAGE.theme, safeTheme);
+    document.querySelectorAll('[data-theme-choice]').forEach(button => {
+      button.classList.toggle('active', button.dataset.themeChoice === safeTheme);
+      button.setAttribute('aria-pressed', String(button.dataset.themeChoice === safeTheme));
+    });
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = safeTheme === 'light' ? '#f6f5f8' : '#111116';
+  }
+
+  function showToast(message) {
+    const toast = $('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+
+  function setRoomStatus(status) {
+    const badge = $('matchBadge');
+    badge.textContent = status?.label || 'Open circle';
+    badge.title = status?.detail || 'Matching status';
+    badge.classList.toggle('nearby', status?.kind === 'nearby');
+  }
+
+  function setRoomCount() {
+    const count = state.remotePeers.size + 1;
+    $('roomCount').textContent = `${count} / 5 people`;
+  }
+
+  function renderPeople() {
+    const people = [{ id: state.id, name: state.name }, ...state.remotePeers.values()];
+    const container = $('people');
+    container.replaceChildren();
+    for (const person of people) {
+      const chip = document.createElement('span');
+      chip.className = 'person';
+      const initial = document.createElement('span');
+      initial.className = 'person-initial';
+      initial.textContent = (person.name || '?').trim().charAt(0).toUpperCase() || '?';
+      const name = document.createElement('span');
+      name.className = 'person-name';
+      name.textContent = person.id === state.id ? `${person.name} · you` : (person.name || 'Guest');
+      chip.append(initial, name);
+      container.append(chip);
+    }
+    setRoomCount();
+  }
+
+  function addMessage(name, text, mine = false) {
+    $('emptyState')?.remove();
+    const message = document.createElement('article');
+    message.className = `message${mine ? ' mine' : ''}`;
+    const author = document.createElement('div');
+    author.className = 'message-who';
+    author.textContent = name;
+    const body = document.createElement('div');
+    body.textContent = text;
+    message.append(author, body);
+    $('messages').append(message);
+    $('messages').scrollTop = $('messages').scrollHeight;
+  }
+
+  function clearMessages() {
+    $('messages').replaceChildren();
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.id = 'emptyState';
+    empty.textContent = 'Waiting for someone to join…';
+    $('messages').append(empty);
+  }
+
+  function sendSignal(to, payload) {
+    if (state.ws?.readyState === WebSocket.OPEN) {
+      state.ws.send(JSON.stringify({ type: 'signal', to, payload }));
+    }
+  }
+
+  function updateConnectionHint() {
+    const open = [...state.channels.values()].filter(channel => channel.readyState === 'open').length;
+    if (open > 0) $('roomCount').textContent = `${state.remotePeers.size + 1} / 5 people · connected`;
+    else if (state.remotePeers.size > 0) $('roomCount').textContent = `${state.remotePeers.size + 1} / 5 people · connecting`;
+  }
+
+  function attachChannel(peer, channel) {
+    state.channels.set(peer.id, channel);
+    channel.onopen = () => updateConnectionHint();
+    channel.onclose = () => {
+      if (state.channels.get(peer.id) === channel) state.channels.delete(peer.id);
+      updateConnectionHint();
+    };
+    channel.onerror = () => updateConnectionHint();
+    channel.onmessage = event => {
+      try {
+        const packet = JSON.parse(event.data);
+        if (packet.type === 'chat' && typeof packet.text === 'string') {
+          addMessage(String(packet.name || peer.name || 'Guest').slice(0, 24), packet.text.slice(0, 1000));
+        }
+      } catch (error) {
+        console.warn('Ignored an unreadable chat packet.', error);
+      }
+    };
+  }
+
+  function makePeer(peer) {
+    if (!peer?.id || peer.id === state.id || state.peers.has(peer.id)) return state.peers.get(peer?.id);
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.cloudflare.com:3478' },
+        { urls: 'stun:stun.l.google.com:19302' }
+      ]
+    });
+    state.peers.set(peer.id, pc);
+
+    pc.onicecandidate = event => {
+      if (event.candidate) sendSignal(peer.id, { candidate: event.candidate });
+    };
+    pc.ondatachannel = event => attachChannel(peer, event.channel);
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === 'connected') {
+        updateConnectionHint();
+      } else if (pc.connectionState === 'failed') {
+        updateConnectionHint();
+        showToast('A connection failed. You can keep chatting with connected members.');
+      }
+    };
+
+    // Exactly one side creates the data channel, avoiding offer collisions.
+    if (state.id.localeCompare(peer.id) < 0) {
+      const channel = pc.createDataChannel('nerukko-chat');
+      attachChannel(peer, channel);
+      pc.createOffer()
+        .then(offer => pc.setLocalDescription(offer))
+        .then(() => sendSignal(peer.id, { description: pc.localDescription }))
+        .catch(error => console.warn('Could not start peer connection.', error));
+    }
     return pc;
   }
-  function attachChannel(peer,ch){state.channels.set(peer.id,ch);ch.onopen=()=>status('Connected · '+state.channels.size+' peer(s)',true);ch.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.type==='chat')addMessage(m.name,m.text,false)}catch{}};ch.onclose=()=>state.channels.delete(peer.id)}
-  async function handleSignal(from,payload){let pc=state.peers.get(from);if(!pc){const peer=state.remotePeers?.get(from)||{id:from,name:'Participant'};pc=makePeer(peer)}if(!pc)return;
-    if(payload.description){await pc.setRemoteDescription(payload.description);if(payload.description.type==='offer'){const answer=await pc.createAnswer();await pc.setLocalDescription(answer);sendSignal(from,{description:pc.localDescription})}}
-    else if(payload.candidate){try{await pc.addIceCandidate(payload.candidate)}catch(e){console.warn(e)}}
+
+  async function handleSignal(from, payload) {
+    const peer = state.remotePeers.get(from) || { id: from, name: 'Guest' };
+    let pc = state.peers.get(from);
+    if (!pc) pc = makePeer(peer);
+    if (!pc) return;
+
+    if (payload.description) {
+      await pc.setRemoteDescription(payload.description);
+      if (payload.description.type === 'offer') {
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        sendSignal(from, { description: pc.localDescription });
+      }
+      const queued = state.pendingCandidates.get(from) || [];
+      state.pendingCandidates.delete(from);
+      for (const candidate of queued) {
+        try { await pc.addIceCandidate(candidate); } catch (error) { console.warn('Could not add queued ICE candidate.', error); }
+      }
+      return;
+    }
+
+    if (payload.candidate) {
+      if (pc.remoteDescription) {
+        try { await pc.addIceCandidate(payload.candidate); } catch (error) { console.warn('Could not add ICE candidate.', error); }
+      } else {
+        const queue = state.pendingCandidates.get(from) || [];
+        queue.push(payload.candidate);
+        state.pendingCandidates.set(from, queue);
+      }
+    }
   }
-  function wsMessage(data){switch(data.type){case 'joined':state.roomId=data.roomId;state.remotePeers=new Map(data.peers.map(p=>[p.id,p]));renderPeople([{id:state.id,name:state.name},...data.peers]);data.peers.forEach(makePeer);$('chat').style.display='block';$('entry').classList.add('hidden');status('In a room · waiting for peers',true);break;
-    case 'peer-joined':state.remotePeers.set(data.peer.id,data.peer);renderPeople([{id:state.id,name:state.name},...[...state.remotePeers.values()]]);makePeer(data.peer);break;
-    case 'peer-left':state.remotePeers.delete(data.id);state.peers.get(data.id)?.close();state.peers.delete(data.id);state.channels.delete(data.id);renderPeople([{id:state.id,name:state.name},...[...state.remotePeers.values()]]);break;
-    case 'signal':handleSignal(data.from,data.payload).catch(console.error);break;
-    case 'error':status(data.message);break;
-  }}
-  async function join(){state.name=$('username').value.trim().slice(0,24);if(!state.name){$('username').focus();return}localStorage.setItem('nerukko_name',state.name);$('join').disabled=true;status('Finding a group…');
-    try{const url=new URL('/api/ws',location.href);url.protocol=location.protocol==='https:'?'wss:':'ws:';state.ws=new WebSocket(url);
-      state.ws.onopen=()=>state.ws.send(JSON.stringify({type:'join',id:state.id,name:state.name,location:state.location}));
-      state.ws.onmessage=e=>{try{wsMessage(JSON.parse(e.data))}catch(err){console.error(err)}};
-      state.ws.onerror=()=>{status('Connection error. Please try again.');$('join').disabled=false};
-      state.ws.onclose=()=>{if(state.connected){status('Disconnected');$('join').disabled=false}};
-      state.connected=true;
-    }catch(e){status('Could not connect.');$('join').disabled=false}
+
+  function handleServerMessage(data) {
+    switch (data.type) {
+      case 'joined':
+        state.roomId = data.roomId;
+        state.remotePeers = new Map((data.peers || []).map(peer => [peer.id, peer]));
+        renderPeople();
+        $('entryView').hidden = true;
+        $('chatView').hidden = false;
+        $('roomCount').textContent = `${state.remotePeers.size + 1} / 5 people · waiting`;
+        for (const peer of state.remotePeers.values()) makePeer(peer);
+        break;
+      case 'peer-joined':
+        if (data.peer?.id) {
+          state.remotePeers.set(data.peer.id, data.peer);
+          renderPeople();
+          makePeer(data.peer);
+        }
+        break;
+      case 'peer-renamed': {
+        const peer = state.remotePeers.get(data.id);
+        if (peer) {
+          peer.name = data.name;
+          renderPeople();
+        }
+        break;
+      }
+      case 'peer-left':
+        state.remotePeers.delete(data.id);
+        state.peers.get(data.id)?.close();
+        state.peers.delete(data.id);
+        state.channels.delete(data.id);
+        state.pendingCandidates.delete(data.id);
+        renderPeople();
+        break;
+      case 'signal':
+        handleSignal(data.from, data.payload || {}).catch(error => console.warn('Signalling failed.', error));
+        break;
+      case 'room-status':
+        setRoomStatus(data.status);
+        break;
+      case 'error':
+        showToast(data.message || 'Something went wrong.');
+        break;
+      case 'pong':
+        break;
+    }
   }
-  $('locationBtn').onclick=()=>{if(!navigator.geolocation){status('Location is not available in this browser.');return}navigator.geolocation.getCurrentPosition(pos=>{state.location={lat:pos.coords.latitude,lon:pos.coords.longitude};$('locationBtn').textContent='Nearby matching enabled';status('Approximate location ready')},()=>status('Location permission not granted. You can still join.'),{enableHighAccuracy:false,timeout:8000,maximumAge:300000})};
-  $('join').onclick=join;
-  $('leave').onclick=()=>{state.ws?.close();state.peers.forEach(pc=>pc.close());state.peers.clear();state.channels.clear();state.connected=false;state.roomId=null;$('chat').style.display='none';$('entry').classList.remove('hidden');$('join').disabled=false;status('You left the room')};
-  $('sendForm').onsubmit=e=>{e.preventDefault();const text=$('messageInput').value.trim();if(!text)return;const packet=JSON.stringify({type:'chat',name:state.name,text});let sent=false;state.channels.forEach(ch=>{if(ch.readyState==='open'){ch.send(packet);sent=true}});if(sent){addMessage(state.name,text,true);$('messageInput').value=''}else{status('No peer connection yet. Try again in a moment.')}};
+
+  function getPosition({ promptUser = false, maximumAge = 300000 } = {}) {
+    return new Promise(resolve => {
+      if (!navigator.geolocation) return resolve(null);
+      if (!promptUser && localStorage.getItem(STORAGE.location) !== 'granted') return resolve(null);
+
+      navigator.geolocation.getCurrentPosition(position => {
+        const location = {
+          lat: position.coords.latitude,
+          lon: position.coords.longitude
+        };
+        state.location = location;
+        state.locationAllowed = true;
+        localStorage.setItem(STORAGE.location, 'granted');
+        $('locationButton').textContent = 'Enabled';
+        state.lastLocationUpdate = Date.now();
+        resolve(location);
+      }, error => {
+        if (error.code === error.PERMISSION_DENIED) {
+          state.locationAllowed = false;
+          localStorage.setItem(STORAGE.location, 'denied');
+        }
+        resolve(null);
+      }, {
+        enableHighAccuracy: false,
+        maximumAge,
+        timeout: 6500
+      });
+    });
+  }
+
+  function startPresence() {
+    clearInterval(state.heartbeat);
+    state.heartbeat = setInterval(() => {
+      if (state.ws?.readyState === WebSocket.OPEN) state.ws.send(JSON.stringify({ type: 'ping' }));
+    }, 45_000);
+
+    clearInterval(state.locationRefresh);
+    if (state.locationAllowed) {
+      state.locationRefresh = setInterval(() => refreshLocation(), 300_000);
+    }
+  }
+
+  async function refreshLocation() {
+    if (!state.locationAllowed || document.visibilityState !== 'visible' || state.ws?.readyState !== WebSocket.OPEN) return;
+    const location = await getPosition({ promptUser: false, maximumAge: 60_000 });
+    if (location && state.ws?.readyState === WebSocket.OPEN) {
+      state.ws.send(JSON.stringify({ type: 'location-update', location }));
+    }
+  }
+
+  function stopPresence() {
+    clearInterval(state.heartbeat);
+    clearInterval(state.locationRefresh);
+    state.heartbeat = null;
+    state.locationRefresh = null;
+  }
+
+  async function joinChat({ automatic = false } = {}) {
+    if (state.ws && state.ws.readyState !== WebSocket.CLOSED) return;
+    const name = ($('nameInput').value || localStorage.getItem(STORAGE.name) || '').trim().slice(0, 24);
+    if (!name) {
+      $('nameInput').focus();
+      return;
+    }
+
+    state.name = name;
+    localStorage.setItem(STORAGE.name, name);
+    $('settingsName').value = name;
+    $('entryView').hidden = true;
+    $('chatView').hidden = false;
+    $('roomCount').textContent = 'Finding your circle…';
+    $('matchBadge').textContent = 'Connecting';
+    $('matchBadge').classList.remove('nearby');
+    $('joinButton').disabled = true;
+    state.manualLeave = false;
+    state.reconnecting = automatic;
+    clearMessages();
+
+    const location = await getPosition({ promptUser: !automatic, maximumAge: 300000 });
+    const url = new URL('/api/ws', window.location.href);
+    url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+    try {
+      const ws = new WebSocket(url);
+      state.ws = ws;
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'join', id: state.id, name: state.name, location }));
+        startPresence();
+      };
+      ws.onmessage = event => {
+        try { handleServerMessage(JSON.parse(event.data)); }
+        catch (error) { console.warn('Ignored an unreadable server message.', error); }
+      };
+      ws.onerror = () => {
+        showToast('Connection problem. Please try again.');
+      };
+      ws.onclose = () => {
+        stopPresence();
+        state.peers.forEach(pc => pc.close());
+        state.peers.clear();
+        state.channels.clear();
+        state.pendingCandidates.clear();
+        state.remotePeers.clear();
+        state.roomId = null;
+        state.ws = null;
+        renderPeople();
+        if (!state.manualLeave) {
+          $('chatView').hidden = true;
+          $('entryView').hidden = false;
+          $('entryState').textContent = 'Connection ended. Try again.';
+          $('joinButton').disabled = false;
+        }
+      };
+    } catch (error) {
+      console.error(error);
+      $('chatView').hidden = true;
+      $('entryView').hidden = false;
+      $('entryState').textContent = 'Could not connect. Try again.';
+      $('joinButton').disabled = false;
+    }
+  }
+
+  function leaveChat() {
+    state.manualLeave = true;
+    stopPresence();
+    if (state.ws?.readyState === WebSocket.OPEN) {
+      try { state.ws.send(JSON.stringify({ type: 'leave' })); } catch {}
+      state.ws.close();
+    } else {
+      state.ws?.close();
+    }
+    state.peers.forEach(pc => pc.close());
+    state.peers.clear();
+    state.channels.clear();
+    state.pendingCandidates.clear();
+    state.remotePeers.clear();
+    state.ws = null;
+    state.roomId = null;
+    $('chatView').hidden = true;
+    $('entryView').hidden = false;
+    $('entryState').textContent = '';
+    $('joinButton').disabled = false;
+    renderPeople();
+  }
+
+  $('entryForm').addEventListener('submit', event => {
+    event.preventDefault();
+    joinChat({ automatic: false });
+  });
+
+  $('sendForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const input = $('messageInput');
+    const text = input.value.trim().slice(0, 1000);
+    if (!text) return;
+    const packet = JSON.stringify({ type: 'chat', name: state.name, text });
+    let sent = 0;
+    for (const channel of state.channels.values()) {
+      if (channel.readyState === 'open') {
+        try { channel.send(packet); sent++; } catch (error) { console.warn('Message could not be sent to a peer.', error); }
+      }
+    }
+    if (sent) {
+      addMessage(state.name, text, true);
+      input.value = '';
+    } else {
+      showToast('Still connecting to your circle. Try again in a moment.');
+    }
+  });
+
+  $('leaveButton').addEventListener('click', leaveChat);
+
+  $('shareButton').addEventListener('click', async () => {
+    const shareData = { title: 'Nerukko', text: 'Closer, together.', url: window.location.origin };
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareData.url);
+        showToast('Link copied.');
+      } else {
+        showToast(shareData.url);
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') showToast('Could not share the link.');
+    }
+  });
+
+  function openSettings() {
+    $('settingsName').value = state.name || localStorage.getItem(STORAGE.name) || '';
+    $('settingsBackdrop').hidden = false;
+  }
+  function closeSettings() { $('settingsBackdrop').hidden = true; }
+  $('settingsButton').addEventListener('click', openSettings);
+  $('closeSettings').addEventListener('click', closeSettings);
+  $('settingsBackdrop').addEventListener('click', event => {
+    if (event.target === $('settingsBackdrop')) closeSettings();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeSettings();
+  });
+
+  document.querySelectorAll('[data-theme-choice]').forEach(button => {
+    button.addEventListener('click', () => applyTheme(button.dataset.themeChoice));
+  });
+
+  $('saveNameButton').addEventListener('click', () => {
+    const name = $('settingsName').value.trim().slice(0, 24);
+    if (!name) return showToast('Choose a nickname first.');
+    state.name = name;
+    $('nameInput').value = name;
+    localStorage.setItem(STORAGE.name, name);
+    if (state.ws?.readyState === WebSocket.OPEN) {
+      state.ws.send(JSON.stringify({ type: 'rename', name }));
+    }
+    renderPeople();
+    showToast('Nickname saved.');
+  });
+
+  $('locationButton').addEventListener('click', async () => {
+    const location = await getPosition({ promptUser: true, maximumAge: 0 });
+    if (!location) {
+      showToast('Location unavailable. You can still use Nerukko.');
+      return;
+    }
+    if (state.ws?.readyState === WebSocket.OPEN) {
+      state.ws.send(JSON.stringify({ type: 'location-update', location }));
+      startPresence();
+    }
+    showToast('Nearby matching enabled for your next match.');
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - state.lastLocationUpdate > 300_000) refreshLocation();
+  });
+
+  applyTheme(localStorage.getItem(STORAGE.theme) || 'dark');
+  const savedName = localStorage.getItem(STORAGE.name) || '';
+  $('nameInput').value = savedName;
+  $('settingsName').value = savedName;
+  if (localStorage.getItem(STORAGE.location) === 'granted') $('locationButton').textContent = 'Enabled';
+
+  // Returning visitors skip the nickname screen and rejoin automatically.
+  if (savedName) joinChat({ automatic: true });
 })();
 </script>
 </body>
