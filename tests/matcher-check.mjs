@@ -1,46 +1,130 @@
 import { Matchmaker } from '../src/worker.js';
 
-function socket(attachment) {
+function socket(id, roomId, location = null, mode = 'group', name = id) {
   return {
-    a: attachment,
+    a: { id, name, roomId, location, mode }, sent: [], closed: false,
     deserializeAttachment() { return this.a; },
     serializeAttachment(value) { this.a = value; },
-    send() {},
+    send(value) { this.sent.push(value); },
+    close() { this.closed = true; }
   };
 }
+function matcherWith(sockets = []) {
+  const store = new Map();
+  const ctx = {
+    getWebSockets: () => sockets,
+    storage: { get: async key => store.get(key), put: async (key, value) => store.set(key, value) }
+  };
+  return { matcher: new Matchmaker(ctx, {}), sockets, store };
+}
 
-const roomNearby = [
-  socket({ id: 'a'.repeat(32), roomId: 'near', location: { lat: 12.0000, lon: 77.0000 } }),
-  socket({ id: 'b'.repeat(32), roomId: 'near', location: { lat: 12.0001, lon: 77.0001 } }),
-];
-const roomNoLocation = [
-  socket({ id: 'c'.repeat(32), roomId: 'open', location: null }),
-  socket({ id: 'd'.repeat(32), roomId: 'open', location: null }),
-];
-const roomMixed = [
-  socket({ id: 'e'.repeat(32), roomId: 'mixed', location: { lat: 12.1, lon: 77.1 } }),
-  socket({ id: 'f'.repeat(32), roomId: 'mixed', location: null }),
-];
-const all = [...roomNearby, ...roomMixed, ...roomNoLocation];
-const ctx = { getWebSockets: () => all };
-const matcher = new Matchmaker(ctx, {});
+// A no-location joiner should prefer a mixed room that already contains a
+// person who also chose not to share location.
+{
+  const mixed = [socket('a'.repeat(32), 'mixed', { lat: 12, lon: 77 }), socket('b'.repeat(32), 'mixed', null)];
+  const located = [socket('c'.repeat(32), 'located', { lat: 12, lon: 77 }), socket('d'.repeat(32), 'located', { lat: 12.0001, lon: 77 })];
+  const { matcher } = matcherWith([...mixed, ...located]);
+  if (matcher.chooseRoom(null) !== 'mixed') throw new Error('No-location joiner should prefer a mixed room with another no-location participant');
+}
 
-const noLocationChoice = matcher.chooseRoom(null);
-if (noLocationChoice !== 'open') throw new Error(`Expected no-location pool, got ${noLocationChoice}`);
-const locatedChoice = matcher.chooseRoom({ lat: 12.0002, lon: 77.0002 });
-if (locatedChoice !== 'near') throw new Error(`Expected nearest fully located room, got ${locatedChoice}`);
-if (matcher.roomStatus('mixed').label !== 'Open circle') throw new Error('Mixed room should be Open circle');
-if (matcher.roomStatus('near').label !== 'Nearby') throw new Error('Close room should be Nearby');
-if (matcher.roomStatus('open').label !== 'Open circle') throw new Error('No-location room should be Open circle');
-console.log('Matcher checks passed.');
+// When a larger no-location pool exists, it wins over a smaller mixed pool.
+{
+  const mixed = [socket('e'.repeat(32), 'mixed', { lat: 12, lon: 77 }), socket('f'.repeat(32), 'mixed', null)];
+  const open = [socket('g'.repeat(32), 'open', null), socket('h'.repeat(32), 'open', null)];
+  const { matcher } = matcherWith([...mixed, ...open]);
+  if (matcher.chooseRoom(null) !== 'open') throw new Error('Largest shared no-location pool should be preferred');
+}
 
-const fallbackSocket = socket({ id: 'g'.repeat(32), roomId: 'only-room', location: { lat: 20, lon: 78 } });
-const fallbackMatcher = new Matchmaker({ getWebSockets: () => [fallbackSocket] }, {});
-if (fallbackMatcher.chooseRoom(null) !== 'only-room') throw new Error('No-location user should fall back to an available room');
-if (fallbackMatcher.roomStatus('only-room').label !== 'Waiting') throw new Error('A solo room should display Waiting');
+// Located joiners choose a nearby fully-located room before a distant one.
+{
+  const near = [socket('i'.repeat(32), 'near', { lat: 12, lon: 77 }), socket('j'.repeat(32), 'near', { lat: 12.0001, lon: 77 })];
+  const far = [socket('k'.repeat(32), 'far', { lat: 12.02, lon: 77 }), socket('l'.repeat(32), 'far', { lat: 12.021, lon: 77 })];
+  const { matcher } = matcherWith([...near, ...far]);
+  if (matcher.chooseRoom({ lat: 12.0002, lon: 77 }) !== 'near') throw new Error('Located joiner should choose the nearby room');
+  if (matcher.roomStatus('near').label !== 'Nearby') throw new Error('Nearby room label should be correct');
+  if (matcher.roomStatus('far').label !== 'Wider circle') throw new Error('Distant room label should be correct');
+}
 
-const distantA = socket({ id: 'h'.repeat(32), roomId: 'distant', location: { lat: 12, lon: 77 } });
-const distantB = socket({ id: 'i'.repeat(32), roomId: 'distant', location: { lat: 12.01, lon: 77.01 } });
-const distantMatcher = new Matchmaker({ getWebSockets: () => [distantA, distantB] }, {});
-if (distantMatcher.roomStatus('distant').label !== 'Wider circle') throw new Error('Distant participants should show Wider circle');
-console.log('Fallback and room-label checks passed.');
+// A no-location-only room is visibly an open circle; a solo room waits.
+{
+  const open = [socket('m'.repeat(32), 'open', null), socket('n'.repeat(32), 'open', null)];
+  const solo = [socket('o'.repeat(32), 'solo', { lat: 12, lon: 77 })];
+  const { matcher } = matcherWith([...open, ...solo]);
+  if (matcher.roomStatus('open').label !== 'Open circle') throw new Error('No-location group should be Open circle');
+  if (matcher.roomStatus('solo').label !== 'Waiting') throw new Error('Solo room should be Waiting');
+}
+
+// Compatible partial groups (2 + 3 nearby) merge and trigger a room reset.
+{
+  const a = [socket('p'.repeat(32), 'room-a', { lat: 12, lon: 77 }), socket('q'.repeat(32), 'room-a', { lat: 12.0001, lon: 77 })];
+  const b = [socket('r'.repeat(32), 'room-b', { lat: 12.0002, lon: 77 }), socket('s'.repeat(32), 'room-b', { lat: 12.0003, lon: 77 }), socket('t'.repeat(32), 'room-b', { lat: 12.0004, lon: 77 })];
+  const { matcher } = matcherWith([...a, ...b]);
+  await matcher.rebalanceGroupRooms();
+  const roomIds = new Set([...a, ...b].map(person => person.a.roomId));
+  if (roomIds.size !== 1) throw new Error('Compatible 2 + 3 groups should merge into one room');
+  if (![...a, ...b].every(person => person.sent.some(packet => JSON.parse(packet).type === 'room-reset'))) throw new Error('All merged participants should receive a room reset');
+}
+
+// Distant location-based rooms should not be merged just to pack seats.
+{
+  const a = [socket('u'.repeat(32), 'distant-a', { lat: 12, lon: 77 }), socket('v'.repeat(32), 'distant-a', { lat: 12.0001, lon: 77 })];
+  const b = [socket('w'.repeat(32), 'distant-b', { lat: 12.02, lon: 77 }), socket('x'.repeat(32), 'distant-b', { lat: 12.021, lon: 77 })];
+  const { matcher } = matcherWith([...a, ...b]);
+  await matcher.rebalanceGroupRooms();
+  if (new Set([...a, ...b].map(person => person.a.roomId)).size !== 2) throw new Error('Distant groups should remain separate');
+}
+
+// Private requests only move the two participants after the recipient accepts.
+{
+  const a = socket('1'.repeat(32), 'group', { lat: 12, lon: 77 }, 'group', 'A');
+  const b = socket('2'.repeat(32), 'group', { lat: 12.0001, lon: 77 }, 'group', 'B');
+  const { matcher } = matcherWith([a, b]);
+  matcher.createPrivateRequest(a, b.a.id);
+  const requestId = [...matcher.pendingPrivate.keys()][0];
+  if (!requestId) throw new Error('Private request should be created');
+  await matcher.respondPrivateRequest(b, requestId, true);
+  if (a.a.mode !== 'private' || b.a.mode !== 'private' || a.a.roomId !== b.a.roomId) throw new Error('Accepted participants should move to the same private room');
+  await matcher.endPrivateRoom(a.a.roomId);
+  if (a.a.mode !== 'group' || b.a.mode !== 'group' || a.a.roomId !== b.a.roomId) throw new Error('Ending private chat should return both people to a group room');
+}
+
+// Two distinct reports trigger a five-minute, server-side ID cooldown.
+{
+  const reporter1 = socket('3'.repeat(32), 'report-room', null, 'group', 'One');
+  const reporter2 = socket('4'.repeat(32), 'report-room', null, 'group', 'Two');
+  const target = socket('5'.repeat(32), 'report-room', null, 'group', 'Target');
+  const { matcher, store } = matcherWith([reporter1, reporter2, target]);
+  const targetId = target.a.id;
+  await matcher.reportMember(reporter1, targetId);
+  await matcher.reportMember(reporter1, targetId);
+  if (store.has(`cooldown:${targetId}`)) throw new Error('Duplicate reports from one ID must not trigger a cooldown');
+  await matcher.reportMember(reporter2, targetId);
+  if (!(Number(store.get(`cooldown:${targetId}`)) > Date.now())) throw new Error('Two distinct reports should trigger a cooldown');
+  if (target.a.id) throw new Error('Reported participant should be removed from the room');
+}
+
+
+// The Durable Object serialises room-affecting socket work so two simultaneous
+// joins cannot both claim the same final seat.
+{
+  const { matcher } = matcherWith([]);
+  let active = 0;
+  let peak = 0;
+  const task = () => matcher.runSerial(async () => {
+    active += 1; peak = Math.max(peak, active);
+    await new Promise(resolve => setTimeout(resolve, 5));
+    active -= 1;
+  });
+  await Promise.all([task(), task(), task(), task()]);
+  if (peak !== 1) throw new Error('Room operations should be serialised');
+}
+
+// When no shared no-location preference exists, a no-location user can still
+// enter any room with available capacity.
+{
+  const onlyRoom = [socket('z'.repeat(32), 'only', { lat: 12, lon: 77 })];
+  const { matcher } = matcherWith(onlyRoom);
+  if (matcher.chooseRoom(null) !== 'only') throw new Error('No-location user should fall back to an available room');
+}
+
+console.log('Nerukko V3 checks passed.');
