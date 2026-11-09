@@ -1,4 +1,5 @@
 import { Matchmaker } from '../src/worker.js';
+import { clampBotReply } from '../src/nerukko-bot.js';
 
 function socket(id, roomId, location = null, mode = 'group', name = id) {
   return {
@@ -13,7 +14,7 @@ function matcherWith(sockets = []) {
   const store = new Map();
   const ctx = {
     getWebSockets: () => sockets,
-    storage: { get: async key => store.get(key), put: async (key, value) => store.set(key, value) }
+    storage: { get: async key => store.get(key), put: async (key, value) => store.set(key, value), delete: async key => store.delete(key) }
   };
   return { matcher: new Matchmaker(ctx, {}), sockets, store };
 }
@@ -127,4 +128,50 @@ function matcherWith(sockets = []) {
   if (matcher.chooseRoom(null) !== 'only') throw new Error('No-location user should fall back to an available room');
 }
 
-console.log('Nerukko V3 checks passed.');
+
+
+// Offline participants are marked for local-only queued delivery; message text is never stored.
+{
+  const sender = socket('a1'.repeat(16), 'old-room', null, 'group', 'Sender');
+  const leaving = socket('b2'.repeat(16), 'old-room', null, 'group', 'Friend');
+  const sockets = [sender, leaving];
+  const store = new Map();
+  const ctx = {
+    getWebSockets: () => sockets,
+    storage: { get: async key => store.get(key), put: async (key, value) => store.set(key, value), delete: async key => store.delete(key) }
+  };
+  const matcher = new Matchmaker(ctx, {});
+  const friendId = leaving.a.id;
+  await matcher.remove(leaving, { rebalance: false, offline: true });
+  const offlineEvent = sender.sent.map(value => JSON.parse(value)).find(packet => packet.type === 'peer-offline');
+  if (offlineEvent?.peer?.id !== friendId) throw new Error('Room members should be told when a peer goes offline');
+  const eligibilityKey = `delivery:${[sender.a.id, friendId].sort().join(':')}`;
+  if (!(Number(store.get(eligibilityKey)) > Date.now())) throw new Error('Offline delivery permission should expire after a limited period');
+
+  const returning = socket(friendId, 'new-room', null, 'group', 'Friend');
+  sockets.push(returning);
+  await matcher.handleDeliveryInvite(sender, friendId);
+  const ready = sender.sent.map(value => JSON.parse(value)).find(packet => packet.type === 'delivery-ready');
+  const invited = returning.sent.map(value => JSON.parse(value)).find(packet => packet.type === 'delivery-invite');
+  if (ready?.peer?.id !== friendId || invited?.peer?.id !== sender.a.id) throw new Error('Both clients should receive cross-room delivery setup');
+  await matcher.handleWebSocketMessage(sender, JSON.stringify({ type: 'signal', to: friendId, payload: { candidate: { candidate: 'test' } } }));
+  const signal = returning.sent.map(value => JSON.parse(value)).find(packet => packet.type === 'signal');
+  if (signal?.from !== sender.a.id) throw new Error('Delivery-only peers should be allowed to exchange WebRTC signals across rooms');
+}
+
+// Optional bot code stays small and clamps every response to ten words.
+{
+  const reply = clampBotReply('One two three four five six seven eight nine ten eleven twelve');
+  if (reply.split(/\s+/).length !== 10) throw new Error('Nerukko Bot replies must be limited to ten words');
+  if (clampBotReply('  hello\nthere  ') !== 'hello there') throw new Error('Nerukko Bot output should be a single clean line');
+}
+
+// Without a Gemini secret, the bot must remain absent and normal human rooms continue.
+{
+  const alone = socket('c3'.repeat(16), 'solo', null, 'group', 'Alone');
+  const { matcher } = matcherWith([alone]);
+  await matcher.updateBotForRoom('solo');
+  if (matcher.botRooms.has('solo') || alone.sent.some(value => JSON.parse(value).type === 'bot-start')) throw new Error('Bot must remain disabled unless its Worker secret exists');
+}
+
+console.log('Nerukko matcher checks passed.');
