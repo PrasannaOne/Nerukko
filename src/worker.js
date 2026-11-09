@@ -1,3 +1,5 @@
+import { generateNerukkoBotReply } from "./nerukko-bot.js";
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -18,6 +20,12 @@ const MAX_SIGNAL_MESSAGE = 16_384;
 const NEARBY_METERS = 100;
 const REPORT_WINDOW_MS = 10 * 60_000;
 const COOLDOWN_MS = 5 * 60_000;
+const DELIVERY_TTL_MS = 7 * 24 * 60 * 60_000;
+const BOT_DAILY_LIMIT = 40;
+const BOT_ROOM_LIMIT = 24;
+const BOT_COOLDOWN_MS = 8_000;
+
+function deliveryKey(a, b) { return [String(a), String(b)].sort().join(":"); }
 
 export class Matchmaker {
   constructor(ctx, env) {
@@ -26,6 +34,12 @@ export class Matchmaker {
     this.pendingPrivate = new Map();
     this.requestRate = new Map();
     this.reports = new Map();
+    this.deliveryEligible = new Map();
+    this.activeDeliveries = new Map();
+    this.botRooms = new Set();
+    this.botRequestsByRoom = new Map();
+    this.botLastRequest = new Map();
+    this.botUsageQueue = Promise.resolve();
     this.serialQueue = Promise.resolve();
   }
 
@@ -74,6 +88,15 @@ export class Matchmaker {
   }
 
   webSocketMessage(ws, message) {
+    if (typeof message === "string") {
+      try {
+        const packet = JSON.parse(message);
+        if (packet?.type === "bot-chat" || packet?.type === "bot-nudge") {
+          this.handleBotRequest(ws, packet).catch(() => this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot is taking a little break." }));
+          return;
+        }
+      } catch {}
+    }
     return this.runSerial(() => this.handleWebSocketMessage(ws, message));
   }
 
@@ -120,6 +143,7 @@ export class Matchmaker {
       }
       this.broadcastRoomStatus(roomId);
       await this.rebalanceGroupRooms();
+      await this.refreshBotRooms();
       return;
     }
 
@@ -128,8 +152,19 @@ export class Matchmaker {
     if (data.type === "signal") {
       const target = String(data.to || "");
       if (!target || target === current.id || !data.payload || typeof data.payload !== "object") return;
-      const recipient = this.members(current.roomId).find(peer => this.attachment(peer).id === target);
+      let recipient = this.members(current.roomId).find(peer => this.attachment(peer).id === target);
+      if (!recipient) {
+        const key = deliveryKey(current.id, target);
+        const until = this.activeDeliveries.get(key) || 0;
+        if (until > Date.now()) recipient = this.sockets().find(peer => this.attachment(peer).id === target);
+        else if (until) this.activeDeliveries.delete(key);
+      }
       if (recipient) this.send(recipient, { type: "signal", from: current.id, payload: data.payload });
+      return;
+    }
+
+    if (data.type === "delivery-invite") {
+      await this.handleDeliveryInvite(ws, String(data.to || ""));
       return;
     }
 
@@ -178,6 +213,96 @@ export class Matchmaker {
 
     // No user-facing Leave button, but lifecycle cleanup still handles deliberate unloads.
     if (data.type === "leave") await this.remove(ws);
+  }
+
+  async handleDeliveryInvite(ws, targetId) {
+    const sender = this.attachment(ws);
+    if (!sender.id || sender.mode !== "group" || !targetId || targetId === sender.id) return;
+    const key = deliveryKey(sender.id, targetId);
+    const now = Date.now();
+    let until = this.deliveryEligible.get(key) || 0;
+    if (until <= now) {
+      until = Number(await this.ctx.storage.get(`delivery:${key}`) || 0);
+      if (until > now) this.deliveryEligible.set(key, until);
+    }
+    if (until <= now) {
+      if (until) await this.ctx.storage.delete(`delivery:${key}`);
+      this.send(ws, { type: "delivery-expired", to: targetId });
+      return;
+    }
+    const recipient = this.sockets().find(peer => this.attachment(peer).id === targetId);
+    if (!recipient || this.attachment(recipient).mode !== "group") return;
+    const receiver = this.attachment(recipient);
+    this.activeDeliveries.set(key, now + 5 * 60_000);
+    this.send(ws, { type: "delivery-ready", peer: { id: receiver.id, name: receiver.name } });
+    this.send(recipient, { type: "delivery-invite", peer: { id: sender.id, name: sender.name } });
+  }
+
+  async refreshBotRooms() {
+    const rooms = [...this.roomMap("group").keys()];
+    const liveRooms = new Set(rooms);
+    for (const roomId of [...this.botRooms]) {
+      if (!liveRooms.has(roomId)) this.botRooms.delete(roomId);
+    }
+    for (const roomId of rooms) await this.updateBotForRoom(roomId);
+  }
+
+  async updateBotForRoom(roomId) {
+    const members = this.members(roomId).filter(ws => this.attachment(ws).mode === "group");
+    const wasActive = this.botRooms.has(roomId);
+    const shouldRun = !!this.env.GEMINI_API_KEY && members.length === 1;
+    if (!shouldRun) {
+      if (wasActive) for (const ws of members) this.send(ws, { type: "bot-stop" });
+      this.botRooms.delete(roomId);
+      return;
+    }
+    if (wasActive) return;
+    this.botRooms.add(roomId);
+    this.botRequestsByRoom.set(roomId, 0);
+    this.send(members[0], { type: "bot-start" });
+    this.handleBotRequest(members[0], { type: "bot-nudge", history: [], prompt: "Greet the person and ask one relaxed opening question." })
+      .catch(() => this.send(members[0], { type: "bot-unavailable", message: "Nerukko Bot is taking a little break." }));
+  }
+
+  reserveBotDailySlot(day) {
+    const task = this.botUsageQueue.then(async () => {
+      const key = `bot-usage:${day}`;
+      const used = Number(await this.ctx.storage.get(key) || 0);
+      if (used >= BOT_DAILY_LIMIT) return false;
+      await this.ctx.storage.put(key, used + 1);
+      return true;
+    });
+    this.botUsageQueue = task.catch(() => false);
+    return task;
+  }
+
+  async handleBotRequest(ws, data) {
+    const member = this.attachment(ws);
+    if (!member.id || member.mode !== "group" || !member.roomId || !this.env.GEMINI_API_KEY) return;
+    const members = this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group");
+    if (members.length !== 1 || members[0] !== ws || !this.botRooms.has(member.roomId)) return;
+    const now = Date.now();
+    const last = this.botLastRequest.get(member.roomId) || 0;
+    if (now - last < BOT_COOLDOWN_MS) return;
+    const roomCount = this.botRequestsByRoom.get(member.roomId) || 0;
+    if (roomCount >= BOT_ROOM_LIMIT) return this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot has reached its chat limit for now." });
+    const day = new Date().toISOString().slice(0, 10);
+    this.botLastRequest.set(member.roomId, now);
+    this.botRequestsByRoom.set(member.roomId, roomCount + 1);
+    if (!await this.reserveBotDailySlot(day)) return this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot is resting for today." });
+    const history = Array.isArray(data.history) ? data.history.slice(-12) : [];
+    const latestText = String(data.text || "").slice(0, 700).trim();
+    if (data.type === "bot-chat" && latestText && !history.some(item => item?.role === "user" && item?.text === latestText)) {
+      history.push({ role: "user", text: latestText });
+    }
+    const prompt = data.type === "bot-chat"
+      ? ""
+      : String(data.prompt || "Continue naturally. Offer a fresh topic or a tiny game.").slice(0, 700);
+    if (!prompt.trim()) return;
+    const reply = await generateNerukkoBotReply(this.env.GEMINI_API_KEY, history, prompt);
+    const stillAlone = this.botRooms.has(member.roomId) && this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group").length === 1 && this.attachment(ws).id === member.id;
+    if (!stillAlone) return;
+    this.send(ws, { type: "bot-message", kind: data.type === "bot-chat" ? "reply" : (history.length ? "nudge" : "greeting"), text: reply, messageId: crypto.randomUUID() });
   }
 
   peerList(roomId, exceptId = null) {
@@ -411,6 +536,7 @@ export class Matchmaker {
     this.send(requesterSocket, { type: "private-start", roomId: newRoom, peer: { id: recipient.id, name: recipient.name } });
     this.broadcastRoomStatus(oldRoom);
     await this.rebalanceGroupRooms();
+    await this.refreshBotRooms();
   }
 
   async endPrivateRoom(roomId) {
@@ -435,6 +561,7 @@ export class Matchmaker {
     }
     this.broadcastRoomStatus(newRoomId);
     await this.rebalanceGroupRooms();
+    await this.refreshBotRooms();
   }
 
   async reportMember(ws, targetId) {
@@ -463,11 +590,21 @@ export class Matchmaker {
     this.reports.delete(key);
   }
 
-  async remove(ws, { rebalance = true } = {}) {
+  async remove(ws, { rebalance = true, offline = false } = {}) {
     const member = this.attachment(ws);
     if (!member.id || !member.roomId) return;
     const oldRoom = member.roomId;
     const wasPrivate = member.mode === "private";
+    const oldRoomPeers = this.members(oldRoom).filter(peer => peer !== ws);
+    if (offline && !wasPrivate) {
+      const expires = Date.now() + DELIVERY_TTL_MS;
+      for (const peer of oldRoomPeers) {
+        const other = this.attachment(peer);
+        const key = deliveryKey(member.id, other.id);
+        this.deliveryEligible.set(key, expires);
+        await this.ctx.storage.put(`delivery:${key}`, expires);
+      }
+    }
     try { ws.serializeAttachment({ id: null, name: "", roomId: null, location: null, mode: "group" }); } catch {}
 
     for (const [id, request] of this.pendingPrivate.entries()) {
@@ -479,7 +616,10 @@ export class Matchmaker {
       }
     }
     this.requestRate.delete(member.id);
-    for (const peer of this.members(oldRoom)) this.send(peer, { type: "peer-left", id: member.id });
+    for (const peer of this.members(oldRoom)) {
+      if (offline && !wasPrivate) this.send(peer, { type: "peer-offline", peer: { id: member.id, name: member.name } });
+      else this.send(peer, { type: "peer-left", id: member.id });
+    }
     this.broadcastRoomStatus(oldRoom);
 
     if (wasPrivate) {
@@ -492,8 +632,9 @@ export class Matchmaker {
       }
     }
     if (rebalance) await this.rebalanceGroupRooms();
+    if (!wasPrivate) await this.refreshBotRooms();
   }
 
-  webSocketClose(ws) { return this.runSerial(() => this.remove(ws)); }
-  webSocketError(ws) { return this.runSerial(() => this.remove(ws)); }
+  webSocketClose(ws) { return this.runSerial(() => this.remove(ws, { offline: true })); }
+  webSocketError(ws) { return this.runSerial(() => this.remove(ws, { offline: true })); }
 }
