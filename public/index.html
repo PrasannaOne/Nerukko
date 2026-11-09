@@ -37,22 +37,15 @@
     [hidden] { display: none !important; }
     .app-shell { width: min(760px,100%); height: 100svh; height: 100dvh; min-height: 0; margin: 0 auto; padding: 0 17px max(4px,env(safe-area-inset-bottom)); display: flex; flex-direction: column; overflow: hidden; }
 
-    /* Fixed-feeling compact header: wordmark, drawer, share, and overflow menu. */
-    .topbar { position: sticky; top: 0; z-index: 20; padding: max(8px,env(safe-area-inset-top)) 0 8px; background: var(--bg); }
-    .topbar-inner { position: relative; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 11px 0 15px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: 0 5px 20px #0000000a; }
-    .brand { flex: 0 0 auto; color: var(--text); text-decoration: none; font-size: 20px; font-weight: 760; letter-spacing: -.8px; }
-    .top-actions { display: flex; align-items: center; gap: 5px; flex: 0 0 auto; }
-    .icon-button { position: relative; flex: 0 0 40px; width: 40px; min-width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 11px; background: transparent; color: var(--text); }
+    /* Minimal header: no enclosing pill, just the wordmark and three clear actions. */
+    .topbar { position: relative; z-index: 20; flex: 0 0 auto; padding: max(9px,env(safe-area-inset-top)) 0 7px; background: var(--bg); }
+    .topbar-inner { position: relative; min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .brand { flex: 0 0 auto; color: var(--text); text-decoration: none; font-size: 21px; font-weight: 780; letter-spacing: -.9px; }
+    .top-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+    .icon-button { position: relative; flex: 0 0 38px; width: 38px; min-width: 38px; height: 38px; display: grid !important; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--text); opacity: 1; visibility: visible; }
     .icon-button:active { background: var(--surface-2); }
-    #shareButton:not([hidden]) {
-      display: inline-flex; visibility: visible; opacity: 1;
-      flex: 0 0 66px; width: 66px; min-width: 66px; height: 38px;
-      align-items: center; justify-content: center; gap: 6px; padding: 0 9px;
-      background: var(--surface-2); border: 1px solid var(--line); color: var(--text);
-      font-size: 11px; font-weight: 750; letter-spacing: .1px;
-    }
-    #shareButton svg { flex: none; display: block; width: 17px; height: 17px; }
-    .icon-button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    #shareButton { display: grid !important; flex: 0 0 38px; width: 38px; min-width: 38px; height: 38px; opacity: 1; visibility: visible; }
+    .icon-button svg { display:block; width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
     .more-dots { font-size: 25px; font-weight: 800; line-height: 1; transform: translateY(-2px); letter-spacing: 1px; }
     .request-dot { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; display: grid; place-items: center; padding: 0 4px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 800; }
     .main-menu { position: absolute; top: calc(100% + 2px); right: 0; width: 178px; padding: 7px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); z-index: 25; }
@@ -75,7 +68,8 @@
     .message-author { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; color: var(--accent); font-size: 11px; font-weight: 750; text-align: left; }
     .message-author.self { color: var(--muted); cursor: default; }
     .message-body { margin-top: 2px; white-space: pre-wrap; line-height: 1.45; }
-    .message-media { display: block; width: auto; max-width: min(260px,65vw); max-height: 300px; margin-top: 5px; border-radius: 10px; object-fit: contain; background: #0001; }
+    .message-media { display:block; width:auto; max-width:min(260px,65vw); max-height:300px; margin-top:5px; border-radius:10px; object-fit:contain; background:#0001; }
+    .message-media.sticker-media { max-width:min(190px,52vw); max-height:190px; margin-top:1px; border-radius:0; background:transparent; }
     .message-time { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; text-align: right; }
     .quoted-message { margin: 1px 0 7px; padding: 6px 8px; border-left: 3px solid var(--accent); border-radius: 6px; background: color-mix(in srgb,var(--accent) 10%,var(--surface-2)); color: var(--muted); font-size: 11px; line-height: 1.35; }
     .quoted-message strong { display:block; color:var(--accent); font-size:10px; margin-bottom:2px; }
@@ -87,15 +81,24 @@
     .reply-cancel { flex:none; width:27px; height:27px; border:0; border-radius:8px; background:var(--surface-2); color:var(--text); }
     .message { touch-action: pan-y; transition: transform .12s ease; }
     .message.swiping { transition:none; }
-    .composer { flex: 0 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: 7px; padding: 8px 0 max(4px,env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--bg); }
-    .composer-row { display:flex; align-items:flex-end; gap:7px; width:100%; }
-    .attach-button { flex: none; width: 43px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); color: var(--text); }
-    .attach-button svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-    .composer-editor { flex: 1; min-width: 0; min-height: 44px; max-height: 120px; overflow-y: auto; border: 1px solid var(--line); border-radius: 13px; padding: 11px 13px; background: var(--surface); color: var(--text); outline: none; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.35; }
-    .composer-editor:empty::before { content: attr(data-placeholder); color: var(--muted); pointer-events: none; }
-    .composer-editor:focus { border-color: var(--accent); }
-    .composer-editor img { max-width: 90px; max-height: 70px; }
-    .send-button { flex: none; min-width: 52px; min-height: 44px; border: 0; border-radius: 13px; padding: 0 13px; background: var(--accent); color: var(--accent-ink); font-weight: 750; }
+    .message.grouped { margin-top:-6px; padding-top:5px; border-top-left-radius:9px; border-top-right-radius:9px; }
+    .message.grouped .message-author { display:none; }
+    .message.grouped .message-body { margin-top:0; }
+    .message-time { display:block; margin-top:4px; color:var(--muted); font-size:9px; line-height:1; text-align:right; opacity:.82; }
+    .typing-hint { flex:none; min-height:17px; padding:0 5px 3px; color:var(--muted); font-size:11px; }
+    .composer { flex: 0 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: 7px; padding: 8px 0 max(5px,env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--bg); }
+    .composer-row { display:flex; align-items:center; gap:8px; width:100%; }
+    .composer-field { flex:1; min-width:0; min-height:50px; display:flex; align-items:center; gap:2px; padding:0 6px; border:1px solid var(--line); border-radius:999px; background:var(--surface); transition:border-color .15s ease,box-shadow .15s ease; }
+    .composer-field:focus-within { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 15%,transparent); }
+    .composer-tool { flex:none; width:36px; height:40px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:transparent; color:var(--muted); }
+    .composer-tool:active { background:var(--surface-2); color:var(--text); }
+    .composer-tool svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .composer-editor { flex:1; min-width:0; min-height:48px; max-height:116px; overflow-y:auto; border:0; border-radius:0; padding:12px 5px; background:transparent; color:var(--text); outline:none; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.35; }
+    .composer-editor:empty::before { content:attr(data-placeholder); color:var(--muted); pointer-events:none; }
+    .composer-editor img { max-width:90px; max-height:70px; }
+    .send-button { flex:none; width:50px; height:50px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:var(--accent); color:var(--accent-ink); box-shadow:0 3px 10px color-mix(in srgb,var(--accent) 20%,transparent); transition:transform .12s ease,filter .12s ease; }
+    .send-button:active { transform:scale(.94); filter:brightness(.96); }
+    .send-button svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
     .toast { position: fixed; z-index: 70; left: 50%; bottom: max(22px,env(safe-area-inset-bottom)); transform: translate(-50%,10px); opacity: 0; pointer-events: none; background: var(--text); color: var(--bg); padding: 10px 14px; border-radius: 999px; font-size: 12px; box-shadow: var(--shadow); transition: opacity .2s ease,transform .2s ease; max-width: calc(100vw - 32px); text-align: center; }
     .toast.show { opacity: 1; transform: translate(-50%,0); }
 
@@ -140,37 +143,75 @@
     .setting-row .text-input { flex: 1; padding: 11px 12px; }
     .setting-copy { color: var(--muted); font-size: 12px; line-height: 1.6; }
     .setting-copy strong { color: var(--text); }
-    .about-link { color: var(--accent); text-decoration: none; font-weight: 750; }
-    .menu-backdrop { position: fixed; inset: 0; z-index: 24; }
-    .media-backdrop { position:fixed; inset:0; z-index:60; display:grid; place-items:end center; padding:10px; background:#0009; }
-    .media-panel { width:min(520px,100%); max-height:min(74dvh,620px); display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:var(--shadow); }
-    .media-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 14px 8px; }
-    .media-head strong { font-size:14px; }
-    .media-tabs { display:flex; gap:6px; padding:4px 12px 10px; }
-    .media-tab { border:1px solid var(--line); border-radius:999px; padding:7px 12px; background:var(--surface-2); color:var(--text); font-size:11px; font-weight:700; }
-    .media-tab.active { border-color:var(--accent); color:var(--accent); }
-    .media-search { margin:0 12px 10px; width:calc(100% - 24px); padding:10px 12px; border:1px solid var(--line); border-radius:11px; background:var(--surface-2); color:var(--text); outline:none; }
-    .media-grid { flex:1; min-height:180px; overflow:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; padding:0 12px 12px; align-content:start; }
-    .media-result { position:relative; aspect-ratio:1; overflow:hidden; border:0; border-radius:10px; padding:0; background:var(--surface-2); }
-    .media-result img { width:100%; height:100%; object-fit:cover; display:block; }
-    .media-empty { grid-column:1/-1; padding:28px 12px; text-align:center; color:var(--muted); font-size:12px; }
-    .media-upload { margin:0 12px 12px; min-height:40px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--text); font-size:12px; }
-    .sticker-button { flex:none; width:43px; height:44px; display:grid; place-items:center; border:1px solid var(--line); border-radius:13px; background:var(--surface); color:var(--text); }
-    .sticker-button svg { width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-    .sticker-result { aspect-ratio:1; display:grid; place-items:center; border:1px solid transparent; border-radius:12px; padding:5px; background:var(--surface-2); }
-    .sticker-result:active { border-color:var(--accent); transform:scale(.97); }
-    .sticker-result img { width:100%; height:100%; object-fit:contain; }
-    .sticker-result:disabled { opacity:.55; }
+    .about-link { display:inline-flex; align-items:center; gap:7px; color:var(--accent); text-decoration:none; font-weight:750; }
+    .about-link svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .about-panel { max-height:min(88svh,740px); padding:16px 18px 14px; }
+    .about-kicker { display:block; margin-bottom:3px; color:var(--muted); font-size:10px; font-weight:750; letter-spacing:.5px; text-transform:uppercase; }
+    .about-intro { padding:4px 0 10px; }
+    .about-intro > strong { display:block; font-size:17px; letter-spacing:-.3px; }
+    .about-intro p,.about-section p { margin:5px 0 0; color:var(--muted); font-size:11.5px; line-height:1.5; }
+    .about-section { padding:9px 0; border-top:1px solid var(--line); }
+    .about-section h3 { margin:0; color:var(--text); font-size:12px; font-weight:750; }
+    .about-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-top:5px; padding-top:13px; border-top:1px solid var(--line); }
+    .about-credit { color:var(--text); font-size:12px; font-weight:750; }
+    .menu-backdrop { position:fixed; inset:0; z-index:24; }
+    /* Compact sticker tray sits just above the composer; it never replaces the chat screen. */
+    .sticker-backdrop { position:fixed; inset:0; z-index:26; pointer-events:none; }
+    .sticker-panel { position:absolute; left:10px; right:10px; bottom:calc(66px + env(safe-area-inset-bottom)); height:min(40dvh,340px); min-height:238px; display:flex; flex-direction:column; overflow:hidden; pointer-events:auto; border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:0 12px 42px #0005; animation:sticker-sheet-in .16s ease-out; }
+    @keyframes sticker-sheet-in { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:translateY(0); } }
+    #stickerBrowseView { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+    .sticker-head { flex:none; min-height:42px; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px 3px 13px; }
+    .sticker-head strong { font-size:13px; font-weight:750; }
+    .sticker-head-actions { display:flex; align-items:center; gap:3px; }
+    .sticker-head-action { width:32px; height:32px; display:grid; place-items:center; border:0; border-radius:50%; background:transparent; color:var(--muted); }
+    .sticker-head-action:active { background:var(--surface-2); color:var(--text); }
+    .sticker-head-action svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+    .sticker-tabs { flex:none; display:flex; align-items:center; gap:17px; min-height:34px; padding:0 13px 5px; border-bottom:1px solid var(--line); }
+    .sticker-tab { position:relative; height:30px; padding:0 1px; border:0; background:transparent; color:var(--muted); font-size:11px; font-weight:700; }
+    .sticker-tab.active { color:var(--accent); }
+    .sticker-tab.active::after { content:""; position:absolute; left:0; right:0; bottom:-5px; height:2px; border-radius:2px; background:var(--accent); }
+    .sticker-pack-strip { flex:none; display:flex; gap:6px; overflow-x:auto; padding:7px 10px 4px; scrollbar-width:none; }
+    .sticker-pack-strip:empty { display:none; }
+    .sticker-pack-chip { flex:none; min-height:28px; padding:5px 9px; border:1px solid var(--line); border-radius:999px; background:transparent; color:var(--muted); font-size:10px; font-weight:700; }
+    .sticker-pack-chip.active { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb,var(--accent) 9%,transparent); }
+    .sticker-grid { flex:1; min-height:0; overflow:auto; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-auto-rows:min-content; gap:2px; padding:4px 8px 8px; align-content:start; overscroll-behavior:contain; }
+    .sticker-tile { position:relative; min-width:0; aspect-ratio:1; }
+    .sticker-result { width:100%; height:100%; display:grid; place-items:center; border:0; border-radius:9px; padding:1px; background:transparent; }
+    .sticker-result:active { background:var(--surface-2); transform:scale(.96); }
+    .sticker-result img { display:block; width:100%; height:100%; object-fit:contain; }
+    .sticker-fav-toggle { position:absolute; top:2px; right:2px; width:21px; height:21px; display:grid; place-items:center; border:0; border-radius:50%; background:color-mix(in srgb,var(--surface) 85%,transparent); color:var(--muted); opacity:.9; }
+    .sticker-fav-toggle svg { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .sticker-fav-toggle.active { color:var(--accent); }
+    .sticker-fav-toggle.active svg { fill:currentColor; }
+    .sticker-empty { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; min-height:120px; padding:12px; text-align:center; color:var(--muted); font-size:11px; }
+    .sticker-empty button { border:0; background:transparent; color:var(--accent); font-size:11px; font-weight:750; }
+    .sticker-create-view { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; padding:7px 12px 10px; overflow:auto; }
+    .sticker-crop-frame { width:min(42vw,190px); max-height:22dvh; aspect-ratio:1; flex:none; overflow:hidden; border:1px solid var(--line); border-radius:13px; background:repeating-conic-gradient(var(--surface-2) 0% 25%,var(--surface) 0% 50%) 50% / 16px 16px; touch-action:none; }
+    #stickerCropCanvas { width:100%; height:100%; display:block; touch-action:none; }
+    .sticker-create-controls { width:min(100%,310px); display:flex; align-items:center; gap:9px; color:var(--muted); font-size:10px; }
+    .sticker-create-controls input[type=range] { flex:1; min-width:0; accent-color:var(--accent); }
+    .sticker-outline-toggle { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); }
+    .sticker-outline-toggle input { accent-color:var(--accent); }
+    .sticker-create-actions { width:min(100%,310px); display:flex; gap:8px; }
+    .sticker-create-actions button { flex:1; min-height:35px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--text); font-size:11px; font-weight:700; }
+    .sticker-create-actions .primary { border-color:var(--accent); background:var(--accent); color:var(--accent-ink); }
+    @media (max-width:520px) {
+      .sticker-panel { left:6px; right:6px; bottom:calc(64px + env(safe-area-inset-bottom)); height:min(39dvh,330px); min-height:228px; }
+      .sticker-grid { gap:1px; padding-left:6px; padding-right:6px; }
+      .sticker-tabs { gap:15px; }
+      .sticker-crop-frame { width:min(43vw,170px); }
+    }
 
     @media (max-width:520px) {
       .app-shell { padding-left: 12px; padding-right: 12px; }
-      .topbar-inner { min-height: 53px; padding-left: 13px; }
-      .brand { font-size: 19px; }
-      .app-shell { padding-left: 10px; padding-right: 10px; }
-      .topbar-inner { gap: 6px; padding-right: 7px; }
-      .top-actions { gap: 2px; }
-      .icon-button { flex-basis:36px; width:36px; min-width:36px; }
-      .brand { font-size:18px; }
+      .topbar-inner { min-height: 46px; }
+      .brand { font-size: 20px; }
+      .top-actions { gap: 5px; }
+      .icon-button,#shareButton { flex-basis:38px; width:38px; min-width:38px; }
+      .composer-row { gap:7px; }
+      .composer-field { min-height:48px; padding-left:4px; padding-right:4px; }
+      .composer-tool { width:34px; }
+      .send-button { width:48px; height:48px; }
       .modal-backdrop { padding: 10px; }
       .modal-panel { border-radius: 17px; }
     }
@@ -182,14 +223,13 @@
     <header class="topbar">
       <div class="topbar-inner">
         <a class="brand" href="/" aria-label="Nerukko home">Nerukko</a>
-        <div class="top-actions">
+        <nav class="top-actions" aria-label="App actions">
           <button class="icon-button" id="drawerButton" type="button" aria-label="Open navigation drawer" title="Menu">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             <span class="request-dot" id="requestDot" hidden>0</span>
           </button>
           <button class="icon-button" id="shareButton" type="button" aria-label="Share Nerukko" title="Share Nerukko">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.7 10.6 15.3 6.4M8.7 13.4 15.3 17.6"/></svg>
-            <span>Share</span>
           </button>
           <button class="icon-button" id="moreButton" type="button" aria-label="More options" aria-expanded="false" title="More">
             <span class="more-dots" aria-hidden="true">⋮</span>
@@ -198,7 +238,7 @@
             <button id="openSettings" type="button">Settings</button>
             <button id="openAbout" type="button">About Nerukko</button>
           </div>
-        </div>
+        </nav>
       </div>
     </header>
 
@@ -215,22 +255,31 @@
         <div class="messages" id="messages" aria-live="polite" aria-relevant="additions">
           <div class="empty-state" id="emptyState">Say hello to someone nearby.</div>
         </div>
+        <div class="typing-hint" id="typingHint" hidden aria-live="polite"></div>
         <form class="composer" id="sendForm">
           <div class="reply-preview" id="replyPreview" hidden>
             <div class="reply-preview-copy"><strong id="replyName">Replying</strong><span id="replyText"></span></div>
             <button class="reply-cancel" id="cancelReply" type="button" aria-label="Cancel reply">×</button>
           </div>
           <div class="composer-row">
-            <button class="attach-button" id="attachButton" type="button" aria-label="Upload image or GIF" title="Upload image or GIF" hidden>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <div class="composer-field">
+              <button class="composer-tool" id="stickerButton" type="button" aria-label="Open Black Cat stickers" title="Stickers">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6"/><path d="M14 20v-4a2 2 0 0 1 2-2h4"/><path d="M14 20l6-6"/><path d="M8 9h8M8 13h4"/></svg>
+              </button>
+              <div class="composer-editor" id="messageEditor" contenteditable="true" role="textbox" aria-label="Message" aria-multiline="true" data-placeholder="Message…" spellcheck="true"></div>
+              <button class="composer-tool" id="attachButton" type="button" aria-label="Choose an image or GIF" title="Attach image or GIF" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5 12.5 20a5 5 0 0 1-7.1-7.1l8.8-8.8a3.3 3.3 0 0 1 4.7 4.7l-8.9 8.9a1.7 1.7 0 0 1-2.4-2.4l8.2-8.2"/></svg>
+              </button>
+              <button class="composer-tool" id="cameraButton" type="button" aria-label="Take a photo" title="Camera" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+              </button>
+            </div>
+            <button class="send-button" type="submit" aria-label="Send message" title="Send">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
-            <button class="sticker-button" id="stickerButton" type="button" aria-label="Open stickers" title="Stickers" hidden>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6"/><path d="M14 20v-4a2 2 0 0 1 2-2h4"/><path d="M14 20l6-6"/><path d="M8 9h8M8 13h4"/></svg>
-            </button>
-            <input id="mediaInput" type="file" accept="image/*,.gif" hidden>
-            <div class="composer-editor" id="messageEditor" contenteditable="true" role="textbox" aria-label="Message" aria-multiline="true" data-placeholder="Message…" spellcheck="true"></div>
-            <button class="send-button" type="submit">Send</button>
           </div>
+          <input id="mediaInput" type="file" accept="image/*,.gif" hidden>
+          <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden>
         </form>
       </section>
     </main>
@@ -286,34 +335,71 @@
   </div>
 
   <div class="modal-backdrop" id="aboutBackdrop" hidden>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-      <div class="modal-head"><h2 id="aboutTitle">About Nerukko</h2><button class="close-button" id="closeAbout" type="button" aria-label="Close About">×</button></div>
-      <div class="setting-section">
-        <p class="setting-copy"><strong>Nerukko · Closer, together.</strong><br>A small place for easy conversations. Join without an account, meet a few people, and leave whenever you like.</p>
-        <p class="setting-copy"><strong>How it works</strong><br>Groups hold up to five people. Your browser keeps a random participant ID and nickname. Optional approximate location helps matchmaking; it is never shown to other members.</p>
-        <p class="setting-copy"><strong>Messages and privacy</strong><br>People chat directly over encrypted WebRTC data channels when a connection is available. Nerukko's server coordinates rooms and connection setup; it does not store ordinary chat messages. Pending offline messages remain in your browser until delivery or expiry.</p>
-        <p class="setting-copy"><strong>Private chats and media</strong><br>Accepting a private request moves both people into a one-to-one chat. Images and GIFs are private-chat-only. The bundled Black Cat stickers work in both group and private chats. Stickers are sent as image files, so recipients do not need the sticker pack.</p>
-        <p class="setting-copy"><strong>Nerukko Bot</strong><br>When you are alone in a group, Nerukko Bot may join as an AI conversation partner. Messages and recent Bot conversation context are sent to Google Gemini to generate replies. The Bot is not a human, and its replies may be imperfect. Bot usage is capped and may pause when its limit is reached.</p>
-        <p class="setting-copy"><strong>Safety and connection</strong><br>Two independent reports can trigger a temporary five-minute cooldown. Direct peer connections use STUN without a TURN relay, so some restrictive networks may not connect reliably.</p>
-        <div class="setting-copy"><strong>Crafted by Prasanna ❤️</strong><br><span>Questions, feedback or just saying hi:</span> <a class="about-link" href="https://t.me/prasannaone" target="_blank" rel="noopener noreferrer">✈️ Telegram · @prasannaone</a></div>
+    <section class="modal-panel about-panel" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+      <div class="modal-head"><div><span class="about-kicker">A little about the place</span><h2 id="aboutTitle">About Nerukko</h2></div><button class="close-button" id="closeAbout" type="button" aria-label="Close About">×</button></div>
+      <div class="about-intro">
+        <strong>Closer, together.</strong>
+        <p>A small corner for easy conversations. No account needed. Drop in, meet a few people and say hello.</p>
+      </div>
+      <div class="about-section">
+        <h3>How Nerukko works</h3>
+        <p>Groups hold up to five people. Your browser keeps a random ID and nickname. Location is optional and used only for matching, never shown to other members.</p>
+      </div>
+      <div class="about-section">
+        <h3>Messages and privacy</h3>
+        <p>Messages travel directly between browsers over encrypted WebRTC when connections allow. The Worker coordinates rooms; it does not store chat content. Pending offline text stays in the sender's browser until delivery or expiry.</p>
+      </div>
+      <div class="about-section">
+        <h3>Private chats and sharing</h3>
+        <p>Private requests move two people into a one-to-one chat. Images and GIFs are private-only. Stickers work in groups and private chats. You can make a sticker from a photo on your device by cropping it, adding an optional white outline, and saving it locally. Recipients receive the image itself, not a pack dependency.</p>
+      </div>
+      <div class="about-section">
+        <h3>Nerukko Bot</h3>
+        <p>When you are alone in a group, Nerukko Bot may join. It is AI, not a human. Bot messages and recent chat context are sent to Google Gemini; replies may be imperfect. Usage is capped.</p>
+      </div>
+      <div class="about-section">
+        <h3>Safety and connection</h3>
+        <p>Two independent reports can trigger a five-minute cooldown. STUN-only connections may fail on restrictive networks.</p>
+      </div>
+      <footer class="about-footer">
+        <span class="about-credit">Crafted by Prasanna <span aria-label="love">❤️</span></span>
+        <a class="about-link" href="https://t.me/prasannaone" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 3-7.2 18-3.8-7-7-3.8L21 3Z"/><path d="m10 14 5-5"/></svg>Telegram · @prasannaone</a>
+      </footer>
+    </section>
+  </div>
+
+  <div class="sticker-backdrop" id="stickerBackdrop" hidden>
+    <section class="sticker-panel" role="dialog" aria-modal="false" aria-labelledby="stickerPanelTitle">
+      <header class="sticker-head">
+        <strong id="stickerPanelTitle">Stickers</strong>
+        <div class="sticker-head-actions">
+          <button class="sticker-head-action" id="createStickerButton" type="button" aria-label="Create a sticker" title="Create sticker">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button class="sticker-head-action" id="closeStickers" type="button" aria-label="Close stickers" title="Close">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+      </header>
+      <div id="stickerBrowseView">
+        <nav class="sticker-tabs" aria-label="Sticker collections">
+          <button class="sticker-tab" type="button" data-sticker-tab="recent">Recent</button>
+          <button class="sticker-tab" type="button" data-sticker-tab="favorites">Favourites</button>
+          <button class="sticker-tab" type="button" data-sticker-tab="packs">Packs</button>
+        </nav>
+        <div class="sticker-pack-strip" id="stickerPackStrip" hidden></div>
+        <div class="sticker-grid" id="stickerGrid"></div>
+      </div>
+      <div class="sticker-create-view" id="stickerCreateView" hidden>
+        <div class="sticker-crop-frame"><canvas id="stickerCropCanvas" width="512" height="512" aria-label="Sticker crop preview"></canvas></div>
+        <div class="sticker-create-controls"><span>Zoom</span><input id="stickerZoom" type="range" min="1" max="3" step="0.05" value="1" aria-label="Zoom sticker crop"></div>
+        <label class="sticker-outline-toggle"><input id="stickerOutline" type="checkbox" checked> White outline</label>
+        <label class="sticker-outline-toggle"><input id="saveStickerFavourite" type="checkbox" checked> Save to favourites</label>
+        <div class="sticker-create-actions"><button id="cancelStickerCreate" type="button">Cancel</button><button class="primary" id="sendCreatedSticker" type="button">Send sticker</button></div>
       </div>
     </section>
   </div>
-
-  <div class="media-backdrop" id="mediaBackdrop" hidden>
-    <section class="media-panel" role="dialog" aria-modal="true" aria-labelledby="mediaTitle">
-      <div class="media-head"><strong id="mediaTitle">Upload media</strong><button class="close-button" id="closeMedia" type="button" aria-label="Close media picker">×</button></div>
-      <div class="media-grid" id="mediaGrid"><div class="media-empty">Choose an image or GIF from your phone.</div></div>
-      <button class="media-upload" id="uploadMedia" type="button">Choose from device</button>
-    </section>
-  </div>
-
-  <div class="media-backdrop" id="stickerBackdrop" hidden>
-    <section class="media-panel" role="dialog" aria-modal="true" aria-labelledby="stickerTitle">
-      <div class="media-head"><strong id="stickerTitle">Black Cat</strong><button class="close-button" id="closeStickers" type="button" aria-label="Close stickers">×</button></div>
-      <div class="media-grid" id="stickerGrid"><div class="media-empty">Loading stickers…</div></div>
-    </section>
-  </div>
+  <input id="stickerCreateInput" type="file" accept="image/*" hidden>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -321,7 +407,52 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const STORAGE = { id: 'nerukko_pid', name: 'nerukko_name', theme: 'nerukko_theme', location: 'nerukko_location_preference', pending: 'nerukko_pending_delivery', received: 'nerukko_received_delivery_ids' };
+
+  // Keep the app usable even when browser storage is blocked or quota-limited.
+  function createSafeStorage() {
+    const memory = new Map();
+    let persistent = null;
+    try {
+      persistent = window.localStorage;
+      const probe = '__nerukko_storage_check__';
+      persistent.setItem(probe, '1');
+      persistent.removeItem(probe);
+    } catch (error) {
+      console.warn('Persistent browser storage is unavailable; using this-session storage.', error);
+    }
+    return {
+      getItem(key) {
+        if (memory.has(key)) return memory.get(key);
+        try { return persistent ? persistent.getItem(key) : null; } catch { return null; }
+      },
+      setItem(key, value) {
+        const safeValue = String(value);
+        try { if (!persistent) throw new Error('Storage unavailable'); persistent.setItem(key, safeValue); memory.delete(key); }
+        catch { memory.set(key, safeValue); }
+      },
+      removeItem(key) {
+        memory.delete(key);
+        try { persistent?.removeItem(key); } catch {}
+      }
+    };
+  }
+  const storage = createSafeStorage();
+
+  function createId() {
+    if (typeof crypto?.randomUUID === 'function') return crypto.randomUUID();
+    const bytes = new Uint8Array(16);
+    if (typeof crypto?.getRandomValues === 'function') crypto.getRandomValues(bytes);
+    else for (let index = 0; index < bytes.length; index++) bytes[index] = Math.floor(Math.random() * 256);
+    const hex = [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0,8)}-${hex.slice(8,12)}-4${hex.slice(13,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+  }
+
+  const STORAGE = {
+    id: 'nerukko_pid', name: 'nerukko_name', theme: 'nerukko_theme',
+    location: 'nerukko_location_preference', pending: 'nerukko_pending_delivery',
+    received: 'nerukko_received_delivery_ids', stickerRecent: 'nerukko_sticker_recent_v1',
+    stickerFavorites: 'nerukko_sticker_favorites_v1'
+  };
   const MAX_MEDIA_BYTES = 2 * 1024 * 1024;
   const MEDIA_CHUNK_BYTES = 12 * 1024;
   const state = {
@@ -332,19 +463,39 @@
     offlinePeers: new Map(), deliveryPeers: new Set(), pendingDeliveries: loadPendingDeliveries(),
     replyTarget: null, botActive: false, botHistory: [], botNudges: 0, botNudgeTimer: null,
     autoReconnect: false, reconnectTimer: null, reconnectAttempt: 0,
-    heartbeat: null, locationRefresh: null, deliveryTimer: null, lastLocationUpdate: 0, cooldownUntil: 0
+    heartbeat: null, locationRefresh: null, deliveryTimer: null, lastLocationUpdate: 0, cooldownUntil: 0,
+    remoteTyping: new Map(), typingTimer: null, lastTypingSent: 0
   };
+  function loadStickerReferences(key) {
+    try {
+      const value = JSON.parse(storage.getItem(key) || '[]');
+      return Array.isArray(value) ? value.filter(item => item && (
+        (item.kind === 'pack' && typeof item.packId === 'string' && typeof item.name === 'string') ||
+        (item.kind === 'custom' && typeof item.id === 'string')
+      )).slice(0, 40) : [];
+    } catch { return []; }
+  }
+  let stickerRecent = loadStickerReferences(STORAGE.stickerRecent);
+  let stickerFavorites = loadStickerReferences(STORAGE.stickerFavorites);
+  const stickerPackCache = new Map();
+  const stickerObjectUrls = new Map();
+  const customStickerMemory = new Map();
+  let stickerRenderToken = 0;
+  let stickerCrop = null;
+  let stickerDbPromise = null;
+  let stickerActiveTab = 'recent';
+  let selectedStickerPack = 'blackcat';
 
   function getOrCreateId() {
-    let id = localStorage.getItem(STORAGE.id);
-    if (!id) { id = crypto.randomUUID(); localStorage.setItem(STORAGE.id, id); }
+    let id = storage.getItem(STORAGE.id);
+    if (!id) { id = createId(); storage.setItem(STORAGE.id, id); }
     return id;
   }
 
   function applyTheme(theme) {
     const safe = theme === 'light' ? 'light' : 'dark';
     document.documentElement.dataset.theme = safe;
-    localStorage.setItem(STORAGE.theme, safe);
+    storage.setItem(STORAGE.theme, safe);
     document.querySelectorAll('[data-theme-choice]').forEach(button => {
       const active = button.dataset.themeChoice === safe;
       button.classList.toggle('active', active);
@@ -385,11 +536,11 @@
 
   function loadPendingDeliveries() {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE.pending) || '[]');
+      const saved = JSON.parse(storage.getItem(STORAGE.pending) || '[]');
       return Array.isArray(saved) ? saved.filter(item => item && item.id && typeof item.text === 'string' && Array.isArray(item.recipients) && Date.now() - Number(item.createdAt || 0) < 7 * 86400000).slice(-100) : [];
     } catch { return []; }
   }
-  function savePendingDeliveries() { localStorage.setItem(STORAGE.pending, JSON.stringify(state.pendingDeliveries.slice(-100))); updatePendingNote(); }
+  function savePendingDeliveries() { storage.setItem(STORAGE.pending, JSON.stringify(state.pendingDeliveries.slice(-100))); updatePendingNote(); }
   function updatePendingNote() {
     document.querySelectorAll('.pending-note').forEach(node => node.remove());
     const pendingIds = new Set(state.pendingDeliveries.map(item => item.id));
@@ -435,17 +586,47 @@
     article.addEventListener('pointerup', finish);
     article.addEventListener('pointercancel', () => { start=null; article.classList.remove('swiping'); article.style.transform=''; });
   }
+  function isNearMessageBottom() {
+    const box = $('messages');
+    return box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+  }
+  function preserveMessageScroll(shouldScroll) {
+    if (shouldScroll) $('messages').scrollTop = $('messages').scrollHeight;
+  }
+  function formatMessageTime() {
+    try { return new Intl.DateTimeFormat(undefined, { hour:'numeric', minute:'2-digit' }).format(new Date()); }
+    catch { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+  }
+  function applyMessageGrouping(article, name, peerId, mine, allowGroup = true) {
+    const senderKey = String(peerId || (mine ? state.id : `name:${name || 'Guest'}`));
+    const box = $('messages');
+    const previous = box.lastElementChild;
+    const recentSameSender = previous?.classList?.contains('message') && previous.dataset.senderKey === senderKey &&
+      Date.now() - Number(previous.dataset.createdAt || 0) < 90_000 && allowGroup && !article.querySelector('.quoted-message');
+    article.dataset.senderKey = senderKey;
+    article.dataset.createdAt = String(Date.now());
+    if (recentSameSender) article.classList.add('grouped');
+  }
+  function appendMessageTime(article) {
+    const time = document.createElement('time');
+    time.className = 'message-time';
+    time.dateTime = new Date().toISOString();
+    time.textContent = formatMessageTime();
+    article.append(time);
+  }
   function addMessage(name, text, mine = false, peerId = null, options = {}) {
+    const shouldScroll = isNearMessageBottom();
     $('emptyState')?.remove();
-    const messageId = String(options.messageId || crypto.randomUUID());
+    const messageId = String(options.messageId || createId());
     const article = document.createElement('article'); article.className = 'message' + (mine ? ' mine' : '');
     article.dataset.messageId = messageId;
-    article.append(messageAuthor(name, peerId || (mine ? state.id : null)));
     const quote = quoteBlock(options.replyTo); if (quote) article.append(quote);
+    applyMessageGrouping(article, name, peerId, mine, !options.replyTo);
+    if (!article.classList.contains('grouped')) article.prepend(messageAuthor(name, peerId || (mine ? state.id : null)));
     const body = document.createElement('div'); body.className = 'message-body'; body.textContent = text;
-    article.append(body); $('messages').append(article);
+    article.append(body); appendMessageTime(article); $('messages').append(article);
     enableSwipeReply(article, { id:messageId, name:String(name || 'Guest'), text:String(text).slice(0,1000) });
-    $('messages').scrollTop = $('messages').scrollHeight;
+    preserveMessageScroll(shouldScroll);
     if (options.pending) updatePendingNote();
     return article;
   }
@@ -486,13 +667,15 @@
   }
 
   function addMediaMessage(name, peerId, blob, mine = false, mediaKind = 'image') {
+    const shouldScroll = isNearMessageBottom();
     $('emptyState')?.remove();
     const article = document.createElement('article'); article.className = 'message' + (mine ? ' mine' : '');
-    article.append(messageAuthor(name, peerId || (mine ? state.id : null)));
-    const image = document.createElement('img'); image.className = 'message-media';
+    applyMessageGrouping(article, name, peerId, mine, true);
+    if (!article.classList.contains('grouped')) article.append(messageAuthor(name, peerId || (mine ? state.id : null)));
+    const image = document.createElement('img'); image.className = 'message-media' + (mediaKind === 'sticker' ? ' sticker-media' : '');
     const url = URL.createObjectURL(blob); state.mediaUrls.push(url); image.src = url; image.alt = mediaKind === 'sticker' ? 'Sticker' : 'Shared image'; image.loading = 'lazy';
     image.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
-    article.append(image); $('messages').append(article); $('messages').scrollTop = $('messages').scrollHeight;
+    article.append(image); appendMessageTime(article); $('messages').append(article); preserveMessageScroll(shouldScroll);
   }
 
   function updateDrawer() {
@@ -549,6 +732,7 @@
       $('privateAvatar').textContent = initial(state.activePrivate.name);
     }
     $('attachButton').hidden = state.mode !== 'private';
+    $('cameraButton').hidden = state.mode !== 'private';
     $('stickerButton').hidden = false;
     const count = state.privateRequests.size;
     $('requestDot').hidden = count === 0;
@@ -582,7 +766,7 @@
   function openModal(which) {
     closeMenu(); closeDrawer();
     if (which === 'settings') {
-      $('settingsName').value = state.name || localStorage.getItem(STORAGE.name) || '';
+      $('settingsName').value = state.name || storage.getItem(STORAGE.name) || '';
       $('settingsBackdrop').hidden = false;
     } else $('aboutBackdrop').hidden = false;
   }
@@ -592,6 +776,8 @@
     state.peers.forEach(pc => { try { pc.close(); } catch {} });
     for (const transfer of state.incomingMedia.values()) clearTimeout(transfer.timer);
     state.peers.clear(); state.channels.clear(); state.pendingCandidates.clear(); state.incomingMedia.clear();
+    for (const [id, entry] of state.remoteTyping) if (entry.timer) clearTimeout(entry.timer);
+    state.remoteTyping.clear(); renderTypingHint();
     state.remotePeers = new Map((peers || []).map(peer => [peer.id, peer]));
     if (mode) state.mode = mode;
     if (roomId) state.roomId = roomId;
@@ -605,7 +791,10 @@
   function attachChannel(peer, channel) {
     state.channels.set(peer.id, channel); channel.binaryType = 'arraybuffer';
     channel.onopen = () => { if (state.deliveryPeers.has(peer.id)) flushDeliveryQueue(peer.id); };
-    channel.onclose = () => { if (state.channels.get(peer.id) === channel) state.channels.delete(peer.id); };
+    channel.onclose = () => {
+      if (state.channels.get(peer.id) === channel) state.channels.delete(peer.id);
+      clearRemoteTyping(peer.id);
+    };
     channel.onerror = () => {};
     channel.onmessage = event => handlePeerData(peer, event.data);
   }
@@ -633,14 +822,15 @@
     try {
       const packet = JSON.parse(data);
       if (packet.type === 'chat' && typeof packet.text === 'string') {
-        const seen = packet.deliveryId ? new Set(JSON.parse(localStorage.getItem(STORAGE.received) || '[]')) : null;
+        const seen = packet.deliveryId ? new Set(JSON.parse(storage.getItem(STORAGE.received) || '[]')) : null;
         if (!packet.deliveryId || !seen.has(packet.deliveryId)) {
           addMessage(String(packet.name || peer.name || 'Guest').slice(0, 24), packet.text.slice(0, 1000), false, peer.id, { messageId:packet.messageId, replyTo:packet.replyTo || null });
-          if (packet.deliveryId && seen) { seen.add(packet.deliveryId); localStorage.setItem(STORAGE.received, JSON.stringify([...seen].slice(-200))); }
+          if (packet.deliveryId && seen) { seen.add(packet.deliveryId); storage.setItem(STORAGE.received, JSON.stringify([...seen].slice(-200))); }
         }
         if (packet.deliveryId) state.channels.get(peer.id)?.send(JSON.stringify({ type:'delivery-ack', deliveryId:packet.deliveryId }));
       }
       if (packet.type === 'delivery-ack' && typeof packet.deliveryId === 'string') removePendingRecipient(packet.deliveryId, peer.id);
+      if (packet.type === 'typing' && typeof packet.active === 'boolean') setRemoteTyping(peer, packet.active);
       const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
       if (packet.type === 'media-start' && (state.mode === 'private' || (packet.kind === 'sticker' && packet.mime === 'image/webp')) && typeof packet.transferId === 'string' && allowedMedia.includes(String(packet.mime)) && Number(packet.size) > 0 && Number(packet.size) <= MAX_MEDIA_BYTES) {
         const transferKey = `${peer.id}:${packet.transferId}`;
@@ -708,10 +898,11 @@
         break;
       }
       case 'peer-left':
+        clearRemoteTyping(data.id);
         state.remotePeers.delete(data.id); state.peers.get(data.id)?.close(); state.peers.delete(data.id);
         state.channels.delete(data.id); state.pendingCandidates.delete(data.id); state.incomingMedia.delete(data.id); state.offlinePeers.delete(data.id); updateDrawer(); break;
       case 'peer-offline':
-        if (data.peer?.id) { state.remotePeers.delete(data.peer.id); state.offlinePeers.set(data.peer.id, data.peer); state.peers.get(data.peer.id)?.close(); state.peers.delete(data.peer.id); state.channels.delete(data.peer.id); updateDrawer(); }
+        if (data.peer?.id) { clearRemoteTyping(data.peer.id); state.remotePeers.delete(data.peer.id); state.offlinePeers.set(data.peer.id, data.peer); state.peers.get(data.peer.id)?.close(); state.peers.delete(data.peer.id); state.channels.delete(data.peer.id); updateDrawer(); }
         break;
       case 'delivery-ready':
       case 'delivery-invite':
@@ -759,7 +950,7 @@
         state.botActive = false; state.botHistory = []; state.botNudges = 0; clearTimeout(state.botNudgeTimer); state.botNudgeTimer = null; break;
       case 'bot-message':
         if (state.botActive && typeof data.text === 'string') {
-          addMessage('Nerukko Bot', data.text, false, null, { messageId:data.messageId || crypto.randomUUID() });
+          addMessage('Nerukko Bot', data.text, false, null, { messageId:data.messageId || createId() });
           if (data.kind !== 'reply') state.botNudges++;
           state.botHistory.push({ role:'model', text:data.text }); state.botHistory = state.botHistory.slice(-12); scheduleBotNudge();
         }
@@ -772,14 +963,14 @@
   function getPosition({ promptUser = false, maximumAge = 300000 } = {}) {
     return new Promise(resolve => {
       if (!navigator.geolocation) return resolve(null);
-      if (!promptUser && localStorage.getItem(STORAGE.location) !== 'granted') return resolve(null);
+      if (!promptUser && storage.getItem(STORAGE.location) !== 'granted') return resolve(null);
       navigator.geolocation.getCurrentPosition(position => {
         const location = { lat: position.coords.latitude, lon: position.coords.longitude };
         state.location = location; state.locationAllowed = true;
-        localStorage.setItem(STORAGE.location, 'granted'); $('locationButton').textContent = 'Enabled';
+        storage.setItem(STORAGE.location, 'granted'); $('locationButton').textContent = 'Enabled';
         state.lastLocationUpdate = Date.now(); resolve(location);
       }, error => {
-        if (error.code === error.PERMISSION_DENIED) { state.locationAllowed = false; state.location = null; localStorage.setItem(STORAGE.location, 'denied'); }
+        if (error.code === error.PERMISSION_DENIED) { state.locationAllowed = false; state.location = null; storage.setItem(STORAGE.location, 'denied'); }
         resolve(null);
       }, { enableHighAccuracy: false, maximumAge, timeout: 6500 });
     });
@@ -798,6 +989,47 @@
   }
   function stopPresence() { clearInterval(state.heartbeat); clearInterval(state.locationRefresh); clearInterval(state.deliveryTimer); state.heartbeat = state.locationRefresh = state.deliveryTimer = null; }
 
+  function renderTypingHint() {
+    const names = [...state.remoteTyping.values()].map(item => item.name).filter(Boolean);
+    const hint = $('typingHint');
+    if (!names.length) { hint.hidden = true; hint.textContent = ''; return; }
+    hint.hidden = false;
+    hint.textContent = names.length === 1 ? `${names[0]} is typing…` : names.length === 2 ? `${names[0]} and ${names[1]} are typing…` : 'Several people are typing…';
+  }
+  function clearRemoteTyping(peerId) {
+    const current = state.remoteTyping.get(peerId);
+    if (current?.timer) clearTimeout(current.timer);
+    state.remoteTyping.delete(peerId); renderTypingHint();
+  }
+  function setRemoteTyping(peer, active) {
+    if (!peer?.id) return;
+    clearRemoteTyping(peer.id);
+    if (!active) return;
+    const entry = { name:peer.name || 'Someone', timer:null };
+    entry.timer = setTimeout(() => { state.remoteTyping.delete(peer.id); renderTypingHint(); }, 2600);
+    state.remoteTyping.set(peer.id, entry); renderTypingHint();
+  }
+  function updateTypingPresence() {
+    const editor = $('messageEditor');
+    const active = !!editor.innerText.trim() && !(state.mode === 'group' && state.botActive && !state.remotePeers.size);
+    const now = Date.now();
+    if (active && now - state.lastTypingSent > 900) {
+      for (const channel of state.channels.values()) if (channel.readyState === 'open') {
+        try { channel.send(JSON.stringify({ type:'typing', active:true })); } catch {}
+      }
+      state.lastTypingSent = now;
+    }
+    clearTimeout(state.typingTimer);
+    if (active) state.typingTimer = setTimeout(() => {
+      for (const channel of state.channels.values()) if (channel.readyState === 'open') {
+        try { channel.send(JSON.stringify({ type:'typing', active:false })); } catch {}
+      }
+    }, 2200);
+    else for (const channel of state.channels.values()) if (channel.readyState === 'open') {
+      try { channel.send(JSON.stringify({ type:'typing', active:false })); } catch {}
+    }
+  }
+
   function scheduleReconnect() {
     if (!state.autoReconnect || state.reconnectTimer) return;
     const delay = Math.min(1200 * (2 ** Math.min(state.reconnectAttempt, 4)), 18_000);
@@ -815,9 +1047,9 @@
     state.autoReconnect = true;
     clearTimeout(state.reconnectTimer); state.reconnectTimer = null;
     if (state.ws && state.ws.readyState !== WebSocket.CLOSED) return;
-    const name = ($('nameInput').value || localStorage.getItem(STORAGE.name) || '').trim().slice(0, 24);
+    const name = ($('nameInput').value || storage.getItem(STORAGE.name) || '').trim().slice(0, 24);
     if (!name) { $('nameInput').focus(); return; }
-    state.name = name; localStorage.setItem(STORAGE.name, name); $('settingsName').value = name;
+    state.name = name; storage.setItem(STORAGE.name, name); $('settingsName').value = name;
     $('entryView').hidden = true; $('chatView').hidden = false; $('joinButton').disabled = true;
     clearMessages(); closeDrawer();
     const location = await getPosition({ promptUser: !automatic, maximumAge: 300000 });
@@ -864,7 +1096,7 @@
     const editor = $('messageEditor');
     const text = editor.innerText.replace(/\u00a0/g, ' ').trim().slice(0, 1000);
     if (!text) return;
-    const messageId = crypto.randomUUID();
+    const messageId = createId();
     const replyTo = state.replyTarget ? { id:state.replyTarget.id, name:state.replyTarget.name, text:state.replyTarget.text.slice(0,180) } : null;
 
     if (state.mode === 'group' && state.botActive && !state.remotePeers.size) {
@@ -901,32 +1133,35 @@
   }
 
   async function sendMedia(file, { sticker = false } = {}) {
-    if (state.mode !== 'private' && !sticker) return showToast('Images and GIFs are available in private chats.');
+    if (state.mode !== 'private' && !sticker) { showToast('Images and GIFs are available in private chats.'); return false; }
     const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
-    if (!file || !allowedMedia.includes(file.type)) return showToast('Choose a GIF, PNG, JPG or WebP image.');
-    if (file.size > MAX_MEDIA_BYTES) return showToast('Keep images and GIFs under 2 MB for now.');
+    if (!file || !allowedMedia.includes(file.type)) { showToast('Choose a GIF, PNG, JPG or WebP image.'); return false; }
+    if (file.size > MAX_MEDIA_BYTES) { showToast('Keep images and GIFs under 2 MB for now.'); return false; }
     const channels = [...state.channels.entries()].filter(([, channel]) => channel.readyState === 'open');
-    if (!channels.length) return showToast('Wait until someone is connected before sharing media.');
+    if (!channels.length) { showToast('Wait until someone is connected before sharing media.'); return false; }
     const mime = file.type || 'image/png';
     const buffer = await file.arrayBuffer();
-    const transferId = crypto.randomUUID();
-    const preview = new Blob([buffer], { type: mime });
-    addMediaMessage(state.name, state.id, preview, true, sticker ? 'sticker' : 'image');
+    const transferId = createId();
     const bytes = new Uint8Array(buffer);
     const transferHeader = new TextEncoder().encode(transferId);
+    let completed = 0;
     for (const [peerId, channel] of channels) {
       try {
-        channel.send(JSON.stringify({ type: 'media-start', transferId, name: file.name || 'image', mime, size: buffer.byteLength, kind: sticker ? 'sticker' : 'image' }));
-        for (let offset = 0; offset < bytes.length; offset += MEDIA_CHUNK_BYTES) {
+        channel.send(JSON.stringify({ type:'media-start', transferId, name:file.name || 'image', mime, size:buffer.byteLength, kind:sticker ? 'sticker' : 'image' }));
+        for (let offset=0; offset<bytes.length; offset+=MEDIA_CHUNK_BYTES) {
           await waitForChannel(channel);
-          if (channel.readyState !== 'open') break;
-          const chunk = bytes.subarray(offset, Math.min(offset + MEDIA_CHUNK_BYTES, bytes.length));
-          const packet = new Uint8Array(transferHeader.length + chunk.length);
-          packet.set(transferHeader, 0); packet.set(chunk, transferHeader.length);
+          if (channel.readyState !== 'open') throw new Error('Media channel closed.');
+          const chunk=bytes.subarray(offset,Math.min(offset+MEDIA_CHUNK_BYTES,bytes.length));
+          const packet=new Uint8Array(transferHeader.length+chunk.length);
+          packet.set(transferHeader,0); packet.set(chunk,transferHeader.length);
           channel.send(packet);
         }
+        completed++;
       } catch (error) { console.warn('Media transfer failed for peer.', peerId, error); }
     }
+    if (completed) addMediaMessage(state.name, state.id, new Blob([buffer], { type:mime }), true, sticker ? 'sticker' : 'image');
+    else showToast('The media could not be sent. Check the connection and try again.');
+    return completed > 0;
   }
 
   async function processEditorImages() {
@@ -940,82 +1175,299 @@
     }
   }
 
-  const STICKER_ZIP_URL = '/Stickers/blackcat.zip?v=1';
-  let stickerPackPromise = null;
-  let stickerObjectUrls = [];
-
+  // Add future packs here and place each matching ZIP in Stickers/. The deploy workflow copies every ZIP.
+  const STICKER_PACKS = [
+    { id:'blackcat', title:'Black Cat', file:'blackcat.zip', url:'/Stickers/blackcat.zip?v=3' }
+  ];
+  const MAX_CUSTOM_STICKER_BYTES = 260 * 1024;
+  function sameSticker(a, b) {
+    return !!a && !!b && a.kind === b.kind && (a.kind === 'custom' ? a.id === b.id : a.packId === b.packId && a.name === b.name);
+  }
+  function saveStickerReferences(key, items) { storage.setItem(key, JSON.stringify(items.slice(0,40))); }
+  function addRecentSticker(ref) {
+    stickerRecent = [ref, ...stickerRecent.filter(item => !sameSticker(item, ref))].slice(0,36);
+    saveStickerReferences(STORAGE.stickerRecent, stickerRecent);
+  }
+  function isFavouriteSticker(ref) { return stickerFavorites.some(item => sameSticker(item, ref)); }
+  function toggleFavouriteSticker(ref) {
+    if (isFavouriteSticker(ref)) stickerFavorites = stickerFavorites.filter(item => !sameSticker(item, ref));
+    else stickerFavorites = [ref, ...stickerFavorites].slice(0,40);
+    saveStickerReferences(STORAGE.stickerFavorites, stickerFavorites);
+    renderStickerPicker();
+  }
   async function readStoredZip(blob) {
     const bytes = new Uint8Array(await blob.arrayBuffer());
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     const decoder = new TextDecoder();
     const files = [];
     let offset = 0;
-    // The bundled ZIP is intentionally ZIP_STORED, so no third-party unzip library is needed.
-    while (offset + 30 <= bytes.length) {
-      if (view.getUint32(offset, true) !== 0x04034b50) break;
+    // Pack ZIPs are deliberately ZIP_STORED; this keeps the reader tiny and dependency-free.
+    while (offset + 30 <= bytes.length && view.getUint32(offset, true) === 0x04034b50) {
+      const flags = view.getUint16(offset + 6, true);
       const method = view.getUint16(offset + 8, true);
       const compressedSize = view.getUint32(offset + 18, true);
+      const plainSize = view.getUint32(offset + 22, true);
       const nameLength = view.getUint16(offset + 26, true);
       const extraLength = view.getUint16(offset + 28, true);
       const nameStart = offset + 30;
       const dataStart = nameStart + nameLength + extraLength;
       const name = decoder.decode(bytes.subarray(nameStart, nameStart + nameLength));
       const dataEnd = dataStart + compressedSize;
-      if (dataEnd > bytes.length) throw new Error('The sticker ZIP is incomplete.');
-      if (method !== 0) throw new Error('This sticker ZIP uses an unsupported compression method.');
-      if (name.toLowerCase().endsWith('.webp') && !name.includes('..') && !name.startsWith('/')) {
-        files.push({ name: name.split('/').pop(), blob: new Blob([bytes.slice(dataStart, dataEnd)], { type:'image/webp' }) });
+      if (dataStart > bytes.length || dataEnd > bytes.length) throw new Error('This sticker pack is incomplete.');
+      if ((flags & 0x08) !== 0) throw new Error('This sticker pack uses an unsupported ZIP layout.');
+      if (method !== 0 || compressedSize !== plainSize) throw new Error('This sticker pack must use ZIP_STORED compression.');
+      if (name.toLowerCase().endsWith('.webp') && !name.includes('..') && !name.startsWith('/') && plainSize > 0 && plainSize <= MAX_MEDIA_BYTES) {
+        files.push({ name:name.split('/').pop(), blob:new Blob([bytes.slice(dataStart, dataEnd)], { type:'image/webp' }) });
+        if (files.length > 120) throw new Error('This sticker pack contains too many files.');
       }
       offset = dataEnd;
     }
-    if (!files.length) throw new Error('No WebP stickers were found in the pack.');
-    return files;
+    if (!files.length) throw new Error('No supported WebP stickers were found in this pack.');
+    return files.sort((a,b) => a.name.localeCompare(b.name, undefined, { numeric:true }));
   }
-
-  async function getBlackCatStickers() {
-    if (!stickerPackPromise) {
-      stickerPackPromise = (async () => {
-        const response = await fetch(STICKER_ZIP_URL, { cache:'force-cache' });
-        if (!response.ok) throw new Error('Could not load Black Cat stickers.');
-        return readStoredZip(await response.blob());
-      })().catch(error => { stickerPackPromise = null; throw error; });
+  async function getStickerPack(packId) {
+    if (stickerPackCache.has(packId)) return stickerPackCache.get(packId);
+    const pack = STICKER_PACKS.find(item => item.id === packId);
+    if (!pack) return [];
+    const promise = (async () => {
+      const response = await fetch(pack.url, { cache:'force-cache' });
+      if (!response.ok) throw new Error(`Could not open ${pack.title}.`);
+      return readStoredZip(await response.blob());
+    })();
+    stickerPackCache.set(packId, promise);
+    try { return await promise; }
+    catch (error) { stickerPackCache.delete(packId); throw error; }
+  }
+  async function openStickerDatabase() {
+    if (!('indexedDB' in window)) return null;
+    if (!stickerDbPromise) stickerDbPromise = new Promise(resolve => {
+      try {
+        const request = indexedDB.open('nerukko-local-stickers', 1);
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains('custom')) db.createObjectStore('custom', { keyPath:'id' });
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => resolve(null);
+        request.onblocked = () => resolve(null);
+      } catch { resolve(null); }
+    });
+    return stickerDbPromise;
+  }
+  async function saveCustomSticker(id, blob, name) {
+    const db = await openStickerDatabase();
+    if (!db) { customStickerMemory.set(id, blob); return; }
+    let stored = false;
+    await new Promise(resolve => {
+      try {
+        const tx = db.transaction('custom','readwrite');
+        tx.objectStore('custom').put({ id, blob, name:String(name || 'My sticker').slice(0,80), createdAt:Date.now() });
+        tx.oncomplete = () => { stored = true; resolve(); };
+        tx.onerror = resolve; tx.onabort = resolve;
+      } catch { resolve(); }
+    });
+    if (!stored) customStickerMemory.set(id, blob);
+  }
+  async function getCustomSticker(id) {
+    if (customStickerMemory.has(id)) return customStickerMemory.get(id);
+    const db = await openStickerDatabase();
+    if (!db) return null;
+    return new Promise(resolve => {
+      try {
+        const request = db.transaction('custom','readonly').objectStore('custom').get(id);
+        request.onsuccess = () => resolve(request.result?.blob || null);
+        request.onerror = () => resolve(null);
+      } catch { resolve(null); }
+    });
+  }
+  async function getStickerBlob(ref) {
+    if (ref.kind === 'custom') return getCustomSticker(ref.id);
+    const files = await getStickerPack(ref.packId);
+    return files.find(file => file.name === ref.name)?.blob || null;
+  }
+  function getStickerObjectUrl(ref, blob) {
+    const key = ref.kind === 'custom' ? `custom:${ref.id}` : `${ref.packId}:${ref.name}`;
+    if (!stickerObjectUrls.has(key)) stickerObjectUrls.set(key, URL.createObjectURL(blob));
+    return stickerObjectUrls.get(key);
+  }
+  function setStickerTab(tab) {
+    stickerActiveTab = tab;
+    document.querySelectorAll('[data-sticker-tab]').forEach(button => {
+      const active = button.dataset.stickerTab === tab;
+      button.classList.toggle('active', active); button.setAttribute('aria-pressed', String(active));
+    });
+    $('stickerPackStrip').hidden = tab !== 'packs';
+    renderStickerPicker();
+  }
+  function renderStickerPackStrip() {
+    const strip = $('stickerPackStrip'); strip.replaceChildren();
+    for (const pack of STICKER_PACKS) {
+      const button = document.createElement('button'); button.type = 'button';
+      button.className = 'sticker-pack-chip' + (selectedStickerPack === pack.id ? ' active' : '');
+      button.textContent = pack.title; button.setAttribute('aria-pressed', String(selectedStickerPack === pack.id));
+      button.addEventListener('click', () => { selectedStickerPack = pack.id; renderStickerPicker(); });
+      strip.append(button);
     }
-    return stickerPackPromise;
   }
-
-  async function openStickerPicker() {
+  function stickerEmpty(message, actionText, action) {
+    const empty = document.createElement('div'); empty.className = 'sticker-empty';
+    const label = document.createElement('span'); label.textContent = message; empty.append(label);
+    if (actionText && action) {
+      const button = document.createElement('button'); button.type = 'button'; button.textContent = actionText; button.addEventListener('click', action); empty.append(button);
+    }
+    $('stickerGrid').replaceChildren(empty);
+  }
+  async function sendStickerReference(ref) {
+    try {
+      const blob = await getStickerBlob(ref);
+      if (!blob) throw new Error('This sticker is no longer available.');
+      const file = new File([blob], ref.name || 'nerukko-sticker.webp', { type:'image/webp' });
+      const sent = await sendMedia(file, { sticker:true });
+      if (sent) { addRecentSticker(ref); closeStickerPicker(); }
+    } catch (error) { showToast(error.message || 'Could not send this sticker.'); }
+  }
+  async function createStickerTile(ref) {
+    const blob = await getStickerBlob(ref);
+    if (!blob) return null;
+    const tile = document.createElement('div'); tile.className = 'sticker-tile';
+    const send = document.createElement('button'); send.type = 'button'; send.className = 'sticker-result';
+    send.title = 'Send sticker'; send.setAttribute('aria-label', `Send ${ref.name || 'sticker'}`);
+    const image = document.createElement('img'); image.src = getStickerObjectUrl(ref, blob); image.alt = ''; image.loading = 'lazy'; image.decoding = 'async';
+    send.append(image); send.addEventListener('click', () => sendStickerReference(ref));
+    const favourite = document.createElement('button'); favourite.type = 'button';
+    const active = isFavouriteSticker(ref); favourite.className = 'sticker-fav-toggle' + (active ? ' active' : '');
+    favourite.title = active ? 'Remove from favourites' : 'Add to favourites';
+    favourite.setAttribute('aria-label', favourite.title);
+    favourite.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg>';
+    favourite.addEventListener('click', event => { event.stopPropagation(); toggleFavouriteSticker(ref); });
+    tile.append(send, favourite); return tile;
+  }
+  async function renderStickerPicker() {
+    const token = ++stickerRenderToken;
+    const grid = $('stickerGrid'); grid.replaceChildren();
+    if (stickerActiveTab === 'packs') renderStickerPackStrip();
+    else $('stickerPackStrip').hidden = true;
+    let refs = [];
+    if (stickerActiveTab === 'recent') refs = [...stickerRecent];
+    else if (stickerActiveTab === 'favorites') refs = [...stickerFavorites];
+    else {
+      const pack = STICKER_PACKS.find(item => item.id === selectedStickerPack) || STICKER_PACKS[0];
+      if (!pack) return stickerEmpty('No sticker packs yet.');
+      const loading = document.createElement('div'); loading.className='sticker-empty'; loading.textContent='Opening pack…'; grid.append(loading);
+      try {
+        const files = await getStickerPack(pack.id);
+        if (token !== stickerRenderToken) return;
+        refs = files.map(file => ({ kind:'pack', packId:pack.id, name:file.name }));
+      } catch (error) {
+        if (token !== stickerRenderToken) return;
+        return stickerEmpty(error.message || 'Could not load this pack.', 'Try again', () => { stickerPackCache.delete(pack.id); renderStickerPicker(); });
+      }
+    }
+    if (token !== stickerRenderToken) return;
+    if (!refs.length) {
+      if (stickerActiveTab === 'recent') return stickerEmpty('Your recent stickers will appear here.', 'Browse packs', () => setStickerTab('packs'));
+      if (stickerActiveTab === 'favorites') return stickerEmpty('No favourites yet. Tap the small star on any sticker.');
+      return stickerEmpty('This pack is empty.');
+    }
+    const results = await Promise.all(refs.map(async ref => {
+      try { return await createStickerTile(ref); } catch { return null; }
+    }));
+    if (token !== stickerRenderToken) return;
+    grid.replaceChildren();
+    const available = results.filter(Boolean);
+    if (!available.length) return stickerEmpty('No saved stickers could be opened.');
+    available.forEach(tile => grid.append(tile));
+  }
+  function openStickerPicker() {
     if ($('chatView').hidden) return;
     $('stickerBackdrop').hidden = false;
-    const grid = $('stickerGrid');
-    if (grid.dataset.loaded === 'yes') return;
-    grid.replaceChildren();
-    const loading = document.createElement('div'); loading.className='media-empty'; loading.textContent='Loading Black Cat…'; grid.append(loading);
-    try {
-      const stickers = await getBlackCatStickers();
-      grid.replaceChildren();
-      for (const sticker of stickers) {
-        const url = URL.createObjectURL(sticker.blob); stickerObjectUrls.push(url);
-        const button = document.createElement('button'); button.className='sticker-result'; button.type='button'; button.title='Send sticker'; button.setAttribute('aria-label','Send sticker');
-        const image = document.createElement('img'); image.src=url; image.alt='Black Cat sticker'; image.loading='lazy';
-        button.append(image);
-        button.addEventListener('click', async () => {
-          const file = new File([sticker.blob], sticker.name || 'black-cat.webp', { type:'image/webp' });
-          await sendMedia(file, { sticker:true }); closeStickerPicker();
-        });
-        grid.append(button);
-      }
-      grid.dataset.loaded='yes';
-    } catch (error) {
-      grid.replaceChildren(); const empty=document.createElement('div'); empty.className='media-empty'; empty.textContent=error.message || 'Could not load stickers.'; grid.append(empty);
-    }
+    $('stickerBrowseView').hidden = false; $('stickerCreateView').hidden = true;
+    $('stickerPanelTitle').textContent = 'Stickers';
+    setStickerTab((stickerRecent.length || stickerFavorites.length) ? 'recent' : 'packs');
   }
-  function closeStickerPicker() { $('stickerBackdrop').hidden=true; }
+  function closeStickerPicker() {
+    $('stickerBackdrop').hidden = true;
+    stickerRenderToken++;
+    if (stickerCrop?.bitmap?.close) stickerCrop.bitmap.close();
+    stickerCrop = null;
+    $('stickerCreateView').hidden = true; $('stickerBrowseView').hidden = false;
+  }
+  function openStickerCreator() {
+    if ($('chatView').hidden) return;
+    $('stickerCreateInput').click();
+  }
+  async function startStickerCreator(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return showToast('Choose an image to create a sticker.');
+    if (file.size > 10 * 1024 * 1024) return showToast('Choose an image under 10 MB.');
+    try {
+      const bitmap = await createImageBitmap(file);
+      if (stickerCrop?.bitmap?.close) stickerCrop.bitmap.close();
+      stickerCrop = { bitmap, zoom:1, panX:0, panY:0, outline:true, name:file.name || 'My sticker' };
+      $('stickerBackdrop').hidden = false; $('stickerBrowseView').hidden = true; $('stickerCreateView').hidden = false;
+      $('stickerPanelTitle').textContent = 'Create sticker'; $('stickerZoom').value = '1'; $('stickerOutline').checked = true; $('saveStickerFavourite').checked = true;
+      drawStickerCrop();
+    } catch (error) { showToast('This image could not be opened on this device.'); }
+  }
+  function drawStickerCrop() {
+    if (!stickerCrop) return;
+    const canvas = $('stickerCropCanvas'), ctx = canvas.getContext('2d');
+    const image = stickerCrop.bitmap; const scale = Math.max(512/image.width,512/image.height) * stickerCrop.zoom;
+    const width = image.width*scale, height=image.height*scale;
+    const maxX = Math.max(0,(width-512)/2), maxY=Math.max(0,(height-512)/2);
+    stickerCrop.panX = Math.max(-maxX,Math.min(maxX,stickerCrop.panX));
+    stickerCrop.panY = Math.max(-maxY,Math.min(maxY,stickerCrop.panY));
+    const x=(512-width)/2+stickerCrop.panX, y=(512-height)/2+stickerCrop.panY;
+    ctx.clearRect(0,0,512,512);
+    if ($('stickerOutline').checked) {
+      ctx.save(); ctx.shadowColor='rgba(255,255,255,.98)'; ctx.shadowBlur=9; ctx.drawImage(image,x,y,width,height); ctx.restore();
+    }
+    ctx.drawImage(image,x,y,width,height);
+  }
+  function installStickerCropGestures() {
+    const canvas = $('stickerCropCanvas'); let drag = null;
+    canvas.addEventListener('pointerdown', event => {
+      if (!stickerCrop) return;
+      canvas.setPointerCapture(event.pointerId);
+      drag = { id:event.pointerId, x:event.clientX, y:event.clientY, panX:stickerCrop.panX, panY:stickerCrop.panY };
+    });
+    canvas.addEventListener('pointermove', event => {
+      if (!drag || !stickerCrop || drag.id !== event.pointerId) return;
+      const rect=canvas.getBoundingClientRect();
+      stickerCrop.panX=drag.panX+(event.clientX-drag.x)*512/rect.width;
+      stickerCrop.panY=drag.panY+(event.clientY-drag.y)*512/rect.height;
+      drawStickerCrop();
+    });
+    const end = event => { if (drag && drag.id === event.pointerId) drag=null; };
+    canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+  }
+  async function sendCreatedSticker() {
+    if (!stickerCrop) return;
+    const canvas = $('stickerCropCanvas');
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', .9));
+    if (!blob) return showToast('Could not prepare this sticker.');
+    if (blob.size > MAX_MEDIA_BYTES) return showToast('This sticker is too large. Try a smaller crop.');
+    const id=createId(); const ref={ kind:'custom', id, name:`${id}.webp` };
+    await saveCustomSticker(id, blob, stickerCrop.name);
+    addRecentSticker(ref);
+    if ($('saveStickerFavourite').checked) {
+      stickerFavorites=[ref,...stickerFavorites.filter(item=>!sameSticker(item,ref))].slice(0,40);
+      saveStickerReferences(STORAGE.stickerFavorites,stickerFavorites);
+    }
+    const file = new File([blob], ref.name, { type:'image/webp' });
+    const sent = await sendMedia(file, { sticker:true });
+    if (sent) closeStickerPicker();
+    else showToast('Sticker saved. Connect to send it.');
+  }
 
   function openMediaPicker() {
-    if (state.mode !== 'private') return showToast('Media sharing is available in private chats.');
-    $('mediaBackdrop').hidden=false;
+    if (state.mode !== 'private') return showToast('Images and GIFs are available in private chats.');
+    $('mediaInput').click();
   }
-  function closeMediaPicker() { $('mediaBackdrop').hidden=true; }
+  function openCameraPicker() {
+    if (state.mode !== 'private') return showToast('Camera sharing is available in private chats.');
+    $('cameraInput').click();
+  }
 
   function respondPrivate(requestId, accept) { sendServer({ type: 'private-respond', requestId, accept }); state.privateRequests.delete(requestId); updateDrawer(); }
 
@@ -1032,15 +1484,50 @@
     sendServer({ type: 'report', target: person.id }); backToDrawer();
   }
 
-  function shareNerukko() {
+  async function copyInvite(text) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (error) { console.debug('Clipboard API unavailable; trying the fallback.', error); }
+
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    field.style.pointerEvents = 'none';
+    document.body.append(field);
+    field.select();
+    field.setSelectionRange(0, field.value.length);
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch {}
+    field.remove();
+    return copied;
+  }
+
+  async function shareNerukko() {
     const shareData = {
       title: 'Nerukko',
       text: 'Meet people nearby in small, anonymous group chats. No account, no pressure. Just drop in and say hello.',
-      url: window.location.origin
+      url: window.location.origin && window.location.origin !== 'null' ? `${window.location.origin}/` : window.location.href
     };
-    if (navigator.share) navigator.share(shareData).catch(error => { if (error.name !== 'AbortError') showToast('Could not open sharing.'); });
-    else if (navigator.clipboard?.writeText) navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`).then(() => showToast('Nerukko invite copied.')).catch(() => showToast(shareData.url));
-    else showToast(shareData.url);
+
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share(shareData);
+        showToast('Nerukko shared.');
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+        console.warn('Native sharing is unavailable; copying the invite instead.', error);
+      }
+    }
+
+    const copied = await copyInvite(`${shareData.text} ${shareData.url}`);
+    if (copied) showToast('Invite link copied. Share it anywhere.');
+    else window.prompt('Copy your Nerukko invite link:', shareData.url);
   }
 
   $('entryForm').addEventListener('submit', event => { event.preventDefault(); joinChat({ automatic: false }); });
@@ -1051,24 +1538,34 @@
   $('messageEditor').addEventListener('paste', event => {
     const items = [...(event.clipboardData?.items || [])];
     const imageItem = items.find(item => item.type.startsWith('image/'));
-    if (imageItem) { event.preventDefault(); const file = imageItem.getAsFile(); if (state.mode === 'private' && file) sendMedia(file); else showToast('Media sharing is available in private chats.'); }
+    if (imageItem) { event.preventDefault(); const file = imageItem.getAsFile(); if (state.mode === 'private' && file) sendMedia(file); else showToast('Images and GIFs are available in private chats.'); }
   });
   $('messageEditor').addEventListener('drop', event => {
     const file = [...(event.dataTransfer?.files || [])].find(item => item.type.startsWith('image/'));
     if (file) { event.preventDefault(); if (state.mode === 'private') sendMedia(file); else showToast('Media sharing is available in private chats.'); }
   });
-  $('messageEditor').addEventListener('input', processEditorImages);
+  $('messageEditor').addEventListener('input', () => { processEditorImages(); updateTypingPresence(); });
   $('attachButton').addEventListener('click', openMediaPicker);
+  $('cameraButton').addEventListener('click', openCameraPicker);
   $('stickerButton').addEventListener('click', openStickerPicker);
   $('closeStickers').addEventListener('click', closeStickerPicker);
+  $('createStickerButton').addEventListener('click', openStickerCreator);
+  $('stickerCreateInput').addEventListener('change', async event => { const file=event.target.files?.[0]; event.target.value=''; if (file) await startStickerCreator(file); });
+  $('stickerZoom').addEventListener('input', event => { if (stickerCrop) { const next=Number(event.target.value); const ratio=next/stickerCrop.zoom; stickerCrop.panX*=ratio; stickerCrop.panY*=ratio; stickerCrop.zoom=next; drawStickerCrop(); } });
+  $('stickerOutline').addEventListener('change', drawStickerCrop);
+  $('cancelStickerCreate').addEventListener('click', () => { if (stickerCrop?.bitmap?.close) stickerCrop.bitmap.close(); stickerCrop=null; $('stickerCreateView').hidden=true; $('stickerBrowseView').hidden=false; $('stickerPanelTitle').textContent='Stickers'; setStickerTab('packs'); });
+  $('sendCreatedSticker').addEventListener('click', sendCreatedSticker);
+  document.querySelectorAll('[data-sticker-tab]').forEach(button => button.addEventListener('click', () => setStickerTab(button.dataset.stickerTab)));
   $('stickerBackdrop').addEventListener('click', event => { if (event.target === $('stickerBackdrop')) closeStickerPicker(); });
+  installStickerCropGestures();
   $('cancelReply').addEventListener('click', clearReply);
-  $('closeMedia').addEventListener('click', closeMediaPicker);
-  $('mediaBackdrop').addEventListener('click', event => { if (event.target === $('mediaBackdrop')) closeMediaPicker(); });
-  $('uploadMedia').addEventListener('click', () => { closeMediaPicker(); $('mediaInput').click(); });
-  $('mediaInput').addEventListener('change', async event => {
-    const file = event.target.files?.[0]; if (file) await sendMedia(file); event.target.value = '';
-  });
+  const handleMediaSelection = async event => {
+    const file = event.target.files?.[0];
+    if (file) await sendMedia(file);
+    event.target.value = '';
+  };
+  $('mediaInput').addEventListener('change', handleMediaSelection);
+  $('cameraInput').addEventListener('change', handleMediaSelection);
 
   $('drawerButton').addEventListener('click', openDrawer);
   $('closeDrawer').addEventListener('click', closeDrawer);
@@ -1091,12 +1588,12 @@
   $('closeAbout').addEventListener('click', () => closeModal('aboutBackdrop'));
   $('settingsBackdrop').addEventListener('click', event => { if (event.target === $('settingsBackdrop')) closeModal('settingsBackdrop'); });
   $('aboutBackdrop').addEventListener('click', event => { if (event.target === $('aboutBackdrop')) closeModal('aboutBackdrop'); });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeMenu(); closeDrawer(); closeModal('settingsBackdrop'); closeModal('aboutBackdrop'); closeStickerPicker(); closeMediaPicker(); } });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeMenu(); closeDrawer(); closeModal('settingsBackdrop'); closeModal('aboutBackdrop'); closeStickerPicker(); } });
   document.querySelectorAll('[data-theme-choice]').forEach(button => button.addEventListener('click', () => applyTheme(button.dataset.themeChoice)));
 
   $('saveNameButton').addEventListener('click', () => {
     const name = $('settingsName').value.trim().slice(0, 24); if (!name) return showToast('Choose a nickname first.');
-    state.name = name; $('nameInput').value = name; localStorage.setItem(STORAGE.name, name);
+    state.name = name; $('nameInput').value = name; storage.setItem(STORAGE.name, name);
     if (state.ws?.readyState === WebSocket.OPEN) sendServer({ type: 'rename', name });
     updateDrawer(); showToast('Nickname saved.');
   });
@@ -1128,20 +1625,22 @@
     if (document.visibilityState === 'visible' && Date.now() - state.lastLocationUpdate > 300_000) refreshLocation();
   });
   window.addEventListener('pagehide', () => {
-    state.autoReconnect = false; clearTimeout(state.reconnectTimer); state.reconnectTimer = null;
+    state.autoReconnect = false; clearTimeout(state.reconnectTimer); clearTimeout(state.typingTimer); state.reconnectTimer = null;
+    for (const url of stickerObjectUrls.values()) URL.revokeObjectURL(url); stickerObjectUrls.clear();
     stopPresence();
     if (state.ws?.readyState === WebSocket.OPEN) { try { state.ws.close(1000, 'Page closed'); } catch {} }
   });
 
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' })
-      .then(registration => registration.update())
-      .catch(error => console.warn('Offline app shell is unavailable.', error));
+  if ('serviceWorker' in navigator) window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/service-worker.js', { scope:'/', updateViaCache:'none' });
+      registration.update().catch(error => console.debug('Service-worker update check skipped.', error));
+    } catch (error) { console.warn('Offline app shell is unavailable.', error); }
   });
-  applyTheme(localStorage.getItem(STORAGE.theme) || 'dark');
-  const savedName = localStorage.getItem(STORAGE.name) || '';
+  applyTheme(storage.getItem(STORAGE.theme) || 'dark');
+  const savedName = storage.getItem(STORAGE.name) || '';
   $('nameInput').value = savedName; $('settingsName').value = savedName;
-  if (localStorage.getItem(STORAGE.location) === 'granted') $('locationButton').textContent = 'Enabled';
+  if (storage.getItem(STORAGE.location) === 'granted') $('locationButton').textContent = 'Enabled';
   updateDrawer();
   if (savedName) joinChat({ automatic: true });
 })();

@@ -1,4 +1,4 @@
-const CACHE_NAME = "nerukko-shell-v6";
+const CACHE_NAME = "nerukko-shell-v8";
 const APP_SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", event => {
@@ -16,7 +16,7 @@ self.addEventListener("fetch", event => {
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(fetch(request, { cache: "no-store" }).then(response => {
+    event.respondWith(fetch(request, { cache: "reload" }).then(response => {
       if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put("/", response.clone()));
       return response;
     }).catch(async () => (await caches.match("/")) || Response.error()));
