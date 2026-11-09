@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/matcher-check.mjs"
+    "test": "node tests/matcher-check.mjs && node tests/sticker-check.mjs"
   }
 }
