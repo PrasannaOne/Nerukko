@@ -33,7 +33,7 @@ if (!html.includes('id="mediaBackdrop"') && !html.includes('id="uploadMedia"')) 
 // Storage and cache checks protect returning users from stale UI and storage restrictions.
 if (!html.includes("function createSafeStorage()") || !html.includes("function createId()")) throw new Error("Safe browser storage/ID fallback is missing.");
 if (!html.includes("updateViaCache:'none'")) throw new Error("Service-worker update strategy is missing.");
-if (!serviceWorker.includes('nerukko-shell-v11') || !serviceWorker.includes('cache: "reload"')) throw new Error("Fresh app-shell cache version is missing.");
+if (!serviceWorker.includes('nerukko-shell-v12') || !serviceWorker.includes('cache: "reload"')) throw new Error("Fresh app-shell cache version is missing.");
 if (!worker.includes('Cache-Control') || !worker.includes('no-store, no-cache, must-revalidate')) throw new Error("Worker must prevent stale HTML/service-worker responses.");
 
 // About and ownership details.
@@ -42,10 +42,10 @@ if (!html.includes('id="aboutTitle">About</h2>') || !html.includes('>About</butt
 if (!html.includes("Google Gemini") || !html.includes("recent conversation context")) throw new Error("About must disclose Bot processing by Gemini.");
 if (!html.includes("function enableSwipeReply(article, target, mine = false)") || !html.includes("const direction = mine ? -1 : 1")) throw new Error("Reply swipes must work in both directions.");
 if (!html.includes("reply-swipe-indicator") || !html.includes("↩")) throw new Error("Reply swipe indicator arrow is missing.");
-if (!html.includes("max-width:min(180px,52vw)")) throw new Error("Stickers in chat should render at the larger V11 size.");
-if (!html.includes(".sticker-panel.is-creating") || !html.includes(".sticker-create-scroll") || !html.includes("overflow:hidden")) throw new Error("Sticker creator should fit in a fixed, non-scrollable panel with a fixed action row.");
+if (!html.includes("max-width:min(135px,42vw)")) throw new Error("Stickers in chat should use the smaller V12 display size.");
+if (!html.includes(".sticker-panel.is-creating") || !html.includes("translate(-50%,-50%)") || !html.includes(".sticker-create-scroll") || !html.includes("sticker-create-in")) throw new Error("Sticker creator should be a compact, centred panel with a stable action row.");
 if (!html.includes("$('stickerPanel').classList.add('is-creating')") || !html.includes("$('stickerPanel').classList.remove('is-creating')")) throw new Error("Sticker creator expanded state must reset on close.");
-if (!html.includes("navigator.serviceWorker.register('/service-worker.js?v=11'")) throw new Error("Service worker registration must request V11 explicitly.");
+if (!html.includes("navigator.serviceWorker.register('/service-worker.js?v=12'")) throw new Error("Service worker registration must request V12 explicitly.");
 
 let offset = 0;
 let count = 0;
@@ -73,7 +73,7 @@ if (!html.includes('id="saveStickerFavourite"') || !html.includes('id="stickerOu
 if (!html.includes('height:min(40dvh,340px)') || !html.includes('grid-template-columns:repeat(4')) throw new Error("Sticker tray should be compact with a four-column grid.");
 if (!html.includes('function updateTypingPresence()') || !html.includes("packet.type === 'typing'")) throw new Error("Ephemeral typing indicator is missing.");
 if (!html.includes('function appendMessageTime(article)') || !html.includes('message.grouped') || !html.includes('function isNearMessageBottom()')) throw new Error("Message grouping/timestamps/scroll preservation are missing.");
-if (!serviceWorker.includes("nerukko-shell-v11")) throw new Error("V11 service-worker cache version is missing.");
+if (!serviceWorker.includes("nerukko-shell-v12")) throw new Error("V11 service-worker cache version is missing.");
 if (!html.includes("updateViaCache:'none'")) throw new Error("Service-worker updates should bypass HTTP cache.");
 if (!html.includes('quota-limited') || !html.includes('memory.set(key, safeValue)')) throw new Error('Storage wrapper must survive runtime quota errors.');
 if (/remove\.bg|background.?remov|rembg|bria\.ai/i.test(html)) throw new Error("Sticker creator must not add background-removal services.");
@@ -81,4 +81,7 @@ if (/remove\.bg|background.?remov|rembg|bria\.ai/i.test(html)) throw new Error("
 if (!workflow.includes('cp Stickers/*.zip public/Stickers/')) throw new Error('Deployment must publish all future sticker packs.');
 if (fs.existsSync(path.join(root, 'public/Stickers/blackcat.zip'))) throw new Error('Do not track a second copy of the sticker pack under public/.');
 
-console.log(`V11 sticker/UI checks passed (${count} WebP assets, ZIP_STORED).`);
+if (!html.includes("outlineCtx.fillStyle = '#fff'")) throw new Error("Sticker outline should use a crisp white silhouette edge.");
+if (!html.includes("outlineCtx.drawImage(cutout")) throw new Error("Sticker outline must follow the cutout alpha shape, not a square frame.");
+if (html.includes("shadowBlur=9")) throw new Error("The old blurry sticker outline must be removed.");
+console.log(`V12 sticker/UI checks passed (${count} WebP assets, ZIP_STORED).`);

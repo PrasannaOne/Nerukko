@@ -220,10 +220,10 @@ function matcherWith(sockets = []) {
   if (signal?.from !== sender.a.id) throw new Error('Delivery-only peers should be allowed to exchange WebRTC signals across rooms');
 }
 
-// Bot output stays compact and clamps every response to twenty-two words.
+// Bot output stays compact and hard-caps every response at ten words.
 {
   const reply = clampBotReply('One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour');
-  if (reply.split(/\s+/).length !== 22) throw new Error('Nerukko Bot replies must be limited to twenty-two words');
+  if (reply.split(/\s+/).length !== 10) throw new Error('Nerukko Bot replies must be limited to ten words');
   if (clampBotReply('  hello\nthere  ') !== 'hello there') throw new Error('Nerukko Bot output should be a single clean line');
 }
 
