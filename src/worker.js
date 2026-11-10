@@ -35,6 +35,7 @@ const REPORT_WINDOW_MS = 10 * 60_000;
 const DELIVERY_TTL_MS = 7 * 24 * 60 * 60_000;
 const BOT_DAILY_LIMIT = 40;
 const BOT_ROOM_LIMIT = 24;
+const BOT_COOLDOWN_MS = 45_000;
 
 function deliveryKey(a, b) { return [String(a), String(b)].sort().join(":"); }
 
@@ -49,7 +50,7 @@ export class Matchmaker {
     this.activeDeliveries = new Map();
     this.botRooms = new Set();
     this.botRequestsByRoom = new Map();
-    this.botEpoch = 0;
+    this.botLastRequest = new Map();
     this.botUsageQueue = Promise.resolve();
     this.botRequestQueues = new Map();
     this.roomJoinAttempts = new Map();
@@ -105,7 +106,7 @@ export class Matchmaker {
     if (typeof message === "string" && message.length <= MAX_SIGNAL_MESSAGE) {
       try {
         const packet = JSON.parse(message);
-        if (packet?.type === "bot-chat" || packet?.type === "bot-sticker") {
+        if (packet?.type === "bot-chat" || packet?.type === "bot-nudge" || packet?.type === "bot-sticker") {
           this.enqueueBotRequest(ws, packet).catch(() => this.send(ws, { type: "bot-unavailable", stickerId: packet.stickerId || null, message: "Nerukko Bot could not reply just now. Try again in a moment." }));
           return;
         }
@@ -607,68 +608,38 @@ export class Matchmaker {
   }
 
   async refreshBotRooms() {
-    // Nerukko Bot is available only when the entire Worker has exactly one
-    // connected human, and that person is in the random-chat pool. Counting
-    // sockets rather than room members also excludes users in named rooms and
-    // one-to-one conversations.
-    const humans = this.sockets()
-      .map(ws => ({ ws, member: this.attachment(ws) }))
-      .filter(({ member }) => member.id && member.roomId);
-    const only = humans.length === 1 ? humans[0] : null;
-    const eligible = !!this.env.GEMINI_API_KEY && !!only &&
-      only.member.mode === "group" && only.member.roomScope === "random" &&
-      !only.member.customRoomId;
-    const activeSocket = eligible ? only.ws : null;
-    const activeRoomId = activeSocket ? only.member.roomId : null;
-    const previousRooms = [...this.botRooms];
-    const sameActivation = activeRoomId
-      ? previousRooms.length === 1 && previousRooms[0] === activeRoomId
-      : previousRooms.length === 0;
-    if (!sameActivation) this.botEpoch++;
-
-    // Explicitly stop every ineligible client. This also repairs stale browser
-    // bot state after a Durable Object restart or a move into another room.
-    for (const { ws } of humans) {
-      if (ws !== activeSocket) this.send(ws, { type: "bot-stop" });
-    }
-
+    // Nerukko Bot is a global fallback, not a per-room filler. Count every
+    // connected human session, including named rooms and private chats.
+    const onlineHumans = this.sockets().filter(ws => !!this.attachment(ws).id).length;
+    const rooms = [...this.roomMap("group").keys()];
+    const liveRooms = new Set(rooms);
     for (const roomId of [...this.botRooms]) {
-      if (roomId !== activeRoomId) {
-        for (const ws of this.members(roomId)) this.send(ws, { type: "bot-stop" });
+      if (!liveRooms.has(roomId)) {
         this.botRooms.delete(roomId);
         this.botRequestsByRoom.delete(roomId);
+        this.botLastRequest.delete(roomId);
       }
     }
-
-    if (!activeSocket) {
-      this.botRooms.clear();
-      return;
-    }
-    await this.updateBotForRoom(activeRoomId, activeSocket);
+    for (const roomId of rooms) await this.updateBotForRoom(roomId, onlineHumans);
   }
 
-  async updateBotForRoom(roomId, expectedSocket = null) {
-    const humans = this.sockets()
-      .map(ws => ({ ws, member: this.attachment(ws) }))
-      .filter(({ member }) => member.id && member.roomId);
-    const only = humans.length === 1 ? humans[0] : null;
-    const socket = expectedSocket || only?.ws;
-    const member = socket ? this.attachment(socket) : null;
-    const shouldRun = !!this.env.GEMINI_API_KEY && !!only && only.ws === socket &&
-      member?.roomId === roomId && member.mode === "group" &&
-      member.roomScope === "random" && !member.customRoomId;
-
+  async updateBotForRoom(roomId, onlineHumans = this.sockets().filter(ws => !!this.attachment(ws).id).length) {
+    const members = this.members(roomId).filter(ws => this.attachment(ws).mode === "group");
+    const wasActive = this.botRooms.has(roomId);
+    const shouldRun = !!this.env.GEMINI_API_KEY && onlineHumans === 1 && members.length === 1;
     if (!shouldRun) {
-      if (socket) this.send(socket, { type: "bot-stop" });
+      // Re-send bot-stop even after a Durable Object restart: in-memory Bot
+      // state can be lost while the accepted WebSockets remain connected.
+      for (const ws of members) this.send(ws, { type: "bot-stop" });
       this.botRooms.delete(roomId);
       return;
     }
-    if (this.botRooms.has(roomId)) return;
+    if (wasActive) return;
     this.botRooms.add(roomId);
     this.botRequestsByRoom.set(roomId, 0);
-    // Joining is silent. The Bot waits for the person's first message or
-    // sticker instead of greeting or nudging them without being asked.
-    this.send(socket, { type: "bot-start" });
+    this.send(members[0], { type: "bot-start" });
+    this.enqueueBotRequest(members[0], { type: "bot-nudge", history: [], prompt: "Give a warm, low-pressure hello with a little personality. Keep it natural, not like a scripted welcome." })
+      .catch(() => this.send(members[0], { type: "bot-unavailable", message: "Nerukko Bot could not join just now. Try again in a moment." }));
   }
 
   enqueueBotRequest(ws, data) {
@@ -698,60 +669,40 @@ export class Matchmaker {
 
   async handleBotRequest(ws, data) {
     const member = this.attachment(ws);
-    if (!member.id || member.mode !== "group" || member.roomScope !== "random" ||
-        member.customRoomId || !member.roomId || !this.env.GEMINI_API_KEY) return;
-    if (data?.type !== "bot-chat" && data?.type !== "bot-sticker") return;
-
-    // A room containing one person is not enough. The whole app must contain
-    // exactly one live human, and it must be this exact socket in random chat.
-    const humans = this.sockets()
-      .map(socket => ({ socket, person: this.attachment(socket) }))
-      .filter(({ person }) => person.id && person.roomId);
-    if (humans.length !== 1 || humans[0].socket !== ws) return;
-    const requestEpoch = this.botEpoch;
-
-    const latestText = String(data.text || "").slice(0, 700).trim();
-    if (data.type === "bot-chat" && !latestText) return;
+    if (!member.id || member.mode !== "group" || member.roomScope === "custom" || !member.roomId || !this.env.GEMINI_API_KEY) return;
+    const members = this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group");
+    // Membership is authoritative. Do not depend on botRooms, which is only
+    // an in-memory cache and may be empty after Durable Object hibernation.
+    const onlineHumans = this.sockets().filter(peer => !!this.attachment(peer).id).length;
+    if (onlineHumans !== 1 || members.length !== 1 || members[0] !== ws) return;
+    const now = Date.now();
+    // Automatic nudges are rate-limited, but a real message from the person is
+    // never silently dropped by this timer. Room requests are queued in order.
+    if (data.type === "bot-nudge") {
+      const last = this.botLastRequest.get(member.roomId) || 0;
+      if (now - last < BOT_COOLDOWN_MS) return;
+      this.botLastRequest.set(member.roomId, now);
+    }
     const roomCount = this.botRequestsByRoom.get(member.roomId) || 0;
-    if (roomCount >= BOT_ROOM_LIMIT) {
-      return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Nerukko Bot has reached its chat limit for now." });
-    }
-
+    if (roomCount >= BOT_ROOM_LIMIT) return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Nerukko Bot has reached its chat limit for now." });
     const day = new Date().toISOString().slice(0, 10);
+    this.botLastRequest.set(member.roomId, now);
     this.botRequestsByRoom.set(member.roomId, roomCount + 1);
-    if (!await this.reserveBotDailySlot(day)) {
-      return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Nerukko Bot is resting for today." });
-    }
-    if (requestEpoch !== this.botEpoch) return;
-    const stillEligibleBeforeRequest = this.sockets()
-      .map(socket => ({ socket, person: this.attachment(socket) }))
-      .filter(({ person }) => person.id && person.roomId);
-    if (stillEligibleBeforeRequest.length !== 1 || stillEligibleBeforeRequest[0].socket !== ws) return;
-
+    if (!await this.reserveBotDailySlot(day)) return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Nerukko Bot is resting for today." });
     const history = Array.isArray(data.history) ? data.history.slice(-12) : [];
-    if (data.type === "bot-chat" && !history.some(item => item?.role === "user" && item?.text === latestText)) {
+    const latestText = String(data.text || "").slice(0, 700).trim();
+    if (data.type === "bot-chat" && latestText && !history.some(item => item?.role === "user" && item?.text === latestText)) {
       history.push({ role: "user", text: latestText });
     }
-    const stickerId = data.type === "bot-sticker" && typeof data.stickerId === "string"
-      ? data.stickerId.slice(0, 80) : null;
-    const prompt = data.type === "bot-sticker"
-      ? "The person sent a sticker. You cannot see it. React to the gesture without guessing what it shows."
-      : "";
+    const prompt = data.type === "bot-chat"
+      ? ""
+      : data.type === "bot-sticker"
+        ? "The user just sent a sticker. You cannot see the image itself, so do not guess what it depicts. React naturally to the gesture, briefly and playfully."
+        : String(data.prompt || "Continue naturally. Add a small playful observation or invite them into a low-pressure mini-topic.").slice(0, 700).trim();
     const reply = await generateNerukkoBotReply(this.env.GEMINI_API_KEY, history, prompt);
-
-    // Re-check globally after Gemini returns. A second person may have arrived
-    // while the request was in flight, in which case the Bot must stay silent.
-    const stillAlone = this.sockets()
-      .map(socket => ({ socket, person: this.attachment(socket) }))
-      .filter(({ person }) => person.id && person.roomId);
-    if (stillAlone.length !== 1 || stillAlone[0].socket !== ws || requestEpoch !== this.botEpoch) return;
-    const current = this.attachment(ws);
-    if (current.mode !== "group" || current.roomScope !== "random" || current.roomId !== member.roomId) return;
-
-    this.send(ws, {
-      type: "bot-message", kind: "reply", text: reply,
-      messageId: crypto.randomUUID(), stickerId
-    });
+    const stillAlone = this.sockets().filter(peer => !!this.attachment(peer).id).length === 1 && this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group").length === 1 && this.attachment(ws).id === member.id;
+    if (!stillAlone) return;
+    this.send(ws, { type: "bot-message", kind: data.type === "bot-chat" || data.type === "bot-sticker" ? "reply" : (history.length ? "nudge" : "greeting"), text: reply, messageId: crypto.randomUUID(), stickerId: data.type === "bot-sticker" && typeof data.stickerId === "string" ? data.stickerId : null });
   }
 
   peerList(roomId, exceptId = null) {
