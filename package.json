@@ -1,9 +1,9 @@
 {
   "name": "nerukko",
+  "version": "13.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/matcher-check.mjs && node tests/bot-check.mjs && node tests/sticker-check.mjs && node tests/rooms-check.mjs && node tests/profile-check.mjs"
-  },
-  "version": "12.0.0"
+    "test": "node tests/matcher-check.mjs && node tests/bot-check.mjs && node tests/sticker-check.mjs && node tests/rooms-check.mjs && node tests/profile-check.mjs && node tests/v13-check.mjs"
+  }
 }
