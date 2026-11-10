@@ -21,17 +21,17 @@ export default {
   }
 };
 
-const MAX_PEOPLE = 10;
+const MAX_PEOPLE = 7;
 const ROOM_NAME_MAX = 36;
 const ROOM_DESCRIPTION_MAX = 120;
 const ROOM_PASSWORD_MIN = 4;
 const ROOM_PASSWORD_MAX = 64;
 const ROOM_PASSWORD_ITERATIONS = 120_000;
+const ROOM_EMPTY_TTL_MS = 24 * 60 * 60_000;
 const MAX_NAME = 24;
 const MAX_SIGNAL_MESSAGE = 16_384;
 const NEARBY_METERS = 100;
 const REPORT_WINDOW_MS = 10 * 60_000;
-const COOLDOWN_MS = 5 * 60_000;
 const DELIVERY_TTL_MS = 7 * 24 * 60 * 60_000;
 const BOT_DAILY_LIMIT = 40;
 const BOT_ROOM_LIMIT = 24;
@@ -106,8 +106,8 @@ export class Matchmaker {
     if (typeof message === "string" && message.length <= MAX_SIGNAL_MESSAGE) {
       try {
         const packet = JSON.parse(message);
-        if (packet?.type === "bot-chat" || packet?.type === "bot-nudge") {
-          this.enqueueBotRequest(ws, packet).catch(() => this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot could not reply just now. Try again in a moment." }));
+        if (packet?.type === "bot-chat" || packet?.type === "bot-nudge" || packet?.type === "bot-sticker") {
+          this.enqueueBotRequest(ws, packet).catch(() => this.send(ws, { type: "bot-unavailable", stickerId: packet.stickerId || null, message: "Nerukko Bot could not reply just now. Try again in a moment." }));
           return;
         }
       } catch {}
@@ -204,9 +204,19 @@ export class Matchmaker {
 
     if (data.type === "location-update") {
       const location = this.cleanLocation(data.location);
-      if (!location) return;
+      if (!location && data.location !== null) return;
       ws.serializeAttachment({ ...current, location });
-      this.broadcastRoomStatus(current.roomId);
+      if (!location && current.customRoomId) {
+        await this.leaveNamedRoom(ws);
+        return;
+      }
+      if (current.mode === "group" && current.roomScope !== "custom") {
+        await this.rebalanceGroupRooms();
+        await this.refreshBotRooms();
+      }
+      const updated = this.attachment(ws);
+      this.broadcastRoomStatus(updated.roomId);
+      await this.broadcastRoomDirectory();
       return;
     }
 
@@ -248,6 +258,56 @@ export class Matchmaker {
     await this.ctx.storage.put("named-rooms", rooms);
   }
 
+  async scheduleNamedRoomExpiry(rooms) {
+    const next = Object.values(rooms).map(room => Number(room?.expiresAt) || 0).filter(value => value > 0).sort((a, b) => a - b)[0];
+    if (next && typeof this.ctx.storage.setAlarm === "function") await this.ctx.storage.setAlarm(next);
+    else if (!next && typeof this.ctx.storage.deleteAlarm === "function") await this.ctx.storage.deleteAlarm();
+  }
+
+  async cleanupExpiredNamedRooms() {
+    const rooms = await this.getNamedRooms();
+    const now = Date.now();
+    let changed = false;
+    for (const [roomId, meta] of Object.entries(rooms)) {
+      if (!meta || !meta.id) { delete rooms[roomId]; changed = true; continue; }
+      if (!meta.emptyPolicy) { meta.emptyPolicy = meta.keepWhenEmpty ? "24h" : "immediate"; changed = true; }
+      if ("keepWhenEmpty" in meta) { delete meta.keepWhenEmpty; changed = true; }
+      const members = this.namedRoomMembers(roomId);
+      if (!meta.location && !members.length) { delete rooms[roomId]; changed = true; continue; }
+      if (!meta.location && members.length) {
+        const locatedMember = members.find(member => member.location);
+        if (locatedMember) { meta.location = { ...locatedMember.location }; changed = true; }
+        else if (meta.emptyPolicy !== "immediate") { meta.emptyPolicy = "immediate"; changed = true; }
+      }
+      if (members.length) {
+        if (meta.expiresAt || meta.emptySince) { meta.expiresAt = null; meta.emptySince = null; changed = true; }
+      } else if (meta.emptyPolicy === "24h") {
+        if (!Number(meta.expiresAt)) {
+          meta.emptySince = now;
+          meta.expiresAt = now + ROOM_EMPTY_TTL_MS;
+          changed = true;
+        } else if (Number(meta.expiresAt) <= now) {
+          delete rooms[roomId];
+          changed = true;
+        }
+      } else {
+        delete rooms[roomId];
+        changed = true;
+      }
+      if (rooms[roomId]) rooms[roomId] = meta;
+    }
+    if (changed) await this.saveNamedRooms(rooms);
+    await this.scheduleNamedRoomExpiry(rooms);
+    return rooms;
+  }
+
+  async alarm() {
+    await this.runSerial(async () => {
+      await this.cleanupExpiredNamedRooms();
+      await this.broadcastRoomDirectory();
+    });
+  }
+
   namedRoomMembers(roomId) {
     return this.sockets().map(ws => ({ ws, ...this.attachment(ws) }))
       .filter(member => member.id && member.customRoomId === roomId && member.roomScope === "custom");
@@ -260,7 +320,8 @@ export class Matchmaker {
       name: meta.name,
       description: meta.description || "",
       visibility: meta.visibility,
-      keepWhenEmpty: !!meta.keepWhenEmpty,
+      emptyPolicy: meta.emptyPolicy === "24h" ? "24h" : "immediate",
+      expiresAt: Number(meta.expiresAt) || null,
       ownerId: meta.ownerId,
       memberCount: members.length,
       capacity: MAX_PEOPLE,
@@ -269,23 +330,26 @@ export class Matchmaker {
     };
   }
 
-  async sendRoomDirectory(ws) {
-    const stored = await this.getNamedRooms();
-    const rooms = Object.values(stored)
-      .filter(meta => meta && meta.id)
-      .map(meta => this.namedRoomView(meta))
-      .sort((a, b) => b.memberCount - a.memberCount || a.name.localeCompare(b.name));
-    this.send(ws, { type: "rooms-list", rooms });
+  async sendRoomDirectory(ws, storedRooms = null) {
+    const stored = storedRooms || await this.cleanupExpiredNamedRooms();
+    const member = this.attachment(ws);
+    if (!member.location) {
+      this.send(ws, { type: "rooms-list", rooms: [], requiresLocation: true });
+      return;
+    }
+    const nearby = Object.values(stored)
+      .filter(meta => meta && meta.id && meta.location && this.distance(member.location, meta.location) <= NEARBY_METERS)
+      .map(meta => ({ ...this.namedRoomView(meta), distanceMeters: Math.round(this.distance(member.location, meta.location)) }));
+    const byDistance = (a, b) => a.distanceMeters - b.distanceMeters || b.memberCount - a.memberCount || a.name.localeCompare(b.name);
+    const publicRooms = nearby.filter(room => room.visibility === "public").sort(byDistance).slice(0, 10);
+    const privateRooms = nearby.filter(room => room.visibility === "private").sort(byDistance).slice(0, 10);
+    const safeRoom = ({ distanceMeters, ...room }) => room;
+    this.send(ws, { type: "rooms-list", rooms: [...publicRooms, ...privateRooms].map(safeRoom), requiresLocation: false });
   }
 
   async broadcastRoomDirectory() {
-    const stored = await this.getNamedRooms();
-    const rooms = Object.values(stored)
-      .filter(meta => meta && meta.id)
-      .map(meta => this.namedRoomView(meta))
-      .sort((a, b) => b.memberCount - a.memberCount || a.name.localeCompare(b.name));
-    const packet = { type: "rooms-list", rooms };
-    for (const ws of this.sockets()) if (this.attachment(ws).id) this.send(ws, packet);
+    const stored = await this.cleanupExpiredNamedRooms();
+    for (const ws of this.sockets()) if (this.attachment(ws).id) await this.sendRoomDirectory(ws, stored);
   }
 
   async broadcastCustomRoomMembers(roomId) {
@@ -301,17 +365,29 @@ export class Matchmaker {
     const meta = rooms[roomId];
     if (!meta) return;
     const members = this.namedRoomMembers(roomId);
-    if (!members.length && !meta.keepWhenEmpty) {
-      delete rooms[roomId];
+    if (!meta.emptyPolicy) meta.emptyPolicy = meta.keepWhenEmpty ? "24h" : "immediate";
+    delete meta.keepWhenEmpty;
+    if (!members.length) {
+      if (meta.emptyPolicy === "24h") {
+        if (!Number(meta.expiresAt)) {
+          meta.emptySince = Date.now();
+          meta.expiresAt = Date.now() + ROOM_EMPTY_TTL_MS;
+        }
+        rooms[roomId] = meta;
+      } else delete rooms[roomId];
       await this.saveNamedRooms(rooms);
+      await this.scheduleNamedRoomExpiry(rooms);
       return;
     }
-    if (members.length && !members.some(member => member.id === meta.ownerId)) {
+    meta.emptySince = null;
+    meta.expiresAt = null;
+    if (!members.some(member => member.id === meta.ownerId)) {
       meta.ownerId = members[0].id;
       meta.ownerName = members[0].name;
-      rooms[roomId] = meta;
-      await this.saveNamedRooms(rooms);
     }
+    rooms[roomId] = meta;
+    await this.saveNamedRooms(rooms);
+    await this.scheduleNamedRoomExpiry(rooms);
   }
 
   async hashRoomPassword(password, saltHex = null) {
@@ -338,6 +414,7 @@ export class Matchmaker {
   async createNamedRoom(ws, data) {
     const member = this.attachment(ws);
     if (!member.id || member.mode !== "group") return this.send(ws, { type: "room-error", message: "Leave your one-to-one chat before creating a room." });
+    if (!member.location) return this.send(ws, { type: "room-error", message: "Enable location in Settings to create or discover nearby rooms." });
     const name = String(data.name || "").replace(/[\\\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ROOM_NAME_MAX);
     const description = String(data.description || "").replace(/[\\\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ROOM_DESCRIPTION_MAX);
     const visibility = data.visibility === "private" ? "private" : "public";
@@ -349,21 +426,24 @@ export class Matchmaker {
     const now = Date.now();
     const createdRecently = (this.roomCreateAttempts.get(member.id) || []).filter(time => now - time < 10 * 60_000);
     if (createdRecently.length >= 3) return this.send(ws, { type: "room-error", message: "You can create up to three rooms every ten minutes." });
-    const rooms = await this.getNamedRooms();
-    if (Object.keys(rooms).length >= 200) return this.send(ws, { type: "room-error", message: "The room directory is full for now." });
-    if (Object.values(rooms).some(room => room.name.toLowerCase() === name.toLowerCase())) {
-      return this.send(ws, { type: "room-error", message: "A room with that name already exists." });
+    const rooms = await this.cleanupExpiredNamedRooms();
+    if (Object.keys(rooms).length >= 500) return this.send(ws, { type: "room-error", message: "The room directory is full for now." });
+    if (Object.values(rooms).some(room => room.name.toLowerCase() === name.toLowerCase() && room.location && this.distance(member.location, room.location) <= NEARBY_METERS)) {
+      return this.send(ws, { type: "room-error", message: "A room with that name already exists nearby." });
     }
     const id = crypto.randomUUID();
     const credentials = visibility === "private" ? await this.hashRoomPassword(password) : null;
     const meta = {
-      id, name, description, visibility, keepWhenEmpty: data.keepWhenEmpty === true,
+      id, name, description, visibility,
+      emptyPolicy: data.emptyPolicy === "24h" ? "24h" : "immediate",
+      emptySince: null, expiresAt: null, location: { ...member.location },
       ownerId: member.id, ownerName: member.name,
       passwordSalt: credentials?.salt || null, passwordHash: credentials?.hash || null,
       createdAt: Date.now()
     };
     rooms[id] = meta;
     await this.saveNamedRooms(rooms);
+    await this.scheduleNamedRoomExpiry(rooms);
     createdRecently.push(now); this.roomCreateAttempts.set(member.id, createdRecently);
     await this.enterNamedRoom(ws, meta);
   }
@@ -372,9 +452,11 @@ export class Matchmaker {
     const member = this.attachment(ws);
     if (!member.id || member.mode !== "group") return this.send(ws, { type: "room-error", message: "Leave your one-to-one chat before joining a room." });
     const roomId = String(data.roomId || "").slice(0, 64);
-    const rooms = await this.getNamedRooms();
+    if (!member.location) return this.send(ws, { type: "room-error", message: "Enable location in Settings to join nearby rooms." });
+    const rooms = await this.cleanupExpiredNamedRooms();
     const meta = rooms[roomId];
     if (!meta) return this.send(ws, { type: "room-error", message: "That room is no longer available." });
+    if (!meta.location || this.distance(member.location, meta.location) > NEARBY_METERS) return this.send(ws, { type: "room-error", message: "That room is outside your nearby area." });
     if (meta.visibility === "private") {
       const key = `${member.id}:${roomId}`;
       const attempts = (this.roomJoinAttempts.get(key) || []).filter(time => Date.now() - time < 60_000);
@@ -385,12 +467,23 @@ export class Matchmaker {
       this.roomJoinAttempts.delete(key);
     }
     if (meta.id === member.customRoomId) return this.send(ws, { type: "room-entered", room: this.namedRoomView(meta), peers: this.peerList(member.roomId, member.id) });
-    if (this.namedRoomMembers(roomId).length >= MAX_PEOPLE) return this.send(ws, { type: "room-error", message: "This room is full (10/10)." });
+    if (this.namedRoomMembers(roomId).length >= MAX_PEOPLE) return this.send(ws, { type: "room-error", message: `This room is full (${MAX_PEOPLE}/${MAX_PEOPLE}).` });
     await this.enterNamedRoom(ws, meta);
   }
 
   async enterNamedRoom(ws, meta) {
     const member = this.attachment(ws);
+    const rooms = await this.getNamedRooms();
+    meta = rooms[meta.id] || meta;
+    meta.emptySince = null; meta.expiresAt = null;
+    const existingMembers = this.namedRoomMembers(meta.id);
+    if (!existingMembers.some(person => person.id === meta.ownerId)) {
+      meta.ownerId = member.id;
+      meta.ownerName = member.name;
+    }
+    rooms[meta.id] = meta;
+    await this.saveNamedRooms(rooms);
+    await this.scheduleNamedRoomExpiry(rooms);
     const oldRoom = member.roomId;
     const oldCustomRoom = member.customRoomId || null;
     this.send(ws, { type: "bot-stop" });
@@ -447,17 +540,18 @@ export class Matchmaker {
     const visibility = data.visibility === "private" ? "private" : "public";
     const password = String(data.password || "");
     if (name.length < 2) return this.send(ws, { type: "room-error", message: "Room name must contain at least two characters." });
-    if (Object.values(rooms).some(room => room.id !== roomId && room.name.toLowerCase() === name.toLowerCase())) return this.send(ws, { type: "room-error", message: "A room with that name already exists." });
+    if (Object.values(rooms).some(room => room.id !== roomId && room.name.toLowerCase() === name.toLowerCase() && room.location && this.distance(member.location, room.location) <= NEARBY_METERS)) return this.send(ws, { type: "room-error", message: "A room with that name already exists nearby." });
     if (visibility === "private" && password && (password.length < ROOM_PASSWORD_MIN || password.length > ROOM_PASSWORD_MAX)) return this.send(ws, { type: "room-error", message: "Passwords must be 4 to 64 characters." });
     if (visibility === "private" && !meta.passwordHash && !password) return this.send(ws, { type: "room-error", message: "Set a password before making this room private." });
     let credentials = null;
     if (visibility === "private" && password) credentials = await this.hashRoomPassword(password);
     meta.name = name; meta.description = description; meta.visibility = visibility;
-    meta.keepWhenEmpty = data.keepWhenEmpty === true;
+    meta.emptyPolicy = data.emptyPolicy === "24h" ? "24h" : "immediate";
     if (visibility === "public") { meta.passwordSalt = null; meta.passwordHash = null; }
     else if (credentials) { meta.passwordSalt = credentials.salt; meta.passwordHash = credentials.hash; }
     rooms[roomId] = meta;
     await this.saveNamedRooms(rooms);
+    await this.scheduleNamedRoomExpiry(rooms);
     const room = this.namedRoomView(meta);
     for (const person of this.namedRoomMembers(roomId)) this.send(person.ws, { type: "room-updated", room });
     await this.broadcastRoomDirectory();
@@ -472,6 +566,7 @@ export class Matchmaker {
     if (!meta || meta.ownerId !== member.id) return this.send(ws, { type: "room-error", message: "Only the room owner can delete this room." });
     delete rooms[roomId];
     await this.saveNamedRooms(rooms);
+    await this.scheduleNamedRoomExpiry(rooms);
     const participants = this.namedRoomMembers(roomId).map(person => person.ws);
     for (const participant of participants) {
       const person = this.attachment(participant);
@@ -585,11 +680,11 @@ export class Matchmaker {
       this.botLastRequest.set(member.roomId, now);
     }
     const roomCount = this.botRequestsByRoom.get(member.roomId) || 0;
-    if (roomCount >= BOT_ROOM_LIMIT) return this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot has reached its chat limit for now." });
+    if (roomCount >= BOT_ROOM_LIMIT) return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Nerukko Bot has reached its chat limit for now." });
     const day = new Date().toISOString().slice(0, 10);
     this.botLastRequest.set(member.roomId, now);
     this.botRequestsByRoom.set(member.roomId, roomCount + 1);
-    if (!await this.reserveBotDailySlot(day)) return this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot is resting for today." });
+    if (!await this.reserveBotDailySlot(day)) return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Nerukko Bot is resting for today." });
     const history = Array.isArray(data.history) ? data.history.slice(-12) : [];
     const latestText = String(data.text || "").slice(0, 700).trim();
     if (data.type === "bot-chat" && latestText && !history.some(item => item?.role === "user" && item?.text === latestText)) {
@@ -597,11 +692,13 @@ export class Matchmaker {
     }
     const prompt = data.type === "bot-chat"
       ? ""
-      : String(data.prompt || "Continue naturally. Add a small playful observation or invite them into a low-pressure mini-topic.").slice(0, 700).trim();
+      : data.type === "bot-sticker"
+        ? "The user just sent a sticker. You cannot see the image itself, so do not guess what it depicts. React naturally to the gesture, briefly and playfully."
+        : String(data.prompt || "Continue naturally. Add a small playful observation or invite them into a low-pressure mini-topic.").slice(0, 700).trim();
     const reply = await generateNerukkoBotReply(this.env.GEMINI_API_KEY, history, prompt);
     const stillAlone = this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group").length === 1 && this.attachment(ws).id === member.id;
     if (!stillAlone) return;
-    this.send(ws, { type: "bot-message", kind: data.type === "bot-chat" ? "reply" : (history.length ? "nudge" : "greeting"), text: reply, messageId: crypto.randomUUID() });
+    this.send(ws, { type: "bot-message", kind: data.type === "bot-chat" || data.type === "bot-sticker" ? "reply" : (history.length ? "nudge" : "greeting"), text: reply, messageId: crypto.randomUUID(), stickerId: data.type === "bot-sticker" && typeof data.stickerId === "string" ? data.stickerId : null });
   }
 
   peerList(roomId, exceptId = null) {
@@ -784,6 +881,11 @@ export class Matchmaker {
         if (toSocket) this.send(toSocket, { type: "private-request-expired", requestId: id });
       }
     }
+    const outgoingPending = [...this.pendingPrivate.values()].some(request => request.from === sender.id);
+    if (outgoingPending) {
+      this.send(ws, { type: "private-error", message: "You already have a private invitation waiting for a reply." });
+      return;
+    }
     const recent = (this.requestRate.get(sender.id) || []).filter(time => now - time < 60_000);
     if (recent.length >= 4) {
       this.send(ws, { type: "private-error", message: "Give it a moment before sending another request." });
@@ -826,6 +928,14 @@ export class Matchmaker {
     const oldRoom = recipient.roomId;
     const newRoom = crypto.randomUUID();
     const requester = this.attachment(requesterSocket);
+    for (const [otherRequestId, pending] of this.pendingPrivate.entries()) {
+      if (otherRequestId === requestId || ![recipient.id, requester.id].some(id => pending.from === id || pending.to === id)) continue;
+      this.pendingPrivate.delete(otherRequestId);
+      for (const participantId of [pending.from, pending.to]) {
+        const participantSocket = this.sockets().find(peer => this.attachment(peer).id === participantId);
+        if (participantSocket) this.send(participantSocket, { type: "private-request-closed", requestId: otherRequestId });
+      }
+    }
     for (const peer of this.members(oldRoom)) {
       if (peer !== ws && peer !== requesterSocket) {
         this.send(peer, { type: "peer-left", id: recipient.id });
@@ -884,9 +994,13 @@ export class Matchmaker {
     if (record.reporters.size < 2) return;
 
     const target = this.attachment(targetSocket);
-    const until = now + COOLDOWN_MS;
+    const strikeKey = `report-strikes:${target.id}`;
+    const strikes = Math.min(3, Number(await this.ctx.storage.get(strikeKey) || 0) + 1);
+    const durationMinutes = strikes === 1 ? 5 : strikes === 2 ? 10 : 15;
+    const until = now + durationMinutes * 60_000;
+    await this.ctx.storage.put(strikeKey, strikes);
     await this.ctx.storage.put(`cooldown:${target.id}`, until);
-    this.send(targetSocket, { type: "blocked", until });
+    this.send(targetSocket, { type: "blocked", until, durationMinutes });
     await this.remove(targetSocket, { rebalance: true });
     try { targetSocket.close(4003, "Temporary cooldown"); } catch {}
     this.reports.delete(key);
