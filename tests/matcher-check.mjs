@@ -89,6 +89,24 @@ function matcherWith(sockets = []) {
   if (a.a.mode !== 'group' || b.a.mode !== 'group' || a.a.roomId !== b.a.roomId) throw new Error('Ending private chat should return both people to a group room');
 }
 
+// Only one outgoing private invitation can wait at a time; accepting a conversation closes other pending invites.
+{
+  const a = socket('a'.repeat(32), 'invite-room', { lat:12, lon:77 }, 'group', 'A');
+  const b = socket('b'.repeat(32), 'invite-room', { lat:12, lon:77 }, 'group', 'B');
+  const c = socket('c'.repeat(32), 'invite-room', { lat:12, lon:77 }, 'group', 'C');
+  const d = socket('d'.repeat(32), 'invite-room', { lat:12, lon:77 }, 'group', 'D');
+  const { matcher } = matcherWith([a,b,c,d]);
+  matcher.createPrivateRequest(a, b.a.id);
+  const firstRequest = [...matcher.pendingPrivate.keys()][0];
+  matcher.createPrivateRequest(a, d.a.id);
+  if (matcher.pendingPrivate.size !== 1) throw new Error('A participant should not send multiple outstanding private invitations');
+  if (!a.sent.some(value => JSON.parse(value).type === 'private-error')) throw new Error('A second outstanding private invitation should be rejected visibly');
+  matcher.createPrivateRequest(c, a.a.id);
+  await matcher.respondPrivateRequest(b, firstRequest, true);
+  if (matcher.pendingPrivate.size !== 0) throw new Error('Other pending invitations should close when a participant enters a private conversation');
+  if (!c.sent.some(value => JSON.parse(value).type === 'private-request-closed')) throw new Error('The other requester should be notified that their invitation closed');
+}
+
 // Two distinct reports trigger a five-minute, server-side ID cooldown.
 {
   const reporter1 = socket('3'.repeat(32), 'report-room', null, 'group', 'One');
@@ -104,6 +122,35 @@ function matcherWith(sockets = []) {
   if (target.a.id) throw new Error('Reported participant should be removed from the room');
 }
 
+
+// Escalating independent-report cooldowns persist by anonymous participant ID.
+{
+  const targetId = '9'.repeat(32);
+  const store = new Map();
+  let incident = 0;
+  async function triggerIncident() {
+    incident++;
+    const roomId = `escalation-${incident}`;
+    const reporter1 = socket(`${incident}a`.padEnd(32, 'a'), roomId, null, 'group', 'One');
+    const reporter2 = socket(`${incident}b`.padEnd(32, 'b'), roomId, null, 'group', 'Two');
+    const target = socket(targetId, roomId, null, 'group', 'Target');
+    const sockets = [reporter1, reporter2, target];
+    const ctx = {
+      getWebSockets: () => sockets,
+      storage: { get: async key => store.get(key), put: async (key, value) => store.set(key, value), delete: async key => store.delete(key) }
+    };
+    const matcher = new Matchmaker(ctx, {});
+    await matcher.reportMember(reporter1, targetId);
+    await matcher.reportMember(reporter2, targetId);
+    const blocked = target.sent.map(value => JSON.parse(value)).find(packet => packet.type === 'blocked');
+    return blocked?.durationMinutes;
+  }
+  if (await triggerIncident() !== 5) throw new Error('First qualifying report incident should pause for five minutes');
+  if (await triggerIncident() !== 10) throw new Error('Second qualifying report incident should pause for ten minutes');
+  if (await triggerIncident() !== 15) throw new Error('Third qualifying report incident should pause for fifteen minutes');
+  if (await triggerIncident() !== 15) throw new Error('Later report incidents should remain at fifteen minutes');
+  if (store.get(`report-strikes:${targetId}`) !== 3) throw new Error('Report strike count should cap at three');
+}
 
 // Reports from different rooms must never combine into one threshold.
 {

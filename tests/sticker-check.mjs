@@ -33,7 +33,7 @@ if (!html.includes('id="mediaBackdrop"') && !html.includes('id="uploadMedia"')) 
 // Storage and cache checks protect returning users from stale UI and storage restrictions.
 if (!html.includes("function createSafeStorage()") || !html.includes("function createId()")) throw new Error("Safe browser storage/ID fallback is missing.");
 if (!html.includes("updateViaCache:'none'")) throw new Error("Service-worker update strategy is missing.");
-if (!serviceWorker.includes('nerukko-shell-v10') || !serviceWorker.includes('cache: "reload"')) throw new Error("Fresh app-shell cache version is missing.");
+if (!serviceWorker.includes('nerukko-shell-v11') || !serviceWorker.includes('cache: "reload"')) throw new Error("Fresh app-shell cache version is missing.");
 if (!worker.includes('Cache-Control') || !worker.includes('no-store, no-cache, must-revalidate')) throw new Error("Worker must prevent stale HTML/service-worker responses.");
 
 // About and ownership details.
@@ -42,10 +42,10 @@ if (!html.includes('id="aboutTitle">About</h2>') || !html.includes('>About</butt
 if (!html.includes("Google Gemini") || !html.includes("recent conversation context")) throw new Error("About must disclose Bot processing by Gemini.");
 if (!html.includes("function enableSwipeReply(article, target, mine = false)") || !html.includes("const direction = mine ? -1 : 1")) throw new Error("Reply swipes must work in both directions.");
 if (!html.includes("reply-swipe-indicator") || !html.includes("↩")) throw new Error("Reply swipe indicator arrow is missing.");
-if (!html.includes("max-width:min(112px,36vw)")) throw new Error("Stickers in chat should render at a compact size.");
-if (!html.includes(".sticker-panel.is-creating") || !html.includes(".sticker-create-scroll") || !html.includes("position:relative")) throw new Error("Sticker creator should have a larger, scrollable work area and a fixed action row.");
+if (!html.includes("max-width:min(180px,52vw)")) throw new Error("Stickers in chat should render at the larger V11 size.");
+if (!html.includes(".sticker-panel.is-creating") || !html.includes(".sticker-create-scroll") || !html.includes("overflow:hidden")) throw new Error("Sticker creator should fit in a fixed, non-scrollable panel with a fixed action row.");
 if (!html.includes("$('stickerPanel').classList.add('is-creating')") || !html.includes("$('stickerPanel').classList.remove('is-creating')")) throw new Error("Sticker creator expanded state must reset on close.");
-if (!html.includes("navigator.serviceWorker.register('/service-worker.js?v=10'")) throw new Error("Service worker registration must request V9 explicitly.");
+if (!html.includes("navigator.serviceWorker.register('/service-worker.js?v=11'")) throw new Error("Service worker registration must request V11 explicitly.");
 
 let offset = 0;
 let count = 0;
@@ -66,13 +66,14 @@ if (count !== 40) throw new Error(`Expected 40 individual stickers, found ${coun
 
 if (!html.includes("const STICKER_PACKS = [") || !html.includes("selectedStickerPack = 'blackcat'")) throw new Error("Multi-pack configuration is missing.");
 if (!html.includes('data-sticker-tab="recent"') || !html.includes('data-sticker-tab="favorites"') || !html.includes('data-sticker-tab="packs"')) throw new Error("Recent, favourites and packs tabs are required.");
-if (!html.includes('id="stickerCreateInput"') || !html.includes('id="stickerCameraInput"') || !html.includes('id="stickerCropCanvas"') || !html.includes('id="stickerZoom"')) throw new Error("Lightweight sticker creator controls are missing.");
-if (!html.includes("indexedDB.open('nerukko-local-stickers', 1)")) throw new Error("Custom stickers should persist in local IndexedDB.");
-if (!html.includes('id="saveStickerFavourite"') || !html.includes('id="stickerOutline"') || !html.includes('id="replaceStickerPhoto"') || !html.includes('id="takeStickerPhoto"')) throw new Error('Sticker creator should save to favourites and support a white outline.');
+if (!html.includes('id="stickerCreateInput"') || !html.includes('id="stickerCropCanvas"') || !html.includes('id="stickerZoom"')) throw new Error("Lightweight sticker creator controls are missing.");
+if (html.includes('id="replaceStickerPhoto"') || html.includes('id="takeStickerPhoto"')) throw new Error('Redundant photo controls should not appear inside the sticker editor.');
+if (!html.includes("indexedDB.open('nerukko-local-stickers', 2)")) throw new Error("Custom stickers should persist in local IndexedDB.");
+if (!html.includes('id="saveStickerFavourite"') || !html.includes('id="stickerOutline"')) throw new Error('Sticker creator should save to favourites and support a white outline.');
 if (!html.includes('height:min(40dvh,340px)') || !html.includes('grid-template-columns:repeat(4')) throw new Error("Sticker tray should be compact with a four-column grid.");
 if (!html.includes('function updateTypingPresence()') || !html.includes("packet.type === 'typing'")) throw new Error("Ephemeral typing indicator is missing.");
 if (!html.includes('function appendMessageTime(article)') || !html.includes('message.grouped') || !html.includes('function isNearMessageBottom()')) throw new Error("Message grouping/timestamps/scroll preservation are missing.");
-if (!serviceWorker.includes("nerukko-shell-v10")) throw new Error("V9 service-worker cache version is missing.");
+if (!serviceWorker.includes("nerukko-shell-v11")) throw new Error("V11 service-worker cache version is missing.");
 if (!html.includes("updateViaCache:'none'")) throw new Error("Service-worker updates should bypass HTTP cache.");
 if (!html.includes('quota-limited') || !html.includes('memory.set(key, safeValue)')) throw new Error('Storage wrapper must survive runtime quota errors.');
 if (/remove\.bg|background.?remov|rembg|bria\.ai/i.test(html)) throw new Error("Sticker creator must not add background-removal services.");
@@ -80,4 +81,4 @@ if (/remove\.bg|background.?remov|rembg|bria\.ai/i.test(html)) throw new Error("
 if (!workflow.includes('cp Stickers/*.zip public/Stickers/')) throw new Error('Deployment must publish all future sticker packs.');
 if (fs.existsSync(path.join(root, 'public/Stickers/blackcat.zip'))) throw new Error('Do not track a second copy of the sticker pack under public/.');
 
-console.log(`V10 sticker/UI checks passed (${count} WebP assets, ZIP_STORED).`);
+console.log(`V11 sticker/UI checks passed (${count} WebP assets, ZIP_STORED).`);
