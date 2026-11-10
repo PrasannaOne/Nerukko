@@ -220,11 +220,23 @@ function matcherWith(sockets = []) {
   if (signal?.from !== sender.a.id) throw new Error('Delivery-only peers should be allowed to exchange WebRTC signals across rooms');
 }
 
-// Bot output stays compact and hard-caps every response at ten words.
+// Bot output stays tiny and clamps every response to eight words.
 {
   const reply = clampBotReply('One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour');
-  if (reply.split(/\s+/).length !== 10) throw new Error('Nerukko Bot replies must be limited to ten words');
+  if (reply.split(/\s+/).length !== 8) throw new Error('Nerukko Bot replies must be limited to eight words');
   if (clampBotReply('  hello\nthere  ') !== 'hello there') throw new Error('Nerukko Bot output should be a single clean line');
+}
+
+
+// Bot is a global fallback: a second human anywhere in the app suppresses it.
+{
+  const randomUser = socket('r'.repeat(32), 'random-solo', null, 'group', 'Random user');
+  const privateUser = socket('s'.repeat(32), 'private-pair', null, 'private', 'Private user');
+  const { matcher } = matcherWith([randomUser, privateUser]);
+  matcher.env.GEMINI_API_KEY = 'test-key';
+  await matcher.updateBotForRoom('random-solo');
+  if (matcher.botRooms.has('random-solo')) throw new Error('Bot must stay absent when a second human is online anywhere in Nerukko.');
+  if (randomUser.sent.some(value => JSON.parse(value).type === 'bot-start')) throw new Error('A random-chat user must not receive the Bot while another human is online elsewhere.');
 }
 
 // Without a Gemini secret, the bot must remain absent and normal human rooms continue.
