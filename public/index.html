@@ -38,13 +38,13 @@
     .app-shell { width: min(760px,100%); height: 100svh; height: 100dvh; min-height: 0; margin: 0 auto; padding: 0 17px max(4px,env(safe-area-inset-bottom)); display: flex; flex-direction: column; overflow: hidden; }
 
     /* Minimal header: no enclosing pill, just the wordmark and three clear actions. */
-    .topbar { position: relative; z-index: 20; flex: 0 0 auto; padding: max(9px,env(safe-area-inset-top)) 0 7px; background: var(--bg); }
-    .topbar-inner { position: relative; min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
-    .brand { flex: 0 0 auto; color: var(--text); text-decoration: none; font-size: 21px; font-weight: 780; letter-spacing: -.9px; }
+    .topbar { position: relative; z-index: 20; flex: 0 0 auto; padding: max(8px,env(safe-area-inset-top)) 0 5px; background: var(--bg); }
+    .topbar-inner { position: relative; min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .brand { flex: 0 0 auto; color: var(--text); text-decoration: none; font-size: 20px; font-weight: 780; letter-spacing: -.9px; }
     .top-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
     .icon-button { position: relative; flex: 0 0 38px; width: 38px; min-width: 38px; height: 38px; display: grid !important; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--text); opacity: 1; visibility: visible; }
     .icon-button:active { background: var(--surface-2); }
-    #shareButton { display: grid !important; flex: 0 0 38px; width: 38px; min-width: 38px; height: 38px; opacity: 1; visibility: visible; }
+    #inviteAction { display: grid !important; flex: 0 0 38px; width: 38px; min-width: 38px; height: 38px; opacity: 1; visibility: visible; }
     .icon-button svg { display:block; width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
     .more-dots { font-size: 25px; font-weight: 800; line-height: 1; transform: translateY(-2px); letter-spacing: 1px; }
     .request-dot { position: absolute; top: 4px; right: 4px; min-width: 17px; height: 17px; display: grid; place-items: center; padding: 0 4px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 800; }
@@ -52,6 +52,27 @@
     .main-menu button { display: block; width: 100%; padding: 11px 12px; text-align: left; border: 0; border-radius: 9px; background: transparent; color: var(--text); font-size: 14px; }
     .main-menu button:active { background: var(--surface-2); }
 
+    .room-bar { flex:none; min-height:54px; display:flex; align-items:center; gap:9px; margin:0 -1px 4px; padding:6px 9px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+    .room-leave { flex:none; width:34px; height:34px; border:0; border-radius:10px; background:var(--surface-2); color:var(--text); font-size:20px; }
+    .room-identity { flex:1; min-width:0; display:flex; flex-direction:column; gap:0; border:0; padding:2px 0; background:transparent; text-align:left; }
+    .room-identity strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:750; }
+    .room-identity small { color:var(--muted); font-size:10px; }
+    .room-header-action { flex:none; width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--text); }
+    .room-header-action svg { width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .room-card { margin:9px 0; padding:11px; border:1px solid var(--line); border-radius:13px; background:var(--surface-2); }
+    .room-card-top { display:flex; align-items:flex-start; gap:8px; }
+    .room-card-title { flex:1; min-width:0; font-size:13px; font-weight:750; overflow-wrap:anywhere; }
+    .room-card-meta,.room-card-description,.room-card-members { margin-top:4px; color:var(--muted); font-size:10px; line-height:1.45; overflow-wrap:anywhere; }
+    .room-card-actions { display:flex; justify-content:flex-end; gap:7px; margin-top:9px; }
+    .room-create-form,.room-settings-form,.room-join-form { display:grid; gap:9px; padding:11px 0; }
+    .room-form-label { display:grid; gap:5px; color:var(--muted); font-size:10px; }
+    .room-form-input,.room-form-select { width:100%; min-height:40px; padding:9px 10px; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--text); outline:none; font:inherit; font-size:12px; }
+    .room-form-input:focus,.room-form-select:focus { border-color:var(--accent); }
+    .room-form-check { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:11px; }
+    .room-form-actions { display:flex; gap:8px; }
+    .room-form-actions button { flex:1; min-height:39px; }
+    .room-member-chip { display:inline-flex; padding:3px 7px; margin:3px 3px 0 0; border:1px solid var(--line); border-radius:99px; color:var(--muted); font-size:10px; }
+    .room-explanation { margin:5px 0 10px; color:var(--muted); font-size:11px; line-height:1.5; }
     main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
     .entry-view { width: 100%; max-width: 420px; margin: auto; padding: 34px 0 70px; }
     .entry-form { display: grid; gap: 11px; }
@@ -63,16 +84,16 @@
     .chat-view { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; padding-top: 3px; overflow: hidden; }
     .messages { flex: 1; min-height: 0; max-height: none; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px 1px 18px; overscroll-behavior: contain; }
     .empty-state { margin: auto; padding: 30px 14px; color: var(--muted); text-align: center; font-size: 13px; }
-    .message { max-width: min(86%,520px); align-self: flex-start; min-width: 82px; background: var(--bubble); border: 1px solid var(--line); border-radius: 16px 16px 16px 5px; padding: 8px 11px 9px; overflow-wrap: anywhere; }
+    .message { position:relative; max-width: min(86%,520px); align-self: flex-start; min-width: 82px; background: var(--bubble); border: 1px solid var(--line); border-radius: 16px 16px 16px 5px; padding: 8px 11px 9px; overflow-wrap: anywhere; }
     .message.mine { align-self: flex-end; background: var(--mine); border-color: color-mix(in srgb,var(--accent) 23%,var(--line)); border-radius: 16px 16px 5px 16px; }
     .message-author { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; color: var(--accent); font-size: 11px; font-weight: 750; text-align: left; }
     .message-author.self { color: var(--muted); cursor: default; }
-    .message-body { margin-top: 2px; white-space: pre-wrap; line-height: 1.45; }
+    .message-body { margin-top: 5px; white-space: pre-wrap; line-height: 1.5; }
     .message-media { display:block; width:auto; max-width:min(260px,65vw); max-height:300px; margin-top:5px; border-radius:10px; object-fit:contain; background:#0001; }
-    .message-media.sticker-media { max-width:min(190px,52vw); max-height:190px; margin-top:1px; border-radius:0; background:transparent; }
-    .message-time { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; text-align: right; }
-    .quoted-message { margin: 1px 0 7px; padding: 6px 8px; border-left: 3px solid var(--accent); border-radius: 6px; background: color-mix(in srgb,var(--accent) 10%,var(--surface-2)); color: var(--muted); font-size: 11px; line-height: 1.35; }
-    .quoted-message strong { display:block; color:var(--accent); font-size:10px; margin-bottom:2px; }
+    .message-media.sticker-media { max-width:min(112px,36vw); max-height:112px; margin:4px auto 2px; border-radius:0; background:transparent; }
+    .message-time { display: block; margin-top: 7px; color: var(--muted); font-size: 9px; text-align: right; }
+    .quoted-message { margin: 5px 0 11px; padding: 10px 12px; border-left: 3px solid var(--accent); border-radius: 9px; background: color-mix(in srgb,var(--accent) 10%,var(--surface-2)); color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .quoted-message strong { display:block; color:var(--accent); font-size:11px; margin-bottom:4px; }
     .pending-note { display:block; margin-top:5px; color:var(--muted); font-size:9px; line-height:1.2; }
     .reply-preview { display:flex; align-items:center; gap:8px; padding:7px 9px; border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:10px; background:var(--surface); }
     .reply-preview-copy { flex:1; min-width:0; }
@@ -81,6 +102,9 @@
     .reply-cancel { flex:none; width:27px; height:27px; border:0; border-radius:8px; background:var(--surface-2); color:var(--text); }
     .message { touch-action: pan-y; transition: transform .12s ease; }
     .message.swiping { transition:none; }
+    .reply-swipe-indicator { position:absolute; top:50%; left:9px; width:25px; height:25px; display:grid; place-items:center; border-radius:50%; background:var(--surface-2); color:var(--accent); font-size:19px; line-height:1; opacity:0; transform:translateY(-50%) scale(.72); transition:opacity .1s ease,transform .1s ease; pointer-events:none; }
+    .message.mine .reply-swipe-indicator { left:auto; right:9px; }
+    .message.swiping .reply-swipe-indicator { opacity:1; transform:translateY(-50%) scale(1); }
     .message.grouped { margin-top:-6px; padding-top:5px; border-top-left-radius:9px; border-top-right-radius:9px; }
     .message.grouped .message-author { display:none; }
     .message.grouped .message-body { margin-top:0; }
@@ -145,19 +169,20 @@
     .setting-copy strong { color: var(--text); }
     .about-link { display:inline-flex; align-items:center; gap:7px; color:var(--accent); text-decoration:none; font-weight:750; }
     .about-link svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
-    .about-panel { max-height:min(88svh,740px); padding:16px 18px 14px; }
-    .about-kicker { display:block; margin-bottom:3px; color:var(--muted); font-size:10px; font-weight:750; letter-spacing:.5px; text-transform:uppercase; }
+    .about-panel { max-height:min(88svh,740px); padding:18px 19px 16px; overflow-y:auto; }
+    .about-kicker { display:none; }
     .about-intro { padding:4px 0 10px; }
     .about-intro > strong { display:block; font-size:17px; letter-spacing:-.3px; }
-    .about-intro p,.about-section p { margin:5px 0 0; color:var(--muted); font-size:11.5px; line-height:1.5; }
-    .about-section { padding:9px 0; border-top:1px solid var(--line); }
-    .about-section h3 { margin:0; color:var(--text); font-size:12px; font-weight:750; }
+    .about-intro p,.about-section p { margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.58; }
+    .about-section { padding:11px 0; border-top:1px solid var(--line); }
+    .about-section h3 { margin:0; color:var(--text); font-size:12.5px; font-weight:750; letter-spacing:.05px; }
     .about-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-top:5px; padding-top:13px; border-top:1px solid var(--line); }
     .about-credit { color:var(--text); font-size:12px; font-weight:750; }
     .menu-backdrop { position:fixed; inset:0; z-index:24; }
     /* Compact sticker tray sits just above the composer; it never replaces the chat screen. */
     .sticker-backdrop { position:fixed; inset:0; z-index:26; pointer-events:none; }
     .sticker-panel { position:absolute; left:10px; right:10px; bottom:calc(66px + env(safe-area-inset-bottom)); height:min(40dvh,340px); min-height:238px; display:flex; flex-direction:column; overflow:hidden; pointer-events:auto; border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:0 12px 42px #0005; animation:sticker-sheet-in .16s ease-out; }
+    .sticker-panel.is-creating { height:min(68dvh,610px); min-height:min(430px,calc(100dvh - 112px)); }
     @keyframes sticker-sheet-in { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:translateY(0); } }
     #stickerBrowseView { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
     .sticker-head { flex:none; min-height:42px; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px 3px 13px; }
@@ -185,29 +210,33 @@
     .sticker-fav-toggle.active svg { fill:currentColor; }
     .sticker-empty { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; min-height:120px; padding:12px; text-align:center; color:var(--muted); font-size:11px; }
     .sticker-empty button { border:0; background:transparent; color:var(--accent); font-size:11px; font-weight:750; }
-    .sticker-create-view { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; padding:7px 12px 10px; overflow:auto; }
-    .sticker-crop-frame { width:min(42vw,190px); max-height:22dvh; aspect-ratio:1; flex:none; overflow:hidden; border:1px solid var(--line); border-radius:13px; background:repeating-conic-gradient(var(--surface-2) 0% 25%,var(--surface) 0% 50%) 50% / 16px 16px; touch-action:none; }
+    .sticker-create-view { flex:1; min-height:0; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:0; padding:0; overflow:hidden; }
+    .sticker-create-scroll { flex:1; min-height:0; width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; padding:12px 15px 16px; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+    .sticker-source-actions { width:min(100%,360px); display:flex; justify-content:center; gap:8px; }
+    .sticker-source-actions button { min-height:36px; flex:1; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--text); font-size:12px; font-weight:650; }
+    .sticker-crop-frame { width:min(58vw,238px); max-height:none; aspect-ratio:1; flex:none; overflow:hidden; border:1px solid var(--line); border-radius:14px; background:repeating-conic-gradient(var(--surface-2) 0% 25%,var(--surface) 0% 50%) 50% / 16px 16px; touch-action:none; }
     #stickerCropCanvas { width:100%; height:100%; display:block; touch-action:none; }
-    .sticker-create-controls { width:min(100%,310px); display:flex; align-items:center; gap:9px; color:var(--muted); font-size:10px; }
+    .sticker-crop-hint { margin:-5px 0 0; color:var(--muted); font-size:11px; text-align:center; }
+    .sticker-create-controls { width:min(100%,360px); display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; }
     .sticker-create-controls input[type=range] { flex:1; min-width:0; accent-color:var(--accent); }
-    .sticker-outline-toggle { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); }
-    .sticker-outline-toggle input { accent-color:var(--accent); }
-    .sticker-create-actions { width:min(100%,310px); display:flex; gap:8px; }
-    .sticker-create-actions button { flex:1; min-height:35px; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--text); font-size:11px; font-weight:700; }
+    .sticker-outline-toggle { width:min(100%,360px); display:flex; align-items:center; gap:9px; min-height:30px; font-size:12px; color:var(--muted); }
+    .sticker-outline-toggle input { width:17px; height:17px; accent-color:var(--accent); }
+    .sticker-create-actions { flex:none; width:100%; display:flex; gap:9px; padding:10px 13px max(12px,env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--surface); }
+    .sticker-create-actions button { flex:1; min-height:44px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); color:var(--text); font-size:13px; font-weight:700; }
     .sticker-create-actions .primary { border-color:var(--accent); background:var(--accent); color:var(--accent-ink); }
     @media (max-width:520px) {
       .sticker-panel { left:6px; right:6px; bottom:calc(64px + env(safe-area-inset-bottom)); height:min(39dvh,330px); min-height:228px; }
       .sticker-grid { gap:1px; padding-left:6px; padding-right:6px; }
       .sticker-tabs { gap:15px; }
-      .sticker-crop-frame { width:min(43vw,170px); }
+      .sticker-crop-frame { width:min(58vw,230px); }
     }
 
     @media (max-width:520px) {
       .app-shell { padding-left: 12px; padding-right: 12px; }
-      .topbar-inner { min-height: 46px; }
-      .brand { font-size: 20px; }
+      .topbar-inner { min-height: 44px; }
+      .brand { font-size: 19px; }
       .top-actions { gap: 5px; }
-      .icon-button,#shareButton { flex-basis:38px; width:38px; min-width:38px; }
+      .icon-button,#inviteAction { flex-basis:38px; width:38px; min-width:38px; }
       .composer-row { gap:7px; }
       .composer-field { min-height:48px; padding-left:4px; padding-right:4px; }
       .composer-tool { width:34px; }
@@ -228,7 +257,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             <span class="request-dot" id="requestDot" hidden>0</span>
           </button>
-          <button class="icon-button" id="shareButton" type="button" aria-label="Share Nerukko" title="Share Nerukko">
+          <button class="icon-button" id="inviteAction" type="button" aria-label="Invite a friend" title="Invite a friend">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.7 10.6 15.3 6.4M8.7 13.4 15.3 17.6"/></svg>
           </button>
           <button class="icon-button" id="moreButton" type="button" aria-label="More options" aria-expanded="false" title="More">
@@ -236,7 +265,7 @@
           </button>
           <div class="main-menu" id="mainMenu" hidden>
             <button id="openSettings" type="button">Settings</button>
-            <button id="openAbout" type="button">About Nerukko</button>
+            <button id="openAbout" type="button">About</button>
           </div>
         </nav>
       </div>
@@ -252,6 +281,15 @@
       </section>
 
       <section class="chat-view" id="chatView" hidden>
+        <div class="room-bar" id="roomBar" hidden>
+          <button class="room-leave" id="leaveNamedRoom" type="button" aria-label="Leave room" title="Return to random chat">‹</button>
+          <button class="room-identity" id="roomMembersButton" type="button" aria-label="View room members">
+            <strong id="roomBarName">Room</strong><small id="roomBarMeta">0/10 members · Public</small>
+          </button>
+          <button class="room-header-action" id="roomSettingsButton" type="button" aria-label="Room settings" title="Room settings" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3.1 1.3v.2a1.8 1.8 0 1 1-3.6 0v-.2a1.8 1.8 0 0 0-3.1-1.3l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1A1.8 1.8 0 0 0 3.3 12H3a1.8 1.8 0 1 1 0-3.6h.2a1.8 1.8 0 0 0 1.3-3.1l-.1-.1A1.8 1.8 0 1 1 7 2.7l.1.1a1.8 1.8 0 0 0 3.1-1.3v-.2a1.8 1.8 0 1 1 3.6 0v.2a1.8 1.8 0 0 0 3.1 1.3l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 1.3 3.1h.2a1.8 1.8 0 1 1 0 3.6h-.2a1.8 1.8 0 0 0-1.3 3.1Z"/></svg>
+          </button>
+        </div>
         <div class="messages" id="messages" aria-live="polite" aria-relevant="additions">
           <div class="empty-state" id="emptyState">Say hello to someone nearby.</div>
         </div>
@@ -295,6 +333,11 @@
             <div id="peopleList" class="drawer-empty">Waiting for people to join…</div>
           </section>
           <section class="drawer-section">
+            <h3>Rooms</h3>
+            <p class="room-explanation">Join open conversations or password-protected rooms. Every room is visible in the directory.</p>
+            <button class="small-action primary" id="openRoomsView" type="button">Browse rooms</button>
+          </section>
+          <section class="drawer-section" id="privateRequestsSection">
             <h3>Private chat requests</h3>
             <div id="incomingRequests" class="drawer-empty">No requests yet.</div>
             <div class="drawer-section-label" id="outgoingLabel" hidden>Sent requests</div><div id="outgoingRequests"></div>
@@ -303,6 +346,32 @@
             <h3>Private conversation</h3>
             <div class="request-row"><div class="person-avatar" id="privateAvatar">?</div><div class="person-info"><strong id="privateName">Private chat</strong><small>You're chatting one-to-one</small></div><button class="small-action primary" id="returnToGroup" type="button">Return</button></div>
           </section>
+        </div>
+        <div id="roomsView" hidden>
+          <button class="profile-back" id="roomsBack" type="button">← Back to menu</button>
+          <p class="room-explanation">Public rooms are open to join. Private rooms are listed too, but require a password. Member names and counts are visible.</p>
+          <button class="small-action primary" id="showCreateRoom" type="button">＋ Create room</button>
+          <form class="room-create-form" id="roomCreateForm" hidden>
+            <label class="room-form-label">Room name<input class="room-form-input" id="newRoomName" maxlength="36" required placeholder="e.g. Late Night Talks"></label>
+            <label class="room-form-label">Description (optional)<input class="room-form-input" id="newRoomDescription" maxlength="120" placeholder="What's this room about?"></label>
+            <label class="room-form-label">Room type<select class="room-form-select" id="newRoomVisibility"><option value="public">Public · Open to everyone</option><option value="private">Private · Password required</option></select></label>
+            <label class="room-form-label" id="newRoomPasswordWrap" hidden>Password<input class="room-form-input" id="newRoomPassword" type="password" minlength="4" maxlength="64" autocomplete="new-password" placeholder="At least 4 characters"></label>
+            <label class="room-form-check"><input id="newRoomKeep" type="checkbox"> Keep this room when everyone leaves</label>
+            <div class="room-form-actions"><button class="small-action" id="cancelCreateRoom" type="button">Cancel</button><button class="small-action primary" type="submit">Create & enter</button></div>
+          </form>
+          <div id="currentRoomMembers" hidden>
+            <section class="drawer-section"><h3>Current room members</h3><div id="currentRoomMemberList"></div></section>
+          </div>
+          <section class="drawer-section"><h3>All rooms</h3><div id="roomList" class="drawer-empty">Loading rooms…</div></section>
+          <div class="room-settings-form" id="roomSettingsView" hidden>
+            <button class="profile-back" id="roomSettingsBack" type="button">← Back to rooms</button>
+            <label class="room-form-label">Room name<input class="room-form-input" id="editRoomName" maxlength="36"></label>
+            <label class="room-form-label">Description<input class="room-form-input" id="editRoomDescription" maxlength="120"></label>
+            <label class="room-form-label">Room type<select class="room-form-select" id="editRoomVisibility"><option value="public">Public</option><option value="private">Private · Password required</option></select></label>
+            <label class="room-form-label" id="editRoomPasswordWrap">New password<input class="room-form-input" id="editRoomPassword" type="password" minlength="4" maxlength="64" autocomplete="new-password" placeholder="Leave blank to keep current password"></label>
+            <label class="room-form-check"><input id="editRoomKeep" type="checkbox"> Keep this room when everyone leaves</label>
+            <div class="room-form-actions"><button class="small-action danger" id="deleteRoomButton" type="button">Delete room</button><button class="small-action primary" id="saveRoomButton" type="button">Save settings</button></div>
+          </div>
         </div>
         <div class="drawer-profile" id="profileView" hidden>
           <button class="profile-back" id="profileBack" type="button">← Back</button>
@@ -336,30 +405,30 @@
 
   <div class="modal-backdrop" id="aboutBackdrop" hidden>
     <section class="modal-panel about-panel" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-      <div class="modal-head"><div><span class="about-kicker">A little about the place</span><h2 id="aboutTitle">About Nerukko</h2></div><button class="close-button" id="closeAbout" type="button" aria-label="Close About">×</button></div>
+      <div class="modal-head"><h2 id="aboutTitle">About</h2><button class="close-button" id="closeAbout" type="button" aria-label="Close About">×</button></div>
       <div class="about-intro">
         <strong>Closer, together.</strong>
-        <p>A small corner for easy conversations. No account needed. Drop in, meet a few people and say hello.</p>
+        <p>A small place for easy conversations. Join without an account and leave whenever you like.</p>
       </div>
       <div class="about-section">
-        <h3>How Nerukko works</h3>
-        <p>Groups hold up to five people. Your browser keeps a random ID and nickname. Location is optional and used only for matching, never shown to other members.</p>
+        <h3>How it works</h3>
+        <p>Random groups and named rooms hold up to ten people. Your browser keeps a random ID and nickname. Approximate location is optional and used only for matching; it is never shown to other members.</p>
       </div>
       <div class="about-section">
         <h3>Messages and privacy</h3>
-        <p>Messages travel directly between browsers over encrypted WebRTC when connections allow. The Worker coordinates rooms; it does not store chat content. Pending offline text stays in the sender's browser until delivery or expiry.</p>
+        <p>Messages travel directly between browsers over encrypted WebRTC when a connection is available. The Worker coordinates rooms but does not store ordinary chat messages. Pending text stays in your browser until delivery or expiry.</p>
       </div>
       <div class="about-section">
-        <h3>Private chats and sharing</h3>
-        <p>Private requests move two people into a one-to-one chat. Images and GIFs are private-only. Stickers work in groups and private chats. You can make a sticker from a photo on your device by cropping it, adding an optional white outline, and saving it locally. Recipients receive the image itself, not a pack dependency.</p>
+        <h3>Private chats and stickers</h3>
+        <p>Private requests move two people into a one-to-one chat. The Rooms directory lists public and password-protected rooms to everyone; public rooms are open to join, while private rooms require a password. Empty rooms are removed unless their owner chooses to keep them. Images and GIFs are private-only; lightweight stickers work in random groups, named rooms and private chats. Stickers you create are saved on your device, and recipients receive the image itself.</p>
       </div>
       <div class="about-section">
         <h3>Nerukko Bot</h3>
-        <p>When you are alone in a group, Nerukko Bot may join. It is AI, not a human. Bot messages and recent chat context are sent to Google Gemini; replies may be imperfect. Usage is capped.</p>
+        <p>The Bot is AI, not a person. Bot messages and recent conversation context are sent to Google Gemini to generate replies. Replies may be imperfect and usage is capped.</p>
       </div>
       <div class="about-section">
         <h3>Safety and connection</h3>
-        <p>Two independent reports can trigger a five-minute cooldown. STUN-only connections may fail on restrictive networks.</p>
+        <p>Two independent reports can trigger a five-minute cooldown. STUN-only connections may not work on some restrictive networks.</p>
       </div>
       <footer class="about-footer">
         <span class="about-credit">Crafted by Prasanna <span aria-label="love">❤️</span></span>
@@ -369,7 +438,7 @@
   </div>
 
   <div class="sticker-backdrop" id="stickerBackdrop" hidden>
-    <section class="sticker-panel" role="dialog" aria-modal="false" aria-labelledby="stickerPanelTitle">
+    <section class="sticker-panel" id="stickerPanel" role="dialog" aria-modal="false" aria-labelledby="stickerPanelTitle">
       <header class="sticker-head">
         <strong id="stickerPanelTitle">Stickers</strong>
         <div class="sticker-head-actions">
@@ -391,15 +460,20 @@
         <div class="sticker-grid" id="stickerGrid"></div>
       </div>
       <div class="sticker-create-view" id="stickerCreateView" hidden>
-        <div class="sticker-crop-frame"><canvas id="stickerCropCanvas" width="512" height="512" aria-label="Sticker crop preview"></canvas></div>
-        <div class="sticker-create-controls"><span>Zoom</span><input id="stickerZoom" type="range" min="1" max="3" step="0.05" value="1" aria-label="Zoom sticker crop"></div>
-        <label class="sticker-outline-toggle"><input id="stickerOutline" type="checkbox" checked> White outline</label>
-        <label class="sticker-outline-toggle"><input id="saveStickerFavourite" type="checkbox" checked> Save to favourites</label>
+        <div class="sticker-create-scroll">
+          <div class="sticker-source-actions"><button id="replaceStickerPhoto" type="button">Choose photo</button><button id="takeStickerPhoto" type="button">Use camera</button></div>
+          <div class="sticker-crop-frame"><canvas id="stickerCropCanvas" width="512" height="512" aria-label="Sticker crop preview"></canvas></div>
+          <p class="sticker-crop-hint">Drag the photo to reposition it, or adjust the zoom.</p>
+          <div class="sticker-create-controls"><span>Zoom</span><input id="stickerZoom" type="range" min="1" max="3" step="0.05" value="1" aria-label="Zoom sticker crop"></div>
+          <label class="sticker-outline-toggle"><input id="stickerOutline" type="checkbox" checked> White outline</label>
+          <label class="sticker-outline-toggle"><input id="saveStickerFavourite" type="checkbox" checked> Save to favourites</label>
+        </div>
         <div class="sticker-create-actions"><button id="cancelStickerCreate" type="button">Cancel</button><button class="primary" id="sendCreatedSticker" type="button">Send sticker</button></div>
       </div>
     </section>
   </div>
   <input id="stickerCreateInput" type="file" accept="image/*" hidden>
+  <input id="stickerCameraInput" type="file" accept="image/*" capture="environment" hidden>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -456,7 +530,7 @@
   const MAX_MEDIA_BYTES = 2 * 1024 * 1024;
   const MEDIA_CHUNK_BYTES = 12 * 1024;
   const state = {
-    id: getOrCreateId(), name: '', ws: null, roomId: null, mode: 'group', location: null,
+    id: getOrCreateId(), name: '', ws: null, roomId: null, mode: 'group', location: null, customRoom: null, roomListings: [],
     locationAllowed: false, peers: new Map(), remotePeers: new Map(), channels: new Map(),
     pendingCandidates: new Map(), incomingMedia: new Map(), mediaUrls: [], privateRequests: new Map(),
     outgoingRequests: new Map(), activePrivate: null, selectedProfile: null,
@@ -563,24 +637,34 @@
     const preview = document.createElement('span'); preview.textContent = replyTo.text.slice(0, 180);
     quote.append(author, preview); return quote;
   }
-  function enableSwipeReply(article, target) {
+  function enableSwipeReply(article, target, mine = false) {
     let start = null;
+    const direction = mine ? -1 : 1;
+    const indicator = document.createElement('span');
+    indicator.className = 'reply-swipe-indicator';
+    indicator.setAttribute('aria-hidden', 'true');
+    indicator.textContent = mine ? '↪' : '↩';
+    article.append(indicator);
     article.addEventListener('pointerdown', event => {
-      if (event.target.closest('button,a,img') || event.button !== 0) return;
+      if (event.target.closest('button,a,img') || event.button !== 0 || !event.isPrimary) return;
       start = { id:event.pointerId, x:event.clientX, y:event.clientY };
     });
     article.addEventListener('pointermove', event => {
       if (!start || event.pointerId !== start.id) return;
       const dx = event.clientX - start.x, dy = event.clientY - start.y;
-      if (dx > 0 && Math.abs(dy) < Math.max(18, dx * .55)) {
-        article.classList.add('swiping'); article.style.transform = `translateX(${Math.min(dx,58)}px)`;
+      const directed = dx * direction;
+      if (directed > 0 && Math.abs(dy) < Math.max(18, directed * .55)) {
+        article.classList.add('swiping');
+        article.style.transform = `translateX(${direction * Math.min(directed,58)}px)`;
+      } else if (Math.abs(dy) > 26) {
+        article.classList.remove('swiping'); article.style.transform = ''; start = null;
       }
     });
     const finish = event => {
       if (!start || event.pointerId !== start.id) return;
       const dx = event.clientX - start.x;
       article.classList.remove('swiping'); article.style.transform = '';
-      if (dx >= 54) { setReplyTarget(target); if (navigator.vibrate) navigator.vibrate(12); }
+      if (dx * direction >= 54) { setReplyTarget(target); if (navigator.vibrate) navigator.vibrate(12); }
       start = null;
     };
     article.addEventListener('pointerup', finish);
@@ -625,7 +709,7 @@
     if (!article.classList.contains('grouped')) article.prepend(messageAuthor(name, peerId || (mine ? state.id : null)));
     const body = document.createElement('div'); body.className = 'message-body'; body.textContent = text;
     article.append(body); appendMessageTime(article); $('messages').append(article);
-    enableSwipeReply(article, { id:messageId, name:String(name || 'Guest'), text:String(text).slice(0,1000) });
+    enableSwipeReply(article, { id:messageId, name:String(name || 'Guest'), text:String(text).slice(0,1000) }, mine);
     preserveMessageScroll(shouldScroll);
     if (options.pending) updatePendingNote();
     return article;
@@ -652,7 +736,7 @@
     savePendingDeliveries();
   }
   function sendDeliveryInvites() {
-    if (state.ws?.readyState !== WebSocket.OPEN) return;
+    if (state.ws?.readyState !== WebSocket.OPEN || state.customRoom) return;
     const ids = new Set(state.pendingDeliveries.flatMap(item => item.recipients.map(person => person.id)));
     for (const targetId of ids) sendServer({ type:'delivery-invite', to:targetId });
   }
@@ -738,15 +822,22 @@
     $('requestDot').hidden = count === 0;
     $('requestDot').textContent = count > 9 ? '9+' : String(count);
     $('peopleSection').hidden = state.mode !== 'group';
+    $('privateRequestsSection').hidden = state.customRoom !== null || state.mode !== 'group';
+    refreshRoomBar();
   }
 
   function initial(name) { return (String(name || '?').trim().charAt(0).toUpperCase() || '?'); }
 
   function openDrawer() {
     if (!$('chatView').hidden) updateDrawer();
+    $('drawerHome').hidden = false; $('profileView').hidden = true; $('roomsView').hidden = true;
     $('drawerOverlay').hidden = false; closeMenu();
   }
-  function closeDrawer() { $('drawerOverlay').hidden = true; $('profileView').hidden = true; $('drawerHome').hidden = false; $('drawerTitle').textContent = 'Your space'; }
+  function closeDrawer() {
+    $('drawerOverlay').hidden = true; $('profileView').hidden = true; $('roomsView').hidden = true;
+    $('roomSettingsView').hidden = true; $('roomCreateForm').hidden = true; $('drawerHome').hidden = false;
+    $('drawerTitle').textContent = 'Your space';
+  }
 
   function openProfile(id) {
     const person = state.remotePeers.get(id);
@@ -754,13 +845,105 @@
     state.selectedProfile = person;
     $('profileAvatar').textContent = initial(person.name);
     $('profileName').textContent = person.name || 'Guest';
-    $('profilePrivate').hidden = state.mode !== 'group';
+    $('profilePrivate').hidden = state.mode !== 'group' || state.customRoom !== null;
     $('profileReport').hidden = state.mode !== 'group';
-    $('drawerHome').hidden = true; $('profileView').hidden = false;
+    $('drawerHome').hidden = true; $('roomsView').hidden = true; $('profileView').hidden = false;
     $('drawerTitle').textContent = 'Profile'; openDrawerFrame();
   }
   function openDrawerFrame() { $('drawerOverlay').hidden = false; closeMenu(); }
-  function backToDrawer() { $('profileView').hidden = true; $('drawerHome').hidden = false; $('drawerTitle').textContent = 'Your space'; }
+  function backToDrawer() { $('profileView').hidden = true; $('roomsView').hidden = true; $('drawerHome').hidden = false; $('drawerTitle').textContent = 'Your space'; }
+
+  function refreshRoomBar() {
+    const room = state.customRoom;
+    $('roomBar').hidden = !room;
+    if (!room) return;
+    const members = Array.isArray(room.members) ? room.members : [];
+    $('roomBarName').textContent = room.name || 'Room';
+    $('roomBarMeta').textContent = `${room.memberCount ?? members.length}/10 members · ${room.visibility === 'private' ? 'Private' : 'Public'}`;
+    $('roomSettingsButton').hidden = room.ownerId !== state.id;
+    const list = $('currentRoomMemberList'); list.replaceChildren();
+    for (const person of members) {
+      const chip = document.createElement('span'); chip.className = 'room-member-chip';
+      chip.textContent = person.id === state.id ? `${person.name} · You` : person.name;
+      list.append(chip);
+    }
+    $('currentRoomMembers').hidden = !state.customRoom;
+  }
+
+  function openRoomsView() {
+    if (state.ws?.readyState !== WebSocket.OPEN) return showToast('Enter chat first to browse rooms.');
+    $('drawerHome').hidden = true; $('profileView').hidden = true; $('roomsView').hidden = false;
+    $('roomSettingsView').hidden = true; $('roomList').closest('.drawer-section').hidden = false;
+    $('showCreateRoom').hidden = false; $('roomCreateForm').hidden = true;
+    $('drawerTitle').textContent = 'Rooms';
+    $('currentRoomMembers').hidden = !state.customRoom;
+    $('roomCreateForm').querySelectorAll('input').forEach(input => { if (input.type !== 'checkbox') input.value = ''; });
+    $('newRoomKeep').checked = false;
+    $('newRoomVisibility').value = 'public'; $('newRoomPasswordWrap').hidden = true;
+    $('newRoomPassword').value = '';
+    sendServer({ type:'rooms-list' });
+  }
+
+  function renderRoomDirectory() {
+    const list = $('roomList'); list.replaceChildren();
+    if (!state.roomListings.length) {
+      list.className = 'drawer-empty'; list.textContent = 'No rooms yet. Create the first one.'; return;
+    }
+    list.className = '';
+    for (const room of state.roomListings) {
+      const card = document.createElement('article'); card.className = 'room-card';
+      const top = document.createElement('div'); top.className = 'room-card-top';
+      const title = document.createElement('div'); title.className = 'room-card-title'; title.textContent = room.name;
+      const lock = document.createElement('span'); lock.textContent = room.visibility === 'private' ? '🔒' : '○'; lock.setAttribute('aria-label', room.visibility === 'private' ? 'Password required' : 'Open room');
+      top.append(title, lock); card.append(top);
+      const meta = document.createElement('div'); meta.className = 'room-card-meta'; meta.textContent = `${room.memberCount}/${room.capacity || 10} members · ${room.visibility === 'private' ? 'Private · Password required' : 'Public · Open to everyone'}`; card.append(meta);
+      if (room.description) { const description = document.createElement('div'); description.className = 'room-card-description'; description.textContent = room.description; card.append(description); }
+      const members = document.createElement('div'); members.className = 'room-card-members';
+      const names = (room.members || []).map(person => person.name);
+      members.textContent = names.length ? `Here now: ${names.join(', ')}` : (room.keepWhenEmpty ? 'Kept room · No one here right now' : 'No members currently online');
+      card.append(members);
+      const actions = document.createElement('div'); actions.className = 'room-card-actions';
+      const join = document.createElement('button'); join.type = 'button'; join.className = 'small-action primary';
+      const alreadyInside = state.customRoom?.id === room.id;
+      join.textContent = alreadyInside ? 'You are here' : (room.visibility === 'private' ? 'Enter password' : 'Join room');
+      join.disabled = alreadyInside || state.mode === 'private' || room.memberCount >= (room.capacity || 10);
+      if (!alreadyInside && room.visibility === 'private') {
+        const form = document.createElement('form'); form.className = 'room-join-form'; form.hidden = true;
+        const passLabel = document.createElement('label'); passLabel.className = 'room-form-label'; passLabel.textContent = 'Room password';
+        const pass = document.createElement('input'); pass.className = 'room-form-input'; pass.type = 'password'; pass.required = true; pass.maxLength = 64; pass.autocomplete = 'current-password'; pass.placeholder = 'Enter password';
+        passLabel.append(pass); const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'small-action primary'; submit.textContent = 'Join private room';
+        form.append(passLabel, submit); form.addEventListener('submit', event => { event.preventDefault(); sendServer({ type:'room-join', roomId:room.id, password:pass.value }); });
+        join.addEventListener('click', () => { form.hidden = !form.hidden; if (!form.hidden) pass.focus(); });
+        actions.append(join); card.append(actions, form);
+      } else {
+        join.addEventListener('click', () => sendServer({ type:'room-join', roomId:room.id }));
+        actions.append(join); card.append(actions);
+      }
+      list.append(card);
+    }
+  }
+
+  function showRoomSettings() {
+    if (!state.customRoom || state.customRoom.ownerId !== state.id) return;
+    const room = state.customRoom;
+    $('roomsView').hidden = false; $('drawerHome').hidden = true; $('profileView').hidden = true;
+    $('roomSettingsView').hidden = false; $('roomList').closest('.drawer-section').hidden = true;
+    $('showCreateRoom').hidden = true; $('currentRoomMembers').hidden = true; $('drawerTitle').textContent = 'Room settings';
+    $('editRoomName').value = room.name || '';
+    $('editRoomDescription').value = room.description || '';
+    $('editRoomVisibility').value = room.visibility || 'public';
+    $('editRoomPassword').value = '';
+    $('editRoomPasswordWrap').hidden = room.visibility !== 'private';
+    $('editRoomKeep').checked = !!room.keepWhenEmpty;
+    $('roomCreateForm').hidden = true;
+  }
+
+  function backToRooms() {
+    $('roomSettingsView').hidden = true; $('roomList').closest('.drawer-section').hidden = false;
+    $('showCreateRoom').hidden = false; $('currentRoomMembers').hidden = !state.customRoom;
+    $('drawerTitle').textContent = 'Rooms';
+    $('roomsView').hidden = false;
+  }
 
   function closeMenu() { $('mainMenu').hidden = true; $('moreButton').setAttribute('aria-expanded', 'false'); }
   function openModal(which) {
@@ -883,10 +1066,31 @@
 
   function handleServerMessage(data) {
     switch (data.type) {
-      case 'joined':
+      case 'joined': {
+        const wasNamedRoom = !!state.customRoom;
+        state.customRoom = null; refreshRoomBar();
+        if (wasNamedRoom || data.notice) clearMessages();
         state.roomId = data.roomId; state.mode = 'group'; state.activePrivate = null;
         syncPeers(data.peers || [], 'group', data.roomId);
-        $('entryView').hidden = true; $('chatView').hidden = false; restorePendingMessages(); sendDeliveryInvites(); break;
+        $('entryView').hidden = true; $('chatView').hidden = false; restorePendingMessages(); sendDeliveryInvites();
+        if (data.notice) showToast(data.notice);
+        if (wasNamedRoom) showToast('Back in random chat.');
+        sendServer({ type:'rooms-list' });
+        break;
+      }
+      case 'room-entered':
+        state.privateRequests.clear(); state.outgoingRequests.clear(); state.offlinePeers.clear(); state.deliveryPeers.clear();
+        state.customRoom = data.room || null; state.mode = 'group'; state.roomId = data.roomId;
+        clearMessages(); syncPeers(data.peers || [], 'group', data.roomId); refreshRoomBar();
+        $('entryView').hidden = true; $('chatView').hidden = false; closeDrawer();
+        showToast(`Joined ${state.customRoom?.name || 'room'}.`); break;
+      case 'room-updated':
+        state.customRoom = data.room || state.customRoom; refreshRoomBar(); renderRoomDirectory(); break;
+      case 'room-members':
+        state.customRoom = data.room || state.customRoom; refreshRoomBar(); renderRoomDirectory(); break;
+      case 'rooms-list':
+        state.roomListings = Array.isArray(data.rooms) ? data.rooms : []; renderRoomDirectory(); break;
+      case 'room-error': showToast(data.message || 'Room action could not be completed.'); break;
       case 'peer-joined':
         if (data.peer?.id && !state.remotePeers.has(data.peer.id)) {
           state.remotePeers.set(data.peer.id, data.peer); state.offlinePeers.delete(data.peer.id); updateDrawer(); makePeer(data.peer);
@@ -895,6 +1099,7 @@
       case 'peer-renamed': {
         const person = state.remotePeers.get(data.id);
         if (person) { person.name = data.name; if (state.activePrivate?.id === data.id) state.activePrivate.name = data.name; updateDrawer(); }
+        if (state.customRoom?.members) { const roomPerson = state.customRoom.members.find(item => item.id === data.id); if (roomPerson) roomPerson.name = data.name; refreshRoomBar(); }
         break;
       }
       case 'peer-left':
@@ -934,6 +1139,7 @@
       case 'private-request-closed':
         state.privateRequests.delete(data.requestId); state.outgoingRequests.delete(data.requestId); updateDrawer(); break;
       case 'private-start':
+        state.customRoom = null; refreshRoomBar();
         state.privateRequests.clear(); state.outgoingRequests.clear();
         syncPeers([data.peer], 'private', data.roomId); closeDrawer(); showToast('Private chat started. You have left the group.'); break;
       case 'private-error': showToast(data.message || 'Could not send the request.'); break;
@@ -955,7 +1161,7 @@
           state.botHistory.push({ role:'model', text:data.text }); state.botHistory = state.botHistory.slice(-12); scheduleBotNudge();
         }
         break;
-      case 'bot-unavailable': showToast(data.message || 'Nerukko Bot is taking a break.'); break;
+      case 'bot-unavailable': showToast(data.message || 'Nerukko Bot could not reply just now. Try again in a moment.'); break;
       case 'pong': break;
     }
   }
@@ -1063,7 +1269,7 @@
         stopPresence();
         for (const person of state.remotePeers.values()) state.offlinePeers.set(person.id, person);
         state.peers.forEach(pc => pc.close()); state.peers.clear(); state.channels.clear();
-        state.pendingCandidates.clear(); state.incomingMedia.clear(); state.remotePeers.clear(); state.roomId = null; state.ws = null; updateDrawer();
+        state.pendingCandidates.clear(); state.incomingMedia.clear(); state.remotePeers.clear(); state.roomId = null; state.ws = null; state.customRoom = null; refreshRoomBar(); updateDrawer();
         if (event.code === 4003 || state.cooldownUntil > Date.now()) {
           state.autoReconnect = false; clearTimeout(state.reconnectTimer); state.reconnectTimer = null;
           $('chatView').hidden = true; $('entryView').hidden = false;
@@ -1086,10 +1292,10 @@
 
   function scheduleBotNudge() {
     clearTimeout(state.botNudgeTimer);
-    if (!state.botActive || state.botNudges >= 2) return;
+    if (!state.botActive || state.botNudges >= 4) return;
     state.botNudgeTimer = setTimeout(() => {
       if (state.botActive && state.mode === 'group' && !state.remotePeers.size) sendServer({ type:'bot-nudge', history:state.botHistory.slice(-12) });
-    }, 45_000);
+    }, 60_000);
   }
 
   function submitTextMessage() {
@@ -1113,7 +1319,7 @@
       try { channel.send(packet); sent++; }
       catch (error) { console.warn('Could not send text.', error); }
     }
-    const offlineRecipients = state.mode === 'group' ? [...state.offlinePeers.values()].map(peer => ({ id:peer.id, name:peer.name })) : [];
+    const offlineRecipients = state.mode === 'group' && !state.customRoom ? [...state.offlinePeers.values()].map(peer => ({ id:peer.id, name:peer.name })) : [];
     const queued = queueOfflineMessage(text, messageId, replyTo, offlineRecipients);
     if (sent || queued) {
       addMessage(state.name, text, true, state.id, { messageId, replyTo, pending:queued });
@@ -1140,6 +1346,8 @@
     const channels = [...state.channels.entries()].filter(([, channel]) => channel.readyState === 'open');
     if (!channels.length) { showToast('Wait until someone is connected before sharing media.'); return false; }
     const mime = file.type || 'image/png';
+    if (sticker && mime !== 'image/webp') { showToast('Stickers must be WebP images.'); return false; }
+    if (sticker && file.size > 512 * 1024) { showToast('Keep stickers under 512 KB for group chats.'); return false; }
     const buffer = await file.arrayBuffer();
     const transferId = createId();
     const bytes = new Uint8Array(buffer);
@@ -1391,6 +1599,7 @@
     if (stickerCrop?.bitmap?.close) stickerCrop.bitmap.close();
     stickerCrop = null;
     $('stickerCreateView').hidden = true; $('stickerBrowseView').hidden = false;
+    $('stickerPanel').classList.remove('is-creating');
   }
   function openStickerCreator() {
     if ($('chatView').hidden) return;
@@ -1404,7 +1613,7 @@
       const bitmap = await createImageBitmap(file);
       if (stickerCrop?.bitmap?.close) stickerCrop.bitmap.close();
       stickerCrop = { bitmap, zoom:1, panX:0, panY:0, outline:true, name:file.name || 'My sticker' };
-      $('stickerBackdrop').hidden = false; $('stickerBrowseView').hidden = true; $('stickerCreateView').hidden = false;
+      $('stickerBackdrop').hidden = false; $('stickerPanel').classList.add('is-creating'); $('stickerBrowseView').hidden = true; $('stickerCreateView').hidden = false;
       $('stickerPanelTitle').textContent = 'Create sticker'; $('stickerZoom').value = '1'; $('stickerOutline').checked = true; $('saveStickerFavourite').checked = true;
       drawStickerCrop();
     } catch (error) { showToast('This image could not be opened on this device.'); }
@@ -1507,7 +1716,7 @@
     return copied;
   }
 
-  async function shareNerukko() {
+  async function inviteFriends() {
     const shareData = {
       title: 'Nerukko',
       text: 'Meet people nearby in small, anonymous group chats. No account, no pressure. Just drop in and say hello.',
@@ -1526,8 +1735,8 @@
     }
 
     const copied = await copyInvite(`${shareData.text} ${shareData.url}`);
-    if (copied) showToast('Invite link copied. Share it anywhere.');
-    else window.prompt('Copy your Nerukko invite link:', shareData.url);
+    if (copied) showToast('Invite link copied.');
+    else window.prompt('Copy the Nerukko invite link:', shareData.url);
   }
 
   $('entryForm').addEventListener('submit', event => { event.preventDefault(); joinChat({ automatic: false }); });
@@ -1551,9 +1760,12 @@
   $('closeStickers').addEventListener('click', closeStickerPicker);
   $('createStickerButton').addEventListener('click', openStickerCreator);
   $('stickerCreateInput').addEventListener('change', async event => { const file=event.target.files?.[0]; event.target.value=''; if (file) await startStickerCreator(file); });
+  $('stickerCameraInput').addEventListener('change', async event => { const file=event.target.files?.[0]; event.target.value=''; if (file) await startStickerCreator(file); });
+  $('replaceStickerPhoto').addEventListener('click', () => $('stickerCreateInput').click());
+  $('takeStickerPhoto').addEventListener('click', () => $('stickerCameraInput').click());
   $('stickerZoom').addEventListener('input', event => { if (stickerCrop) { const next=Number(event.target.value); const ratio=next/stickerCrop.zoom; stickerCrop.panX*=ratio; stickerCrop.panY*=ratio; stickerCrop.zoom=next; drawStickerCrop(); } });
   $('stickerOutline').addEventListener('change', drawStickerCrop);
-  $('cancelStickerCreate').addEventListener('click', () => { if (stickerCrop?.bitmap?.close) stickerCrop.bitmap.close(); stickerCrop=null; $('stickerCreateView').hidden=true; $('stickerBrowseView').hidden=false; $('stickerPanelTitle').textContent='Stickers'; setStickerTab('packs'); });
+  $('cancelStickerCreate').addEventListener('click', () => { if (stickerCrop?.bitmap?.close) stickerCrop.bitmap.close(); stickerCrop=null; $('stickerCreateView').hidden=true; $('stickerBrowseView').hidden=false; $('stickerPanel').classList.remove('is-creating'); $('stickerPanelTitle').textContent='Stickers'; setStickerTab('packs'); });
   $('sendCreatedSticker').addEventListener('click', sendCreatedSticker);
   document.querySelectorAll('[data-sticker-tab]').forEach(button => button.addEventListener('click', () => setStickerTab(button.dataset.stickerTab)));
   $('stickerBackdrop').addEventListener('click', event => { if (event.target === $('stickerBackdrop')) closeStickerPicker(); });
@@ -1571,6 +1783,28 @@
   $('closeDrawer').addEventListener('click', closeDrawer);
   $('drawerOverlay').addEventListener('click', event => { if (event.target === $('drawerOverlay')) closeDrawer(); });
   $('profileBack').addEventListener('click', backToDrawer);
+  $('openRoomsView').addEventListener('click', openRoomsView);
+  $('roomsBack').addEventListener('click', backToDrawer);
+  $('showCreateRoom').addEventListener('click', () => { $('roomCreateForm').hidden = !$('roomCreateForm').hidden; $('newRoomName').focus(); });
+  $('cancelCreateRoom').addEventListener('click', () => { $('roomCreateForm').hidden = true; });
+  $('newRoomVisibility').addEventListener('change', () => { $('newRoomPasswordWrap').hidden = $('newRoomVisibility').value !== 'private'; });
+  $('roomCreateForm').addEventListener('submit', event => {
+    event.preventDefault();
+    if (state.mode === 'private') return showToast('Leave your one-to-one chat before creating a room.');
+    sendServer({ type:'room-create', name:$('newRoomName').value, description:$('newRoomDescription').value, visibility:$('newRoomVisibility').value, password:$('newRoomPassword').value, keepWhenEmpty:$('newRoomKeep').checked });
+  });
+  $('roomMembersButton').addEventListener('click', () => { openRoomsView(); $('currentRoomMembers').hidden = false; });
+  $('leaveNamedRoom').addEventListener('click', () => { sendServer({ type:'room-leave' }); showToast('Returning to random chat…'); });
+  $('roomSettingsButton').addEventListener('click', () => { openDrawerFrame(); showRoomSettings(); });
+  $('roomSettingsBack').addEventListener('click', backToRooms);
+  $('editRoomVisibility').addEventListener('change', () => { $('editRoomPasswordWrap').hidden = $('editRoomVisibility').value !== 'private'; });
+  $('saveRoomButton').addEventListener('click', () => {
+    sendServer({ type:'room-update', name:$('editRoomName').value, description:$('editRoomDescription').value, visibility:$('editRoomVisibility').value, password:$('editRoomPassword').value, keepWhenEmpty:$('editRoomKeep').checked });
+    showToast('Saving room settings…');
+  });
+  $('deleteRoomButton').addEventListener('click', () => {
+    if (window.confirm('Delete this room and return everyone to random chat?')) sendServer({ type:'room-delete' });
+  });
   $('profilePrivate').addEventListener('click', requestPrivate);
   $('profileReport').addEventListener('click', reportSelected);
   $('returnToGroup').addEventListener('click', () => { sendServer({ type: 'private-end' }); closeDrawer(); showToast('Returning to a group…'); });
@@ -1583,7 +1817,7 @@
   document.addEventListener('click', event => {
     if (!$('mainMenu').hidden && !event.target.closest('#mainMenu') && !event.target.closest('#moreButton')) closeMenu();
   });
-  $('shareButton').addEventListener('click', shareNerukko);
+  $('inviteAction').addEventListener('click', inviteFriends);
   $('closeSettings').addEventListener('click', () => closeModal('settingsBackdrop'));
   $('closeAbout').addEventListener('click', () => closeModal('aboutBackdrop'));
   $('settingsBackdrop').addEventListener('click', event => { if (event.target === $('settingsBackdrop')) closeModal('settingsBackdrop'); });
@@ -1633,7 +1867,7 @@
 
   if ('serviceWorker' in navigator) window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register('/service-worker.js', { scope:'/', updateViaCache:'none' });
+      const registration = await navigator.serviceWorker.register('/service-worker.js?v=10', { scope:'/', updateViaCache:'none' });
       registration.update().catch(error => console.debug('Service-worker update check skipped.', error));
     } catch (error) { console.warn('Offline app shell is unavailable.', error); }
   });
