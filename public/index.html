@@ -39,8 +39,8 @@
 
     /* Minimal header: no enclosing pill, just the wordmark and three clear actions. */
     .topbar { position: relative; z-index: 20; flex: 0 0 auto; padding: max(8px,env(safe-area-inset-top)) 0 5px; background: var(--bg); }
-    .topbar-inner { position: relative; min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
-    .brand { flex: 0 0 auto; color: var(--text); text-decoration: none; font-size: 20px; font-weight: 780; letter-spacing: -.9px; }
+    .topbar-inner { position: relative; min-height: 46px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .brand { flex: 0 0 auto; margin-right: auto; color: var(--text); text-decoration: none; font-size: 20px; font-weight: 780; letter-spacing: -.9px; }
     .top-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
     .icon-button { position: relative; flex: 0 0 38px; width: 38px; min-width: 38px; height: 38px; display: grid !important; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--text); opacity: 1; visibility: visible; }
     .icon-button:active { background: var(--surface-2); }
@@ -73,6 +73,15 @@
     .room-form-actions button { flex:1; min-height:39px; }
     .room-member-chip { display:inline-flex; padding:3px 7px; margin:3px 3px 0 0; border:1px solid var(--line); border-radius:99px; color:var(--muted); font-size:10px; }
     .room-explanation { margin:5px 0 10px; color:var(--muted); font-size:11px; line-height:1.5; }
+    .room-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; align-items:start; }
+    .room-column { min-width:0; }
+    .room-column h4 { margin:10px 0 6px; font-size:11px; color:var(--muted); letter-spacing:.3px; }
+    .room-column .room-card { margin:7px 0; padding:9px; }
+    .room-column .room-card-title { font-size:12px; }
+    .room-column .room-card-meta,.room-column .room-card-description,.room-column .room-card-members { font-size:9px; }
+    .room-column .room-card-actions { justify-content:stretch; }
+    .room-column .room-card-actions button { width:100%; }
+    .entry-location-note { max-width:420px; margin:13px auto 0; color:var(--muted); text-align:center; font-size:11px; line-height:1.55; }
     main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
     .entry-view { width: 100%; max-width: 420px; margin: auto; padding: 34px 0 70px; }
     .entry-form { display: grid; gap: 11px; }
@@ -82,7 +91,7 @@
     .primary-button { min-height: 49px; border: 0; border-radius: 14px; padding: 12px 18px; background: var(--accent); color: var(--accent-ink); font-weight: 750; }
     .entry-state { min-height: 20px; margin-top: 13px; color: var(--muted); font-size: 12px; text-align: center; }
     .chat-view { width: 100%; flex: 1; min-height: 0; display: flex; flex-direction: column; padding-top: 3px; overflow: hidden; }
-    .messages { flex: 1; min-height: 0; max-height: none; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px 1px 18px; overscroll-behavior: contain; }
+    .messages { flex: 1; min-height: 0; max-height: none; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px 36px 18px; overscroll-behavior: contain; }
     .empty-state { margin: auto; padding: 30px 14px; color: var(--muted); text-align: center; font-size: 13px; }
     .message { position:relative; max-width: min(86%,520px); align-self: flex-start; min-width: 82px; background: var(--bubble); border: 1px solid var(--line); border-radius: 16px 16px 16px 5px; padding: 8px 11px 9px; overflow-wrap: anywhere; }
     .message.mine { align-self: flex-end; background: var(--mine); border-color: color-mix(in srgb,var(--accent) 23%,var(--line)); border-radius: 16px 16px 5px 16px; }
@@ -90,7 +99,7 @@
     .message-author.self { color: var(--muted); cursor: default; }
     .message-body { margin-top: 5px; white-space: pre-wrap; line-height: 1.5; }
     .message-media { display:block; width:auto; max-width:min(260px,65vw); max-height:300px; margin-top:5px; border-radius:10px; object-fit:contain; background:#0001; }
-    .message-media.sticker-media { max-width:min(112px,36vw); max-height:112px; margin:4px auto 2px; border-radius:0; background:transparent; }
+    .message-media.sticker-media { max-width:min(180px,52vw); max-height:180px; margin:6px auto 3px; border-radius:0; background:transparent; }
     .message-time { display: block; margin-top: 7px; color: var(--muted); font-size: 9px; text-align: right; }
     .quoted-message { margin: 5px 0 11px; padding: 10px 12px; border-left: 3px solid var(--accent); border-radius: 9px; background: color-mix(in srgb,var(--accent) 10%,var(--surface-2)); color: var(--muted); font-size: 12px; line-height: 1.5; }
     .quoted-message strong { display:block; color:var(--accent); font-size:11px; margin-bottom:4px; }
@@ -102,13 +111,14 @@
     .reply-cancel { flex:none; width:27px; height:27px; border:0; border-radius:8px; background:var(--surface-2); color:var(--text); }
     .message { touch-action: pan-y; transition: transform .12s ease; }
     .message.swiping { transition:none; }
-    .reply-swipe-indicator { position:absolute; top:50%; left:9px; width:25px; height:25px; display:grid; place-items:center; border-radius:50%; background:var(--surface-2); color:var(--accent); font-size:19px; line-height:1; opacity:0; transform:translateY(-50%) scale(.72); transition:opacity .1s ease,transform .1s ease; pointer-events:none; }
-    .message.mine .reply-swipe-indicator { left:auto; right:9px; }
+    .reply-swipe-indicator { position:absolute; top:50%; left:-32px; width:25px; height:25px; display:grid; place-items:center; border-radius:50%; background:var(--surface-2); color:var(--accent); font-size:19px; line-height:1; opacity:0; transform:translateY(-50%) scale(.72); transition:opacity .1s ease,transform .1s ease; pointer-events:none; z-index:2; }
+    .message.mine .reply-swipe-indicator { left:auto; right:-32px; }
     .message.swiping .reply-swipe-indicator { opacity:1; transform:translateY(-50%) scale(1); }
     .message.grouped { margin-top:-6px; padding-top:5px; border-top-left-radius:9px; border-top-right-radius:9px; }
     .message.grouped .message-author { display:none; }
     .message.grouped .message-body { margin-top:0; }
     .message-time { display:block; margin-top:4px; color:var(--muted); font-size:9px; line-height:1; text-align:right; opacity:.82; }
+    .pending-sticker-note { display:block; margin-top:5px; color:var(--muted); text-align:center; font-size:9px; }
     .typing-hint { flex:none; min-height:17px; padding:0 5px 3px; color:var(--muted); font-size:11px; }
     .composer { flex: 0 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: 7px; padding: 8px 0 max(5px,env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--bg); }
     .composer-row { display:flex; align-items:center; gap:8px; width:100%; }
@@ -182,7 +192,8 @@
     /* Compact sticker tray sits just above the composer; it never replaces the chat screen. */
     .sticker-backdrop { position:fixed; inset:0; z-index:26; pointer-events:none; }
     .sticker-panel { position:absolute; left:10px; right:10px; bottom:calc(66px + env(safe-area-inset-bottom)); height:min(40dvh,340px); min-height:238px; display:flex; flex-direction:column; overflow:hidden; pointer-events:auto; border:1px solid var(--line); border-radius:18px; background:var(--surface); box-shadow:0 12px 42px #0005; animation:sticker-sheet-in .16s ease-out; }
-    .sticker-panel.is-creating { height:min(68dvh,610px); min-height:min(430px,calc(100dvh - 112px)); }
+    .sticker-panel.is-creating { top:max(8px,env(safe-area-inset-top)); bottom:max(8px,env(safe-area-inset-bottom)); height:auto; min-height:0; border-radius:18px; }
+    .sticker-panel.is-creating #createStickerButton { display:none; }
     @keyframes sticker-sheet-in { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:translateY(0); } }
     #stickerBrowseView { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
     .sticker-head { flex:none; min-height:42px; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px 3px 13px; }
@@ -211,24 +222,24 @@
     .sticker-empty { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; min-height:120px; padding:12px; text-align:center; color:var(--muted); font-size:11px; }
     .sticker-empty button { border:0; background:transparent; color:var(--accent); font-size:11px; font-weight:750; }
     .sticker-create-view { flex:1; min-height:0; display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start; gap:0; padding:0; overflow:hidden; }
-    .sticker-create-scroll { flex:1; min-height:0; width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; padding:12px 15px 16px; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+    .sticker-create-scroll { flex:1; min-height:0; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:8px 15px 10px; overflow:hidden; }
     .sticker-source-actions { width:min(100%,360px); display:flex; justify-content:center; gap:8px; }
     .sticker-source-actions button { min-height:36px; flex:1; border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--text); font-size:12px; font-weight:650; }
-    .sticker-crop-frame { width:min(58vw,238px); max-height:none; aspect-ratio:1; flex:none; overflow:hidden; border:1px solid var(--line); border-radius:14px; background:repeating-conic-gradient(var(--surface-2) 0% 25%,var(--surface) 0% 50%) 50% / 16px 16px; touch-action:none; }
+    .sticker-crop-frame { width:min(72vw,340px,48dvh); max-height:none; aspect-ratio:1; flex:none; overflow:hidden; border:1px solid var(--line); border-radius:14px; background:repeating-conic-gradient(var(--surface-2) 0% 25%,var(--surface) 0% 50%) 50% / 16px 16px; touch-action:none; }
     #stickerCropCanvas { width:100%; height:100%; display:block; touch-action:none; }
     .sticker-crop-hint { margin:-5px 0 0; color:var(--muted); font-size:11px; text-align:center; }
-    .sticker-create-controls { width:min(100%,360px); display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; }
+    .sticker-create-controls { width:min(100%,440px); display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; }
     .sticker-create-controls input[type=range] { flex:1; min-width:0; accent-color:var(--accent); }
-    .sticker-outline-toggle { width:min(100%,360px); display:flex; align-items:center; gap:9px; min-height:30px; font-size:12px; color:var(--muted); }
+    .sticker-outline-toggle { width:min(100%,440px); display:flex; align-items:center; gap:9px; min-height:25px; font-size:12px; color:var(--muted); }
     .sticker-outline-toggle input { width:17px; height:17px; accent-color:var(--accent); }
-    .sticker-create-actions { flex:none; width:100%; display:flex; gap:9px; padding:10px 13px max(12px,env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--surface); }
+    .sticker-create-actions { flex:none; width:100%; display:flex; gap:9px; padding:9px 13px max(10px,env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--surface); }
     .sticker-create-actions button { flex:1; min-height:44px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); color:var(--text); font-size:13px; font-weight:700; }
     .sticker-create-actions .primary { border-color:var(--accent); background:var(--accent); color:var(--accent-ink); }
     @media (max-width:520px) {
       .sticker-panel { left:6px; right:6px; bottom:calc(64px + env(safe-area-inset-bottom)); height:min(39dvh,330px); min-height:228px; }
       .sticker-grid { gap:1px; padding-left:6px; padding-right:6px; }
       .sticker-tabs { gap:15px; }
-      .sticker-crop-frame { width:min(58vw,230px); }
+      .sticker-crop-frame { width:min(72vw,340px,42dvh); }
     }
 
     @media (max-width:520px) {
@@ -251,12 +262,12 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="topbar-inner">
+        <button class="icon-button" id="drawerButton" type="button" aria-label="Open navigation drawer" title="Menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <span class="request-dot" id="requestDot" hidden>0</span>
+        </button>
         <a class="brand" href="/" aria-label="Nerukko home">Nerukko</a>
         <nav class="top-actions" aria-label="App actions">
-          <button class="icon-button" id="drawerButton" type="button" aria-label="Open navigation drawer" title="Menu">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-            <span class="request-dot" id="requestDot" hidden>0</span>
-          </button>
           <button class="icon-button" id="inviteAction" type="button" aria-label="Invite a friend" title="Invite a friend">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.7 10.6 15.3 6.4M8.7 13.4 15.3 17.6"/></svg>
           </button>
@@ -277,6 +288,7 @@
           <input class="text-input" id="nameInput" maxlength="24" autocomplete="nickname" placeholder="Choose a nickname" aria-label="Choose a nickname" required>
           <button class="primary-button" id="joinButton" type="submit">Enter chat</button>
         </form>
+        <p class="entry-location-note">Location is how Nerukko finds nearby people and rooms. The server uses an approximate location for matching and discovery; it is not shown to other members. A room’s approximate creation point is retained only while that room exists. If you decline permission, random chat still works through the fallback matching pool, but nearby Rooms need location.</p>
         <div class="entry-state" id="entryState" aria-live="polite"></div>
       </section>
 
@@ -284,7 +296,7 @@
         <div class="room-bar" id="roomBar" hidden>
           <button class="room-leave" id="leaveNamedRoom" type="button" aria-label="Leave room" title="Return to random chat">‹</button>
           <button class="room-identity" id="roomMembersButton" type="button" aria-label="View room members">
-            <strong id="roomBarName">Room</strong><small id="roomBarMeta">0/10 members · Public</small>
+            <strong id="roomBarName">Room</strong><small id="roomBarMeta">0/7 members · Public</small>
           </button>
           <button class="room-header-action" id="roomSettingsButton" type="button" aria-label="Room settings" title="Room settings" hidden>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3.1 1.3v.2a1.8 1.8 0 1 1-3.6 0v-.2a1.8 1.8 0 0 0-3.1-1.3l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1A1.8 1.8 0 0 0 3.3 12H3a1.8 1.8 0 1 1 0-3.6h.2a1.8 1.8 0 0 0 1.3-3.1l-.1-.1A1.8 1.8 0 1 1 7 2.7l.1.1a1.8 1.8 0 0 0 3.1-1.3v-.2a1.8 1.8 0 1 1 3.6 0v.2a1.8 1.8 0 0 0 3.1 1.3l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 1.3 3.1h.2a1.8 1.8 0 1 1 0 3.6h-.2a1.8 1.8 0 0 0-1.3 3.1Z"/></svg>
@@ -332,9 +344,9 @@
             <h3>People here</h3>
             <div id="peopleList" class="drawer-empty">Waiting for people to join…</div>
           </section>
-          <section class="drawer-section">
-            <h3>Rooms</h3>
-            <p class="room-explanation">Join open conversations or password-protected rooms. Every room is visible in the directory.</p>
+          <section class="drawer-section" id="roomsSection">
+            <h3>Nearby rooms</h3>
+            <p class="room-explanation">Rooms stay at the location where they were created. Only nearby rooms appear here.</p>
             <button class="small-action primary" id="openRoomsView" type="button">Browse rooms</button>
           </section>
           <section class="drawer-section" id="privateRequestsSection">
@@ -344,32 +356,33 @@
           </section>
           <section class="drawer-section" id="activePrivateSection" hidden>
             <h3>Private conversation</h3>
-            <div class="request-row"><div class="person-avatar" id="privateAvatar">?</div><div class="person-info"><strong id="privateName">Private chat</strong><small>You're chatting one-to-one</small></div><button class="small-action primary" id="returnToGroup" type="button">Return</button></div>
+            <div class="request-row"><div class="person-avatar" id="privateAvatar">?</div><div class="person-info"><strong id="privateName">Private chat</strong><small>Separate one-to-one room</small></div></div>
+            <div class="room-form-actions"><button class="small-action danger" id="blockPrivateUser" type="button">Block</button><button class="small-action" id="returnToGroup" type="button">Leave conversation</button></div>
           </section>
         </div>
         <div id="roomsView" hidden>
           <button class="profile-back" id="roomsBack" type="button">← Back to menu</button>
-          <p class="room-explanation">Public rooms are open to join. Private rooms are listed too, but require a password. Member names and counts are visible.</p>
+          <p class="room-explanation">Only nearby rooms are shown. Public rooms are open; private rooms require a password. Every room holds up to seven people.</p>
           <button class="small-action primary" id="showCreateRoom" type="button">＋ Create room</button>
           <form class="room-create-form" id="roomCreateForm" hidden>
             <label class="room-form-label">Room name<input class="room-form-input" id="newRoomName" maxlength="36" required placeholder="e.g. Late Night Talks"></label>
             <label class="room-form-label">Description (optional)<input class="room-form-input" id="newRoomDescription" maxlength="120" placeholder="What's this room about?"></label>
             <label class="room-form-label">Room type<select class="room-form-select" id="newRoomVisibility"><option value="public">Public · Open to everyone</option><option value="private">Private · Password required</option></select></label>
             <label class="room-form-label" id="newRoomPasswordWrap" hidden>Password<input class="room-form-input" id="newRoomPassword" type="password" minlength="4" maxlength="64" autocomplete="new-password" placeholder="At least 4 characters"></label>
-            <label class="room-form-check"><input id="newRoomKeep" type="checkbox"> Keep this room when everyone leaves</label>
+            <label class="room-form-label">When everyone leaves<select class="room-form-select" id="newRoomExpiry"><option value="immediate">Delete immediately</option><option value="24h">Keep for up to 24 hours</option></select></label>
             <div class="room-form-actions"><button class="small-action" id="cancelCreateRoom" type="button">Cancel</button><button class="small-action primary" type="submit">Create & enter</button></div>
           </form>
           <div id="currentRoomMembers" hidden>
             <section class="drawer-section"><h3>Current room members</h3><div id="currentRoomMemberList"></div></section>
           </div>
-          <section class="drawer-section"><h3>All rooms</h3><div id="roomList" class="drawer-empty">Loading rooms…</div></section>
+          <section class="drawer-section"><h3>Nearby rooms</h3><div id="roomList" class="drawer-empty">Loading nearby rooms…</div></section>
           <div class="room-settings-form" id="roomSettingsView" hidden>
             <button class="profile-back" id="roomSettingsBack" type="button">← Back to rooms</button>
             <label class="room-form-label">Room name<input class="room-form-input" id="editRoomName" maxlength="36"></label>
             <label class="room-form-label">Description<input class="room-form-input" id="editRoomDescription" maxlength="120"></label>
             <label class="room-form-label">Room type<select class="room-form-select" id="editRoomVisibility"><option value="public">Public</option><option value="private">Private · Password required</option></select></label>
             <label class="room-form-label" id="editRoomPasswordWrap">New password<input class="room-form-input" id="editRoomPassword" type="password" minlength="4" maxlength="64" autocomplete="new-password" placeholder="Leave blank to keep current password"></label>
-            <label class="room-form-check"><input id="editRoomKeep" type="checkbox"> Keep this room when everyone leaves</label>
+            <label class="room-form-label">When everyone leaves<select class="room-form-select" id="editRoomExpiry"><option value="immediate">Delete immediately</option><option value="24h">Keep for up to 24 hours</option></select></label>
             <div class="room-form-actions"><button class="small-action danger" id="deleteRoomButton" type="button">Delete room</button><button class="small-action primary" id="saveRoomButton" type="button">Save settings</button></div>
           </div>
         </div>
@@ -379,7 +392,8 @@
           <div class="profile-name" id="profileName">Guest</div>
           <div class="profile-actions">
             <button class="small-action primary" id="profilePrivate" type="button">Request private chat</button>
-            <button class="small-action danger" id="profileReport" type="button">Report this person</button>
+            <button class="small-action" id="profileBlock" type="button">Block</button>
+            <button class="small-action danger" id="profileReport" type="button">Report</button>
           </div>
         </div>
       </div>
@@ -398,7 +412,11 @@
         <div class="setting-row"><input class="text-input" id="settingsName" maxlength="24" autocomplete="nickname"><button class="setting-action" id="saveNameButton" type="button">Save</button></div>
       </div>
       <div class="setting-section">
-        <div class="setting-row"><div style="flex:1"><span class="setting-label">Nearby matching</span><div class="setting-copy">Share approximate location for matching. It is never shown to other members. You can still chat without it.</div></div><button class="setting-action" id="locationButton" type="button">Enable</button></div>
+        <div class="setting-row"><div style="flex:1"><span class="setting-label">Location</span><div class="setting-copy">Location is part of how Nerukko works. It helps match you with nearby people and show nearby rooms. The server uses an approximate location for nearby matching and room discovery. It is not shown to other members; a room’s approximate creation point is retained only while that room exists. If you decline permission, random matching uses the fallback pool and Rooms remain unavailable.</div></div><button class="setting-action" id="locationButton" type="button">Enable</button></div>
+      </div>
+      <div class="setting-section">
+        <span class="setting-label">Blocked users</span>
+        <div id="blockedUsersList" class="setting-copy">No blocked users.</div>
       </div>
     </section>
   </div>
@@ -412,7 +430,7 @@
       </div>
       <div class="about-section">
         <h3>How it works</h3>
-        <p>Random groups and named rooms hold up to ten people. Your browser keeps a random ID and nickname. Approximate location is optional and used only for matching; it is never shown to other members.</p>
+        <p>Random groups and nearby rooms hold up to seven people. Location is the normal way Nerukko finds nearby people and rooms. It is used only for matching and discovery, never shown to other members. If permission is declined, random matching uses the fallback priority system.</p>
       </div>
       <div class="about-section">
         <h3>Messages and privacy</h3>
@@ -420,7 +438,7 @@
       </div>
       <div class="about-section">
         <h3>Private chats and stickers</h3>
-        <p>Private requests move two people into a one-to-one chat. The Rooms directory lists public and password-protected rooms to everyone; public rooms are open to join, while private rooms require a password. Empty rooms are removed unless their owner chooses to keep them. Images and GIFs are private-only; lightweight stickers work in random groups, named rooms and private chats. Stickers you create are saved on your device, and recipients receive the image itself.</p>
+        <p>One accepted invitation moves two people into a separate one-to-one conversation. Nearby Rooms shows up to ten public and ten private rooms in your area. Rooms are fixed to their creation location and disappear when empty, immediately or after at most 24 hours. Images and GIFs are private-only; lightweight stickers work in group, room and private chats. Stickers you create are saved on your device, and pending stickers wait locally until a person arrives.</p>
       </div>
       <div class="about-section">
         <h3>Nerukko Bot</h3>
@@ -428,7 +446,7 @@
       </div>
       <div class="about-section">
         <h3>Safety and connection</h3>
-        <p>Two independent reports can trigger a five-minute cooldown. STUN-only connections may not work on some restrictive networks.</p>
+        <p>Block hides a person and their messages only from your own view. Two independent reports in the same room trigger a temporary cooldown: five minutes for the first incident, ten for the second, and fifteen for later incidents. STUN-only connections may not work on some restrictive networks.</p>
       </div>
       <footer class="about-footer">
         <span class="about-credit">Crafted by Prasanna <span aria-label="love">❤️</span></span>
@@ -461,7 +479,6 @@
       </div>
       <div class="sticker-create-view" id="stickerCreateView" hidden>
         <div class="sticker-create-scroll">
-          <div class="sticker-source-actions"><button id="replaceStickerPhoto" type="button">Choose photo</button><button id="takeStickerPhoto" type="button">Use camera</button></div>
           <div class="sticker-crop-frame"><canvas id="stickerCropCanvas" width="512" height="512" aria-label="Sticker crop preview"></canvas></div>
           <p class="sticker-crop-hint">Drag the photo to reposition it, or adjust the zoom.</p>
           <div class="sticker-create-controls"><span>Zoom</span><input id="stickerZoom" type="range" min="1" max="3" step="0.05" value="1" aria-label="Zoom sticker crop"></div>
@@ -473,7 +490,6 @@
     </section>
   </div>
   <input id="stickerCreateInput" type="file" accept="image/*" hidden>
-  <input id="stickerCameraInput" type="file" accept="image/*" capture="environment" hidden>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -525,13 +541,14 @@
     id: 'nerukko_pid', name: 'nerukko_name', theme: 'nerukko_theme',
     location: 'nerukko_location_preference', pending: 'nerukko_pending_delivery',
     received: 'nerukko_received_delivery_ids', stickerRecent: 'nerukko_sticker_recent_v1',
-    stickerFavorites: 'nerukko_sticker_favorites_v1'
+    stickerFavorites: 'nerukko_sticker_favorites_v1', blocked: 'nerukko_blocked_users_v1'
   };
   const MAX_MEDIA_BYTES = 2 * 1024 * 1024;
   const MEDIA_CHUNK_BYTES = 12 * 1024;
   const state = {
     id: getOrCreateId(), name: '', ws: null, roomId: null, mode: 'group', location: null, customRoom: null, roomListings: [],
     locationAllowed: false, peers: new Map(), remotePeers: new Map(), channels: new Map(),
+    blockedUsers: loadBlockedUsers(), pendingStickers: [], pendingStickerFlush: false,
     pendingCandidates: new Map(), incomingMedia: new Map(), mediaUrls: [], privateRequests: new Map(),
     outgoingRequests: new Map(), activePrivate: null, selectedProfile: null,
     offlinePeers: new Map(), deliveryPeers: new Set(), pendingDeliveries: loadPendingDeliveries(),
@@ -540,6 +557,15 @@
     heartbeat: null, locationRefresh: null, deliveryTimer: null, lastLocationUpdate: 0, cooldownUntil: 0,
     remoteTyping: new Map(), typingTimer: null, lastTypingSent: 0
   };
+  function loadBlockedUsers() {
+    try {
+      const saved = JSON.parse(storage.getItem(STORAGE.blocked) || '[]');
+      return new Map(Array.isArray(saved) ? saved.filter(item => item && typeof item.id === 'string').map(item => [item.id, { id:item.id, name:String(item.name || 'Guest').slice(0,24) }]) : []);
+    } catch { return new Map(); }
+  }
+  function persistBlockedUsers() { storage.setItem(STORAGE.blocked, JSON.stringify([...state.blockedUsers.values()].slice(-200))); }
+  function isBlocked(id) { return !!id && state.blockedUsers.has(id); }
+
   function loadStickerReferences(key) {
     try {
       const value = JSON.parse(storage.getItem(key) || '[]');
@@ -554,6 +580,7 @@
   const stickerPackCache = new Map();
   const stickerObjectUrls = new Map();
   const customStickerMemory = new Map();
+  const pendingStickerMemory = new Map();
   let stickerRenderToken = 0;
   let stickerCrop = null;
   let stickerDbPromise = null;
@@ -655,20 +682,22 @@
       const directed = dx * direction;
       if (directed > 0 && Math.abs(dy) < Math.max(18, directed * .55)) {
         article.classList.add('swiping');
-        article.style.transform = `translateX(${direction * Math.min(directed,58)}px)`;
+        const travel = Math.min(directed,42);
+        article.style.transform = `translateX(${direction * travel}px)`;
+        indicator.style.transform = `translateY(-50%) scale(1) translateX(${-direction * travel}px)`;
       } else if (Math.abs(dy) > 26) {
-        article.classList.remove('swiping'); article.style.transform = ''; start = null;
+        article.classList.remove('swiping'); article.style.transform = ''; indicator.style.transform = ''; start = null;
       }
     });
     const finish = event => {
       if (!start || event.pointerId !== start.id) return;
       const dx = event.clientX - start.x;
-      article.classList.remove('swiping'); article.style.transform = '';
+      article.classList.remove('swiping'); article.style.transform = ''; indicator.style.transform = '';
       if (dx * direction >= 54) { setReplyTarget(target); if (navigator.vibrate) navigator.vibrate(12); }
       start = null;
     };
     article.addEventListener('pointerup', finish);
-    article.addEventListener('pointercancel', () => { start=null; article.classList.remove('swiping'); article.style.transform=''; });
+    article.addEventListener('pointercancel', () => { start=null; article.classList.remove('swiping'); article.style.transform=''; indicator.style.transform=''; });
   }
   function isNearMessageBottom() {
     const box = $('messages');
@@ -699,6 +728,7 @@
     article.append(time);
   }
   function addMessage(name, text, mine = false, peerId = null, options = {}) {
+    if (!mine && isBlocked(peerId)) return null;
     const shouldScroll = isNearMessageBottom();
     $('emptyState')?.remove();
     const messageId = String(options.messageId || createId());
@@ -737,7 +767,7 @@
   }
   function sendDeliveryInvites() {
     if (state.ws?.readyState !== WebSocket.OPEN || state.customRoom) return;
-    const ids = new Set(state.pendingDeliveries.flatMap(item => item.recipients.map(person => person.id)));
+    const ids = new Set(state.pendingDeliveries.flatMap(item => item.recipients.map(person => person.id)).filter(id => !isBlocked(id)));
     for (const targetId of ids) sendServer({ type:'delivery-invite', to:targetId });
   }
   function flushDeliveryQueue(peerId) {
@@ -751,6 +781,7 @@
   }
 
   function addMediaMessage(name, peerId, blob, mine = false, mediaKind = 'image') {
+    if (!mine && isBlocked(peerId)) return null;
     const shouldScroll = isNearMessageBottom();
     $('emptyState')?.remove();
     const article = document.createElement('article'); article.className = 'message' + (mine ? ' mine' : '');
@@ -760,6 +791,7 @@
     const url = URL.createObjectURL(blob); state.mediaUrls.push(url); image.src = url; image.alt = mediaKind === 'sticker' ? 'Sticker' : 'Shared image'; image.loading = 'lazy';
     image.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
     article.append(image); appendMessageTime(article); $('messages').append(article); preserveMessageScroll(shouldScroll);
+    return article;
   }
 
   function updateDrawer() {
@@ -770,6 +802,7 @@
       } else {
         peopleList.className = '';
         for (const person of state.remotePeers.values()) {
+          if (isBlocked(person.id)) continue;
           const row = document.createElement('div'); row.className = 'person-row';
           const avatar = document.createElement('div'); avatar.className = 'person-avatar'; avatar.textContent = initial(person.name);
           const info = document.createElement('div'); info.className = 'person-info';
@@ -811,6 +844,7 @@
       const sub = document.createElement('small'); sub.textContent = 'Request sent · waiting'; info.append(name, sub); row.append(info); outgoing.append(row);
     }
     $('activePrivateSection').hidden = !(state.mode === 'private' && state.activePrivate);
+    $('roomsSection').hidden = !state.locationAllowed;
     if (state.activePrivate) {
       $('privateName').textContent = state.activePrivate.name || 'Private chat';
       $('privateAvatar').textContent = initial(state.activePrivate.name);
@@ -826,7 +860,33 @@
     refreshRoomBar();
   }
 
-  function initial(name) { return (String(name || '?').trim().charAt(0).toUpperCase() || '?'); }
+  function renderBlockedUsers() {
+    const list = $('blockedUsersList'); if (!list) return;
+    list.replaceChildren();
+    if (!state.blockedUsers.size) { list.textContent = 'No blocked users.'; return; }
+    for (const person of state.blockedUsers.values()) {
+      const row = document.createElement('div'); row.className = 'person-row';
+      const name = document.createElement('strong'); name.textContent = person.name || 'Guest'; name.style.flex = '1';
+      const unblock = document.createElement('button'); unblock.type = 'button'; unblock.className = 'small-action'; unblock.textContent = 'Unblock';
+      unblock.addEventListener('click', () => { state.blockedUsers.delete(person.id); persistBlockedUsers(); renderBlockedUsers(); showToast('Person unblocked.'); });
+      row.append(name, unblock); list.append(row);
+    }
+  }
+  function blockSelected() {
+    const person = state.mode === 'private' ? state.activePrivate : state.selectedProfile;
+    if (!person?.id || isBlocked(person.id)) return;
+    if (!window.confirm(`Block ${person.name || 'this person'}? Their messages and profile will be hidden only for you.`)) return;
+    state.blockedUsers.set(person.id, { id:person.id, name:String(person.name || 'Guest').slice(0,24) });
+    persistBlockedUsers(); clearRemoteTyping(person.id);
+    state.peers.get(person.id)?.close(); state.peers.delete(person.id); state.channels.delete(person.id);
+    state.pendingCandidates.delete(person.id); state.incomingMedia.delete(person.id);
+    for (const item of state.pendingDeliveries) item.recipients = item.recipients.filter(recipient => recipient.id !== person.id);
+    state.pendingDeliveries = state.pendingDeliveries.filter(item => item.recipients.length); savePendingDeliveries();
+    state.remotePeers.delete(person.id); state.offlinePeers.delete(person.id); state.deliveryPeers.delete(person.id);
+    if (state.mode === 'private' && state.activePrivate?.id === person.id) sendServer({ type:'private-end' });
+    updateDrawer(); renderBlockedUsers(); closeDrawer(); showToast('Person blocked for you.');
+  }
+  function initial(name) { return (String(name || '?').trim().charAt(0).toUpperCase() || '?'); } 
 
   function openDrawer() {
     if (!$('chatView').hidden) updateDrawer();
@@ -847,6 +907,7 @@
     $('profileName').textContent = person.name || 'Guest';
     $('profilePrivate').hidden = state.mode !== 'group' || state.customRoom !== null;
     $('profileReport').hidden = state.mode !== 'group';
+    $('profileBlock').hidden = false;
     $('drawerHome').hidden = true; $('roomsView').hidden = true; $('profileView').hidden = false;
     $('drawerTitle').textContent = 'Profile'; openDrawerFrame();
   }
@@ -855,14 +916,28 @@
 
   function refreshRoomBar() {
     const room = state.customRoom;
-    $('roomBar').hidden = !room;
+    const privateChat = state.mode === 'private' && state.activePrivate;
+    $('roomBar').hidden = !(room || privateChat);
+    if (privateChat) {
+      $('roomBarName').textContent = state.activePrivate.name || 'Private conversation';
+      $('roomBarMeta').textContent = 'Private conversation';
+      $('roomSettingsButton').hidden = false;
+      $('roomSettingsButton').title = 'Conversation settings';
+      $('roomSettingsButton').setAttribute('aria-label', 'Conversation settings');
+      $('roomMembersButton').setAttribute('aria-label', 'Private conversation details');
+      $('currentRoomMembers').hidden = true;
+      return;
+    }
     if (!room) return;
     const members = Array.isArray(room.members) ? room.members : [];
     $('roomBarName').textContent = room.name || 'Room';
-    $('roomBarMeta').textContent = `${room.memberCount ?? members.length}/10 members · ${room.visibility === 'private' ? 'Private' : 'Public'}`;
+    $('roomBarMeta').textContent = `${room.memberCount ?? members.length}/7 members · ${room.visibility === 'private' ? 'Private' : 'Public'}`;
     $('roomSettingsButton').hidden = room.ownerId !== state.id;
+    $('roomSettingsButton').title = 'Room settings';
+    $('roomSettingsButton').setAttribute('aria-label', 'Room settings');
     const list = $('currentRoomMemberList'); list.replaceChildren();
     for (const person of members) {
+      if (person.id !== state.id && isBlocked(person.id)) continue;
       const chip = document.createElement('span'); chip.className = 'room-member-chip';
       chip.textContent = person.id === state.id ? `${person.name} · You` : person.name;
       list.append(chip);
@@ -872,55 +947,60 @@
 
   function openRoomsView() {
     if (state.ws?.readyState !== WebSocket.OPEN) return showToast('Enter chat first to browse rooms.');
+    if (!state.locationAllowed || !state.location) return showToast('Enable location in Settings to discover nearby rooms.');
     $('drawerHome').hidden = true; $('profileView').hidden = true; $('roomsView').hidden = false;
     $('roomSettingsView').hidden = true; $('roomList').closest('.drawer-section').hidden = false;
     $('showCreateRoom').hidden = false; $('roomCreateForm').hidden = true;
     $('drawerTitle').textContent = 'Rooms';
     $('currentRoomMembers').hidden = !state.customRoom;
     $('roomCreateForm').querySelectorAll('input').forEach(input => { if (input.type !== 'checkbox') input.value = ''; });
-    $('newRoomKeep').checked = false;
+    $('newRoomExpiry').value = 'immediate';
     $('newRoomVisibility').value = 'public'; $('newRoomPasswordWrap').hidden = true;
     $('newRoomPassword').value = '';
     sendServer({ type:'rooms-list' });
   }
 
   function renderRoomDirectory() {
-    const list = $('roomList'); list.replaceChildren();
-    if (!state.roomListings.length) {
-      list.className = 'drawer-empty'; list.textContent = 'No rooms yet. Create the first one.'; return;
-    }
-    list.className = '';
-    for (const room of state.roomListings) {
-      const card = document.createElement('article'); card.className = 'room-card';
-      const top = document.createElement('div'); top.className = 'room-card-top';
-      const title = document.createElement('div'); title.className = 'room-card-title'; title.textContent = room.name;
-      const lock = document.createElement('span'); lock.textContent = room.visibility === 'private' ? '🔒' : '○'; lock.setAttribute('aria-label', room.visibility === 'private' ? 'Password required' : 'Open room');
-      top.append(title, lock); card.append(top);
-      const meta = document.createElement('div'); meta.className = 'room-card-meta'; meta.textContent = `${room.memberCount}/${room.capacity || 10} members · ${room.visibility === 'private' ? 'Private · Password required' : 'Public · Open to everyone'}`; card.append(meta);
-      if (room.description) { const description = document.createElement('div'); description.className = 'room-card-description'; description.textContent = room.description; card.append(description); }
-      const members = document.createElement('div'); members.className = 'room-card-members';
-      const names = (room.members || []).map(person => person.name);
-      members.textContent = names.length ? `Here now: ${names.join(', ')}` : (room.keepWhenEmpty ? 'Kept room · No one here right now' : 'No members currently online');
-      card.append(members);
-      const actions = document.createElement('div'); actions.className = 'room-card-actions';
-      const join = document.createElement('button'); join.type = 'button'; join.className = 'small-action primary';
-      const alreadyInside = state.customRoom?.id === room.id;
-      join.textContent = alreadyInside ? 'You are here' : (room.visibility === 'private' ? 'Enter password' : 'Join room');
-      join.disabled = alreadyInside || state.mode === 'private' || room.memberCount >= (room.capacity || 10);
-      if (!alreadyInside && room.visibility === 'private') {
-        const form = document.createElement('form'); form.className = 'room-join-form'; form.hidden = true;
-        const passLabel = document.createElement('label'); passLabel.className = 'room-form-label'; passLabel.textContent = 'Room password';
-        const pass = document.createElement('input'); pass.className = 'room-form-input'; pass.type = 'password'; pass.required = true; pass.maxLength = 64; pass.autocomplete = 'current-password'; pass.placeholder = 'Enter password';
-        passLabel.append(pass); const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'small-action primary'; submit.textContent = 'Join private room';
-        form.append(passLabel, submit); form.addEventListener('submit', event => { event.preventDefault(); sendServer({ type:'room-join', roomId:room.id, password:pass.value }); });
-        join.addEventListener('click', () => { form.hidden = !form.hidden; if (!form.hidden) pass.focus(); });
-        actions.append(join); card.append(actions, form);
-      } else {
-        join.addEventListener('click', () => sendServer({ type:'room-join', roomId:room.id }));
-        actions.append(join); card.append(actions);
+    const root = $('roomList'); root.replaceChildren();
+    if (!state.locationAllowed) { root.className = 'drawer-empty'; root.textContent = 'Enable location in Settings to discover nearby rooms.'; return; }
+    const makeColumn = (visibility, titleText) => {
+      const column = document.createElement('div'); column.className = 'room-column';
+      const heading = document.createElement('h4'); heading.textContent = titleText; column.append(heading);
+      const items = state.roomListings.filter(room => room.visibility === visibility).slice(0,10);
+      if (!items.length) { const empty = document.createElement('div'); empty.className = 'drawer-empty'; empty.textContent = 'No nearby rooms.'; column.append(empty); return column; }
+      for (const room of items) {
+        const card = document.createElement('article'); card.className = 'room-card';
+        const top = document.createElement('div'); top.className = 'room-card-top';
+        const title = document.createElement('div'); title.className = 'room-card-title'; title.textContent = room.name;
+        const lock = document.createElement('span'); lock.textContent = visibility === 'private' ? '🔒' : '○';
+        top.append(title, lock); card.append(top);
+        const meta = document.createElement('div'); meta.className = 'room-card-meta'; meta.textContent = `${room.memberCount}/7 · Nearby`; card.append(meta);
+        if (room.description) { const description = document.createElement('div'); description.className = 'room-card-description'; description.textContent = room.description; card.append(description); }
+        const members = document.createElement('div'); members.className = 'room-card-members';
+        const names = (room.members || []).filter(person => !isBlocked(person.id)).map(person => person.name);
+        members.textContent = names.length ? `Here now: ${names.join(', ')}` : (room.expiresAt ? 'Empty · kept for up to 24 hours' : 'No members currently online'); card.append(members);
+        const actions = document.createElement('div'); actions.className = 'room-card-actions';
+        const join = document.createElement('button'); join.type = 'button'; join.className = 'small-action primary';
+        const alreadyInside = state.customRoom?.id === room.id;
+        join.textContent = alreadyInside ? 'You are here' : (visibility === 'private' ? 'Enter password' : 'Join');
+        join.disabled = alreadyInside || state.mode === 'private' || room.memberCount >= 7;
+        if (!alreadyInside && visibility === 'private') {
+          const form = document.createElement('form'); form.className = 'room-join-form'; form.hidden = true;
+          const passLabel = document.createElement('label'); passLabel.className = 'room-form-label'; passLabel.textContent = 'Room password';
+          const pass = document.createElement('input'); pass.className = 'room-form-input'; pass.type = 'password'; pass.required = true; pass.maxLength = 64; pass.autocomplete = 'current-password'; pass.placeholder = 'Enter password';
+          passLabel.append(pass); const submit = document.createElement('button'); submit.type = 'submit'; submit.className = 'small-action primary'; submit.textContent = 'Join';
+          form.append(passLabel, submit); form.addEventListener('submit', event => { event.preventDefault(); sendServer({ type:'room-join', roomId:room.id, password:pass.value }); });
+          join.addEventListener('click', () => { form.hidden = !form.hidden; if (!form.hidden) pass.focus(); });
+          actions.append(join); card.append(actions, form);
+        } else {
+          join.addEventListener('click', () => sendServer({ type:'room-join', roomId:room.id })); actions.append(join); card.append(actions);
+        }
+        column.append(card);
       }
-      list.append(card);
-    }
+      return column;
+    };
+    root.className = 'room-columns';
+    root.append(makeColumn('public','Public'), makeColumn('private','Private'));
   }
 
   function showRoomSettings() {
@@ -934,7 +1014,7 @@
     $('editRoomVisibility').value = room.visibility || 'public';
     $('editRoomPassword').value = '';
     $('editRoomPasswordWrap').hidden = room.visibility !== 'private';
-    $('editRoomKeep').checked = !!room.keepWhenEmpty;
+    $('editRoomExpiry').value = room.emptyPolicy === '24h' ? '24h' : 'immediate';
     $('roomCreateForm').hidden = true;
   }
 
@@ -950,6 +1030,9 @@
     closeMenu(); closeDrawer();
     if (which === 'settings') {
       $('settingsName').value = state.name || storage.getItem(STORAGE.name) || '';
+      $('locationButton').textContent = state.locationAllowed ? 'Enabled' : 'Enable';
+      $('locationButton').disabled = state.locationAllowed;
+      renderBlockedUsers();
       $('settingsBackdrop').hidden = false;
     } else $('aboutBackdrop').hidden = false;
   }
@@ -961,7 +1044,7 @@
     state.peers.clear(); state.channels.clear(); state.pendingCandidates.clear(); state.incomingMedia.clear();
     for (const [id, entry] of state.remoteTyping) if (entry.timer) clearTimeout(entry.timer);
     state.remoteTyping.clear(); renderTypingHint();
-    state.remotePeers = new Map((peers || []).map(peer => [peer.id, peer]));
+    state.remotePeers = new Map((peers || []).filter(peer => !isBlocked(peer.id)).map(peer => [peer.id, peer]));
     if (mode) state.mode = mode;
     if (roomId) state.roomId = roomId;
     state.activePrivate = state.mode === 'private' ? (state.remotePeers.values().next().value || null) : null;
@@ -973,7 +1056,7 @@
 
   function attachChannel(peer, channel) {
     state.channels.set(peer.id, channel); channel.binaryType = 'arraybuffer';
-    channel.onopen = () => { if (state.deliveryPeers.has(peer.id)) flushDeliveryQueue(peer.id); };
+    channel.onopen = () => { if (state.deliveryPeers.has(peer.id)) flushDeliveryQueue(peer.id); flushPendingStickers(); };
     channel.onclose = () => {
       if (state.channels.get(peer.id) === channel) state.channels.delete(peer.id);
       clearRemoteTyping(peer.id);
@@ -983,6 +1066,7 @@
   }
 
   async function handlePeerData(peer, data) {
+    if (isBlocked(peer.id)) return;
     if (data instanceof ArrayBuffer || data instanceof Blob) {
       const bytes = data instanceof Blob ? await data.arrayBuffer() : data;
       const packetBytes = new Uint8Array(bytes);
@@ -1025,7 +1109,7 @@
   }
 
   function makePeer(peer) {
-    if (!peer?.id || peer.id === state.id || state.peers.has(peer.id)) return state.peers.get(peer?.id);
+    if (!peer?.id || peer.id === state.id || isBlocked(peer.id) || state.peers.has(peer.id)) return state.peers.get(peer?.id);
     const pc = new RTCPeerConnection({ iceServers: [
       { urls: 'stun:stun.cloudflare.com:3478' },
       { urls: 'stun:stun.l.google.com:19302' }
@@ -1046,6 +1130,7 @@
   }
 
   async function handleSignal(from, payload) {
+    if (isBlocked(from)) return;
     const peer = state.remotePeers.get(from) || { id: from, name: 'Guest' };
     let pc = state.peers.get(from); if (!pc) pc = makePeer(peer); if (!pc) return;
     if (payload.description) {
@@ -1071,7 +1156,7 @@
         state.customRoom = null; refreshRoomBar();
         if (wasNamedRoom || data.notice) clearMessages();
         state.roomId = data.roomId; state.mode = 'group'; state.activePrivate = null;
-        syncPeers(data.peers || [], 'group', data.roomId);
+        syncPeers(data.peers || [], 'group', data.roomId); renderPendingStickerMessages();
         $('entryView').hidden = true; $('chatView').hidden = false; restorePendingMessages(); sendDeliveryInvites();
         if (data.notice) showToast(data.notice);
         if (wasNamedRoom) showToast('Back in random chat.');
@@ -1081,7 +1166,7 @@
       case 'room-entered':
         state.privateRequests.clear(); state.outgoingRequests.clear(); state.offlinePeers.clear(); state.deliveryPeers.clear();
         state.customRoom = data.room || null; state.mode = 'group'; state.roomId = data.roomId;
-        clearMessages(); syncPeers(data.peers || [], 'group', data.roomId); refreshRoomBar();
+        clearMessages(); syncPeers(data.peers || [], 'group', data.roomId); refreshRoomBar(); renderPendingStickerMessages();
         $('entryView').hidden = true; $('chatView').hidden = false; closeDrawer();
         showToast(`Joined ${state.customRoom?.name || 'room'}.`); break;
       case 'room-updated':
@@ -1092,11 +1177,12 @@
         state.roomListings = Array.isArray(data.rooms) ? data.rooms : []; renderRoomDirectory(); break;
       case 'room-error': showToast(data.message || 'Room action could not be completed.'); break;
       case 'peer-joined':
-        if (data.peer?.id && !state.remotePeers.has(data.peer.id)) {
+        if (data.peer?.id && !isBlocked(data.peer.id) && !state.remotePeers.has(data.peer.id)) {
           state.remotePeers.set(data.peer.id, data.peer); state.offlinePeers.delete(data.peer.id); updateDrawer(); makePeer(data.peer);
         }
         break;
       case 'peer-renamed': {
+        if (isBlocked(data.id)) break;
         const person = state.remotePeers.get(data.id);
         if (person) { person.name = data.name; if (state.activePrivate?.id === data.id) state.activePrivate.name = data.name; updateDrawer(); }
         if (state.customRoom?.members) { const roomPerson = state.customRoom.members.find(item => item.id === data.id); if (roomPerson) roomPerson.name = data.name; refreshRoomBar(); }
@@ -1111,12 +1197,12 @@
         break;
       case 'delivery-ready':
       case 'delivery-invite':
-        if (data.peer?.id) { state.offlinePeers.delete(data.peer.id); state.deliveryPeers.add(data.peer.id); makePeer({ ...data.peer, delivery:true }); flushDeliveryQueue(data.peer.id); }
+        if (data.peer?.id && !isBlocked(data.peer.id)) { state.offlinePeers.delete(data.peer.id); state.deliveryPeers.add(data.peer.id); makePeer({ ...data.peer, delivery:true }); flushDeliveryQueue(data.peer.id); }
         break;
       case 'delivery-expired': showToast('A pending message expired before they returned.'); break;
       case 'signal': handleSignal(data.from, data.payload || {}).catch(error => console.warn('Signalling failed.', error)); break;
       case 'room-reset':
-        syncPeers(data.peers || [], data.mode, data.roomId);
+        clearMessages(); syncPeers(data.peers || [], data.mode, data.roomId); renderPendingStickerMessages();
         if (data.mode === 'group') showToast('Your nearby group has refreshed.');
         break;
       case 'private-request':
@@ -1139,29 +1225,35 @@
       case 'private-request-closed':
         state.privateRequests.delete(data.requestId); state.outgoingRequests.delete(data.requestId); updateDrawer(); break;
       case 'private-start':
-        state.customRoom = null; refreshRoomBar();
+        state.customRoom = null; state.selectedProfile = null; clearMessages(); refreshRoomBar();
         state.privateRequests.clear(); state.outgoingRequests.clear();
-        syncPeers([data.peer], 'private', data.roomId); closeDrawer(); showToast('Private chat started. You have left the group.'); break;
+        syncPeers([data.peer], 'private', data.roomId); renderPendingStickerMessages(); closeDrawer(); showToast('Private chat started. You have left the group.'); break;
       case 'private-error': showToast(data.message || 'Could not send the request.'); break;
       case 'report-received':
-        showToast(data.count >= 2 ? 'The report threshold was reached.' : 'Report received. A second independent report is required.'); break;
-      case 'blocked':
-        state.cooldownUntil = Number(data.until) || Date.now() + 300_000;
-        showToast('You have been paused from Nerukko for five minutes.');
+        showToast('Report received. Thank you for helping keep Nerukko comfortable.'); break;
+      case 'blocked': {
+        state.cooldownUntil = Number(data.until) || Date.now() + (Number(data.durationMinutes) || 5) * 60_000;
+        const minutes = Number(data.durationMinutes) || Math.max(1, Math.ceil((state.cooldownUntil - Date.now()) / 60_000));
+        showToast(`You have been paused from Nerukko for ${minutes} minutes.`);
         break;
+      }
       case 'error': showToast(data.message || 'Something went wrong.'); break;
       case 'bot-start':
-        state.botActive = true; state.botHistory = []; state.botNudges = 0; scheduleBotNudge(); break;
+        state.botActive = true; state.botHistory = []; state.botNudges = 0; scheduleBotNudge(); flushPendingStickers(); break;
       case 'bot-stop':
         state.botActive = false; state.botHistory = []; state.botNudges = 0; clearTimeout(state.botNudgeTimer); state.botNudgeTimer = null; break;
       case 'bot-message':
+        if (data.stickerId) {
+          const stickerId = String(data.stickerId);
+          deletePendingStickerRecord(stickerId).then(() => { state.pendingStickers = state.pendingStickers.filter(item => item.id !== stickerId); document.querySelector(`[data-pending-sticker-id="${stickerId}"] .pending-sticker-note`)?.remove(); });
+        }
         if (state.botActive && typeof data.text === 'string') {
           addMessage('Nerukko Bot', data.text, false, null, { messageId:data.messageId || createId() });
           if (data.kind !== 'reply') state.botNudges++;
           state.botHistory.push({ role:'model', text:data.text }); state.botHistory = state.botHistory.slice(-12); scheduleBotNudge();
         }
         break;
-      case 'bot-unavailable': showToast(data.message || 'Nerukko Bot could not reply just now. Try again in a moment.'); break;
+      case 'bot-unavailable': showToast(data.message || (data.stickerId ? 'Your sticker is saved here and will reach the group when someone joins.' : 'Nerukko Bot could not reply just now. Try again in a moment.')); break;
       case 'pong': break;
     }
   }
@@ -1173,10 +1265,10 @@
       navigator.geolocation.getCurrentPosition(position => {
         const location = { lat: position.coords.latitude, lon: position.coords.longitude };
         state.location = location; state.locationAllowed = true;
-        storage.setItem(STORAGE.location, 'granted'); $('locationButton').textContent = 'Enabled';
+        storage.setItem(STORAGE.location, 'granted'); $('locationButton').textContent = 'Enabled'; $('locationButton').disabled = true; updateDrawer();
         state.lastLocationUpdate = Date.now(); resolve(location);
       }, error => {
-        if (error.code === error.PERMISSION_DENIED) { state.locationAllowed = false; state.location = null; storage.setItem(STORAGE.location, 'denied'); }
+        if (error.code === error.PERMISSION_DENIED) { state.locationAllowed = false; state.location = null; storage.setItem(STORAGE.location, 'denied'); $('locationButton').textContent = 'Enable'; $('locationButton').disabled = false; state.roomListings = []; renderRoomDirectory(); if (state.ws?.readyState === WebSocket.OPEN) sendServer({ type:'location-update', location:null }); updateDrawer(); }
         resolve(null);
       }, { enableHighAccuracy: false, maximumAge, timeout: 6500 });
     });
@@ -1258,6 +1350,7 @@
     state.name = name; storage.setItem(STORAGE.name, name); $('settingsName').value = name;
     $('entryView').hidden = true; $('chatView').hidden = false; $('joinButton').disabled = true;
     clearMessages(); closeDrawer();
+    await loadPendingStickers();
     const location = await getPosition({ promptUser: !automatic, maximumAge: 300000 });
     const url = new URL('/api/ws', window.location.href); url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     try {
@@ -1343,11 +1436,20 @@
     const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
     if (!file || !allowedMedia.includes(file.type)) { showToast('Choose a GIF, PNG, JPG or WebP image.'); return false; }
     if (file.size > MAX_MEDIA_BYTES) { showToast('Keep images and GIFs under 2 MB for now.'); return false; }
-    const channels = [...state.channels.entries()].filter(([, channel]) => channel.readyState === 'open');
-    if (!channels.length) { showToast('Wait until someone is connected before sharing media.'); return false; }
     const mime = file.type || 'image/png';
     if (sticker && mime !== 'image/webp') { showToast('Stickers must be WebP images.'); return false; }
     if (sticker && file.size > 512 * 1024) { showToast('Keep stickers under 512 KB for group chats.'); return false; }
+    const peerIds = [...state.remotePeers.keys()].filter(id=>!isBlocked(id));
+    const channels = peerIds.map(id=>[id,state.channels.get(id)]).filter(([,channel])=>channel?.readyState==='open');
+    if (sticker && (!peerIds.length || channels.length !== peerIds.length)) {
+      if (!peerIds.length && state.mode === 'group' && !state.customRoom && state.botActive) {
+        const queued = await queuePendingSticker(file);
+        sendServer({ type:'bot-sticker', stickerId:queued.id, history:state.botHistory.slice(-12) });
+        return true;
+      }
+      return queuePendingSticker(file);
+    }
+    if (!channels.length) { showToast('Wait until the person is connected before sharing media.'); return false; }
     const buffer = await file.arrayBuffer();
     const transferId = createId();
     const bytes = new Uint8Array(buffer);
@@ -1368,8 +1470,9 @@
       } catch (error) { console.warn('Media transfer failed for peer.', peerId, error); }
     }
     if (completed) addMediaMessage(state.name, state.id, new Blob([buffer], { type:mime }), true, sticker ? 'sticker' : 'image');
+    else if (sticker) return queuePendingSticker(file);
     else showToast('The media could not be sent. Check the connection and try again.');
-    return completed > 0;
+    return completed > 0 || sticker;
   }
 
   async function processEditorImages() {
@@ -1450,10 +1553,11 @@
     if (!('indexedDB' in window)) return null;
     if (!stickerDbPromise) stickerDbPromise = new Promise(resolve => {
       try {
-        const request = indexedDB.open('nerukko-local-stickers', 1);
+        const request = indexedDB.open('nerukko-local-stickers', 2);
         request.onupgradeneeded = () => {
           const db = request.result;
           if (!db.objectStoreNames.contains('custom')) db.createObjectStore('custom', { keyPath:'id' });
+          if (!db.objectStoreNames.contains('pending')) db.createObjectStore('pending', { keyPath:'id' });
         };
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => resolve(null);
@@ -1488,6 +1592,113 @@
       } catch { resolve(null); }
     });
   }
+  async function savePendingStickerRecord(record) {
+    const db = await openStickerDatabase();
+    if (!db) { pendingStickerMemory.set(record.id, record); return; }
+    let stored = false;
+    await new Promise(resolve => {
+      try {
+        const tx = db.transaction('pending','readwrite'); tx.objectStore('pending').put(record);
+        tx.oncomplete = () => { stored = true; resolve(); };
+        tx.onerror = resolve; tx.onabort = resolve;
+      } catch { resolve(); }
+    });
+    if (!stored) pendingStickerMemory.set(record.id, record);
+  }
+  async function listPendingStickerRecords() {
+    const db = await openStickerDatabase();
+    if (!db) return [...pendingStickerMemory.values()].sort((a,b)=>a.createdAt-b.createdAt);
+    return new Promise(resolve => {
+      try {
+        const request = db.transaction('pending','readonly').objectStore('pending').getAll();
+        request.onsuccess = () => {
+          const combined = new Map((request.result || []).map(item => [item.id,item]));
+          for (const item of pendingStickerMemory.values()) combined.set(item.id,item);
+          resolve([...combined.values()].sort((a,b)=>a.createdAt-b.createdAt));
+        };
+        request.onerror = () => resolve([...pendingStickerMemory.values()].sort((a,b)=>a.createdAt-b.createdAt));
+      } catch { resolve([...pendingStickerMemory.values()].sort((a,b)=>a.createdAt-b.createdAt)); }
+    });
+  }
+  async function deletePendingStickerRecord(id) {
+    pendingStickerMemory.delete(id);
+    const db = await openStickerDatabase(); if (!db) return;
+    await new Promise(resolve => {
+      try { const tx=db.transaction('pending','readwrite'); tx.objectStore('pending').delete(id); tx.oncomplete=resolve; tx.onerror=resolve; tx.onabort=resolve; }
+      catch { resolve(); }
+    });
+  }
+  function markPendingStickerMessage(id, article) {
+    if (!article) return;
+    article.dataset.pendingStickerId = id;
+    const note = document.createElement('small'); note.className = 'pending-sticker-note'; note.textContent = 'Saved here · waiting to send';
+    article.append(note);
+  }
+  function currentStickerScope() {
+    if (state.mode === 'private') return `private:${state.activePrivate?.id || 'unknown'}`;
+    if (state.customRoom?.id) return `room:${state.customRoom.id}`;
+    return 'random';
+  }
+  function renderPendingStickerMessages() {
+    const scope = currentStickerScope();
+    for (const item of state.pendingStickers.filter(saved => saved.scope === scope)) {
+      const exists = document.querySelector(`[data-pending-sticker-id="${item.id}"]`);
+      if (exists) continue;
+      const article = addMediaMessage(state.name, state.id, item.blob, true, 'sticker');
+      markPendingStickerMessage(item.id, article);
+    }
+  }
+  async function loadPendingStickers() {
+    state.pendingStickers = await listPendingStickerRecords();
+    renderPendingStickerMessages();
+  }
+  async function queuePendingSticker(file) {
+    const record = { id:createId(), blob:file, name:file.name || 'nerukko-sticker.webp', createdAt:Date.now(), scope:currentStickerScope() };
+    await savePendingStickerRecord(record);
+    state.pendingStickers.push(record);
+    const article = addMediaMessage(state.name, state.id, file, true, 'sticker');
+    markPendingStickerMessage(record.id, article);
+    showToast('Sticker saved here. It will send when someone joins.');
+    return record;
+  }
+  async function flushPendingStickers() {
+    if (state.pendingStickerFlush || !state.pendingStickers.some(item => item.scope === currentStickerScope())) return;
+    state.pendingStickerFlush = true;
+    try {
+      if (state.mode === 'group' && !state.customRoom && state.botActive && !state.remotePeers.size) {
+        for (const item of state.pendingStickers.filter(saved => saved.scope === 'random')) {
+          sendServer({ type:'bot-sticker', stickerId:item.id, history:state.botHistory.slice(-12) });
+        }
+        return;
+      }
+      const peerIds = [...state.remotePeers.keys()].filter(id=>!isBlocked(id));
+      if (!peerIds.length) return;
+      const channels = peerIds.map(id=>[id,state.channels.get(id)]);
+      if (channels.some(([,channel])=>!channel || channel.readyState!=='open')) return;
+      for (const item of state.pendingStickers.filter(saved => saved.scope === currentStickerScope())) {
+        const buffer = await item.blob.arrayBuffer();
+        const transferId=createId(), bytes=new Uint8Array(buffer), header=new TextEncoder().encode(transferId);
+        let completed=0;
+        for (const [peerId,channel] of channels) {
+          try {
+            channel.send(JSON.stringify({ type:'media-start', transferId, name:item.name, mime:'image/webp', size:buffer.byteLength, kind:'sticker' }));
+            for (let offset=0; offset<bytes.length; offset+=MEDIA_CHUNK_BYTES) {
+              await waitForChannel(channel);
+              const chunk=bytes.subarray(offset,Math.min(offset+MEDIA_CHUNK_BYTES,bytes.length));
+              const packet=new Uint8Array(header.length+chunk.length); packet.set(header,0); packet.set(chunk,header.length); channel.send(packet);
+            }
+            completed++;
+          } catch (error) { console.warn('Pending sticker transfer failed.', peerId, error); }
+        }
+        if (completed === channels.length) {
+          await deletePendingStickerRecord(item.id);
+          state.pendingStickers = state.pendingStickers.filter(saved=>saved.id!==item.id);
+          document.querySelector(`[data-pending-sticker-id="${item.id}"] .pending-sticker-note`)?.remove();
+        }
+      }
+    } finally { state.pendingStickerFlush = false; }
+  }
+
   async function getStickerBlob(ref) {
     if (ref.kind === 'custom') return getCustomSticker(ref.id);
     const files = await getStickerPack(ref.packId);
@@ -1689,7 +1900,7 @@
   function reportSelected() {
     const person = state.selectedProfile;
     if (!person || state.mode !== 'group') return;
-    if (!window.confirm(`Report ${person.name || 'this person'}? Two independent reports are needed before a temporary five-minute cooldown is applied.`)) return;
+    if (!window.confirm(`Report ${person.name || 'this person'}? Reports are considered together. You can also block them separately.`)) return;
     sendServer({ type: 'report', target: person.id }); backToDrawer();
   }
 
@@ -1760,9 +1971,6 @@
   $('closeStickers').addEventListener('click', closeStickerPicker);
   $('createStickerButton').addEventListener('click', openStickerCreator);
   $('stickerCreateInput').addEventListener('change', async event => { const file=event.target.files?.[0]; event.target.value=''; if (file) await startStickerCreator(file); });
-  $('stickerCameraInput').addEventListener('change', async event => { const file=event.target.files?.[0]; event.target.value=''; if (file) await startStickerCreator(file); });
-  $('replaceStickerPhoto').addEventListener('click', () => $('stickerCreateInput').click());
-  $('takeStickerPhoto').addEventListener('click', () => $('stickerCameraInput').click());
   $('stickerZoom').addEventListener('input', event => { if (stickerCrop) { const next=Number(event.target.value); const ratio=next/stickerCrop.zoom; stickerCrop.panX*=ratio; stickerCrop.panY*=ratio; stickerCrop.zoom=next; drawStickerCrop(); } });
   $('stickerOutline').addEventListener('change', drawStickerCrop);
   $('cancelStickerCreate').addEventListener('click', () => { if (stickerCrop?.bitmap?.close) stickerCrop.bitmap.close(); stickerCrop=null; $('stickerCreateView').hidden=true; $('stickerBrowseView').hidden=false; $('stickerPanel').classList.remove('is-creating'); $('stickerPanelTitle').textContent='Stickers'; setStickerTab('packs'); });
@@ -1791,15 +1999,24 @@
   $('roomCreateForm').addEventListener('submit', event => {
     event.preventDefault();
     if (state.mode === 'private') return showToast('Leave your one-to-one chat before creating a room.');
-    sendServer({ type:'room-create', name:$('newRoomName').value, description:$('newRoomDescription').value, visibility:$('newRoomVisibility').value, password:$('newRoomPassword').value, keepWhenEmpty:$('newRoomKeep').checked });
+    sendServer({ type:'room-create', name:$('newRoomName').value, description:$('newRoomDescription').value, visibility:$('newRoomVisibility').value, password:$('newRoomPassword').value, emptyPolicy:$('newRoomExpiry').value });
   });
-  $('roomMembersButton').addEventListener('click', () => { openRoomsView(); $('currentRoomMembers').hidden = false; });
-  $('leaveNamedRoom').addEventListener('click', () => { sendServer({ type:'room-leave' }); showToast('Returning to random chat…'); });
-  $('roomSettingsButton').addEventListener('click', () => { openDrawerFrame(); showRoomSettings(); });
+  $('roomMembersButton').addEventListener('click', () => {
+    if (state.mode === 'private') { openDrawer(); $('drawerTitle').textContent = 'Conversation settings'; return; }
+    openRoomsView(); $('currentRoomMembers').hidden = false;
+  });
+  $('leaveNamedRoom').addEventListener('click', () => {
+    if (state.mode === 'private') { sendServer({ type:'private-end' }); closeDrawer(); showToast('Leaving conversation…'); return; }
+    sendServer({ type:'room-leave' }); showToast('Returning to random chat…');
+  });
+  $('roomSettingsButton').addEventListener('click', () => {
+    if (state.mode === 'private') { openDrawer(); $('drawerTitle').textContent = 'Conversation settings'; return; }
+    openDrawerFrame(); showRoomSettings();
+  });
   $('roomSettingsBack').addEventListener('click', backToRooms);
   $('editRoomVisibility').addEventListener('change', () => { $('editRoomPasswordWrap').hidden = $('editRoomVisibility').value !== 'private'; });
   $('saveRoomButton').addEventListener('click', () => {
-    sendServer({ type:'room-update', name:$('editRoomName').value, description:$('editRoomDescription').value, visibility:$('editRoomVisibility').value, password:$('editRoomPassword').value, keepWhenEmpty:$('editRoomKeep').checked });
+    sendServer({ type:'room-update', name:$('editRoomName').value, description:$('editRoomDescription').value, visibility:$('editRoomVisibility').value, password:$('editRoomPassword').value, emptyPolicy:$('editRoomExpiry').value });
     showToast('Saving room settings…');
   });
   $('deleteRoomButton').addEventListener('click', () => {
@@ -1807,7 +2024,9 @@
   });
   $('profilePrivate').addEventListener('click', requestPrivate);
   $('profileReport').addEventListener('click', reportSelected);
-  $('returnToGroup').addEventListener('click', () => { sendServer({ type: 'private-end' }); closeDrawer(); showToast('Returning to a group…'); });
+  $('profileBlock').addEventListener('click', blockSelected);
+  $('blockPrivateUser').addEventListener('click', blockSelected);
+  $('returnToGroup').addEventListener('click', () => { sendServer({ type: 'private-end' }); closeDrawer(); showToast('Leaving conversation…'); });
 
   $('moreButton').addEventListener('click', () => {
     const opening = $('mainMenu').hidden; $('mainMenu').hidden = !opening; $('moreButton').setAttribute('aria-expanded', String(opening));
@@ -1833,9 +2052,9 @@
   });
   $('locationButton').addEventListener('click', async () => {
     const location = await getPosition({ promptUser: true, maximumAge: 0 });
-    if (!location) { showToast('Location unavailable. You can still use Nerukko.'); return; }
+    if (!location) { showToast('Location is unavailable. Random chat will use the fallback pool; nearby rooms need location.'); return; }
     if (state.ws?.readyState === WebSocket.OPEN) { sendServer({ type: 'location-update', location }); startPresence(); }
-    showToast('Nearby matching enabled for your next group.');
+    showToast('Nearby matching and room discovery enabled.');
   });
 
   // Horizontal edge-swipe opens the drawer; a left swipe inside it closes it.
@@ -1867,14 +2086,14 @@
 
   if ('serviceWorker' in navigator) window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register('/service-worker.js?v=10', { scope:'/', updateViaCache:'none' });
+      const registration = await navigator.serviceWorker.register('/service-worker.js?v=11', { scope:'/', updateViaCache:'none' });
       registration.update().catch(error => console.debug('Service-worker update check skipped.', error));
     } catch (error) { console.warn('Offline app shell is unavailable.', error); }
   });
   applyTheme(storage.getItem(STORAGE.theme) || 'dark');
   const savedName = storage.getItem(STORAGE.name) || '';
   $('nameInput').value = savedName; $('settingsName').value = savedName;
-  if (storage.getItem(STORAGE.location) === 'granted') $('locationButton').textContent = 'Enabled';
+  if (storage.getItem(STORAGE.location) === 'granted') { $('locationButton').textContent = 'Enabled'; $('locationButton').disabled = true; }
   updateDrawer();
   if (savedName) joinChat({ automatic: true });
 })();
