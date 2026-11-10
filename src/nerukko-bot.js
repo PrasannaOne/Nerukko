@@ -3,7 +3,7 @@
  * Room membership, request limits and Bot lifecycle live in worker.js.
  */
 const MODEL = "gemini-3.5-flash-lite";
-const MAX_WORDS = 22;
+const MAX_WORDS = 10;
 const MAX_HISTORY_ITEMS = 12;
 const MAX_TEXT_LENGTH = 700;
 
@@ -14,8 +14,8 @@ export function clampBotReply(value) {
 
 /**
  * Build a valid Gemini conversation.
- * The launch greeting is generated without history, so browser history can
- * begin with a model turn. Gemini conversations must begin with a user turn.
+ * The Bot only responds to a real user message or sticker. Gemini
+ * conversations must begin with a user turn.
  * Drop leading model messages and merge accidental consecutive roles.
  */
 export function buildGeminiContents(history, prompt = "") {
@@ -49,12 +49,12 @@ export function buildGeminiContents(history, prompt = "") {
   if (!contents.length) {
     contents.push({
       role: "user",
-      parts: [{ text: "Start a friendly conversation. Ask one easy question." }]
+      parts: [{ text: "The person sent a sticker. React briefly and naturally." }]
     });
   } else if (contents[contents.length - 1].role !== "user") {
     contents.push({
       role: "user",
-      parts: [{ text: "Continue naturally. Offer a fresh topic or a tiny game." }]
+      parts: [{ text: "Respond briefly to the latest message." }]
     });
   }
 
@@ -75,11 +75,11 @@ export async function generateNerukkoBotReply(apiKey, history, prompt) {
       body: JSON.stringify({
         systemInstruction: {
           parts: [{
-            text: `You are Nerukko Bot, a transparent AI companion in a casual anonymous group chat. Your vibe is warm, quick-witted, playful and socially aware: the friend who can make a quiet chat feel comfortable without forcing it. Talk naturally in everyday language. React to what was actually said before introducing anything new. You may tease gently, notice a funny detail, share a tiny opinion, offer a playful challenge, start a tiny game, or tell a short amusing observation. Do not behave like a customer-support agent, therapist, interviewer or questionnaire. Do not ask a question in every reply; often a good reaction or a thought is enough. Never answer a one-word reply with a stack of questions. If the person seems uninterested, respect that and let the conversation breathe. If the conversation stalls, use a fresh low-pressure hook rather than another generic “how are you?” or “tell me more”. Vary sentence openings, cadence and length. Do not repeat greetings, recycled questions or the same joke. Remember the recent conversation and use its details naturally, but never invent facts about the person. Do not claim to be human. Avoid sensitive personal questions, pressure, lectures and lists. Send one concise, natural message, usually 3–22 words; a little humour is welcome when it fits.`
+            text: `You are Nerukko Bot, a transparent AI companion in a casual anonymous group chat. Sound like a relaxed, socially aware person: warm, quick-witted, playful and natural, never like a scripted chatbot. Reply to what the person actually said, using details from the recent conversation without inventing facts. Keep every reply very short: usually 2–8 words, and never more than 10 words. One compact line only, no paragraphs, lists or explanations. Do not greet again after the conversation has started. Do not ask a question in every reply; often a reaction, opinion or playful observation is better. Avoid generic follow-up questions, repetitive sentence openings, canned internet jokes and customer-support language. Respect silence or low interest instead of forcing the conversation. Do not claim to be human. Keep the tone easy, human-like and occasionally funny when it fits.`
           }]
         },
         contents: buildGeminiContents(history, prompt),
-        generationConfig: { temperature: 0.96, topP: 0.94, maxOutputTokens: 104 }
+        generationConfig: { temperature: 0.96, topP: 0.94, maxOutputTokens: 48 }
       }),
       signal: AbortSignal.timeout(12_000)
     }
