@@ -21,7 +21,12 @@ export default {
   }
 };
 
-const MAX_PEOPLE = 5;
+const MAX_PEOPLE = 10;
+const ROOM_NAME_MAX = 36;
+const ROOM_DESCRIPTION_MAX = 120;
+const ROOM_PASSWORD_MIN = 4;
+const ROOM_PASSWORD_MAX = 64;
+const ROOM_PASSWORD_ITERATIONS = 120_000;
 const MAX_NAME = 24;
 const MAX_SIGNAL_MESSAGE = 16_384;
 const NEARBY_METERS = 100;
@@ -30,7 +35,7 @@ const COOLDOWN_MS = 5 * 60_000;
 const DELIVERY_TTL_MS = 7 * 24 * 60 * 60_000;
 const BOT_DAILY_LIMIT = 40;
 const BOT_ROOM_LIMIT = 24;
-const BOT_COOLDOWN_MS = 8_000;
+const BOT_COOLDOWN_MS = 45_000;
 
 function deliveryKey(a, b) { return [String(a), String(b)].sort().join(":"); }
 
@@ -47,6 +52,9 @@ export class Matchmaker {
     this.botRequestsByRoom = new Map();
     this.botLastRequest = new Map();
     this.botUsageQueue = Promise.resolve();
+    this.botRequestQueues = new Map();
+    this.roomJoinAttempts = new Map();
+    this.roomCreateAttempts = new Map();
     this.serialQueue = Promise.resolve();
   }
 
@@ -81,7 +89,7 @@ export class Matchmaker {
     const rooms = new Map();
     for (const ws of this.sockets()) {
       const member = this.attachment(ws);
-      if (!member.id || !member.roomId || member.mode !== mode) continue;
+      if (!member.id || !member.roomId || member.mode !== mode || member.roomScope === "custom") continue;
       if (!rooms.has(member.roomId)) rooms.set(member.roomId, []);
       rooms.get(member.roomId).push({ ws, ...member });
     }
@@ -99,7 +107,7 @@ export class Matchmaker {
       try {
         const packet = JSON.parse(message);
         if (packet?.type === "bot-chat" || packet?.type === "bot-nudge") {
-          this.handleBotRequest(ws, packet).catch(() => this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot is taking a little break." }));
+          this.enqueueBotRequest(ws, packet).catch(() => this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot could not reply just now. Try again in a moment." }));
           return;
         }
       } catch {}
@@ -142,7 +150,7 @@ export class Matchmaker {
 
       const location = this.cleanLocation(data.location);
       const roomId = this.chooseRoom(location, { requiredSlots: 1 });
-      ws.serializeAttachment({ id, name, roomId, location, mode: "group" });
+      ws.serializeAttachment({ id, name, roomId, location, mode: "group", roomScope: "random", customRoomId: null });
       const peers = this.peerList(roomId, id);
       this.send(ws, { type: "joined", roomId, peers });
       for (const peer of this.members(roomId)) {
@@ -151,10 +159,18 @@ export class Matchmaker {
       this.broadcastRoomStatus(roomId);
       await this.rebalanceGroupRooms();
       await this.refreshBotRooms();
+      await this.broadcastRoomDirectory();
       return;
     }
 
     if (!current.id) return;
+
+    if (data.type === "rooms-list") { await this.sendRoomDirectory(ws); return; }
+    if (data.type === "room-create") { await this.createNamedRoom(ws, data); return; }
+    if (data.type === "room-join") { await this.joinNamedRoom(ws, data); return; }
+    if (data.type === "room-leave") { await this.leaveNamedRoom(ws); return; }
+    if (data.type === "room-update") { await this.updateNamedRoom(ws, data); return; }
+    if (data.type === "room-delete") { await this.deleteNamedRoom(ws); return; }
 
     if (data.type === "signal") {
       const target = String(data.to || "");
@@ -182,6 +198,7 @@ export class Matchmaker {
       for (const peer of this.members(current.roomId)) {
         if (peer !== ws) this.send(peer, { type: "peer-renamed", id: current.id, name });
       }
+      if (current.customRoomId) { await this.broadcastCustomRoomMembers(current.customRoomId); await this.broadcastRoomDirectory(); }
       return;
     }
 
@@ -222,9 +239,259 @@ export class Matchmaker {
     if (data.type === "leave") await this.remove(ws);
   }
 
+  async getNamedRooms() {
+    const value = await this.ctx.storage.get("named-rooms");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  }
+
+  async saveNamedRooms(rooms) {
+    await this.ctx.storage.put("named-rooms", rooms);
+  }
+
+  namedRoomMembers(roomId) {
+    return this.sockets().map(ws => ({ ws, ...this.attachment(ws) }))
+      .filter(member => member.id && member.customRoomId === roomId && member.roomScope === "custom");
+  }
+
+  namedRoomView(meta) {
+    const members = this.namedRoomMembers(meta.id);
+    return {
+      id: meta.id,
+      name: meta.name,
+      description: meta.description || "",
+      visibility: meta.visibility,
+      keepWhenEmpty: !!meta.keepWhenEmpty,
+      ownerId: meta.ownerId,
+      memberCount: members.length,
+      capacity: MAX_PEOPLE,
+      members: members.map(member => ({ id: member.id, name: member.name || "Guest" })),
+      createdAt: meta.createdAt
+    };
+  }
+
+  async sendRoomDirectory(ws) {
+    const stored = await this.getNamedRooms();
+    const rooms = Object.values(stored)
+      .filter(meta => meta && meta.id)
+      .map(meta => this.namedRoomView(meta))
+      .sort((a, b) => b.memberCount - a.memberCount || a.name.localeCompare(b.name));
+    this.send(ws, { type: "rooms-list", rooms });
+  }
+
+  async broadcastRoomDirectory() {
+    const stored = await this.getNamedRooms();
+    const rooms = Object.values(stored)
+      .filter(meta => meta && meta.id)
+      .map(meta => this.namedRoomView(meta))
+      .sort((a, b) => b.memberCount - a.memberCount || a.name.localeCompare(b.name));
+    const packet = { type: "rooms-list", rooms };
+    for (const ws of this.sockets()) if (this.attachment(ws).id) this.send(ws, packet);
+  }
+
+  async broadcastCustomRoomMembers(roomId) {
+    const meta = (await this.getNamedRooms())[roomId];
+    if (!meta) return;
+    const room = this.namedRoomView(meta);
+    for (const member of this.namedRoomMembers(roomId)) this.send(member.ws, { type: "room-members", room });
+  }
+
+  async cleanupNamedRoom(roomId) {
+    if (!roomId) return;
+    const rooms = await this.getNamedRooms();
+    const meta = rooms[roomId];
+    if (!meta) return;
+    const members = this.namedRoomMembers(roomId);
+    if (!members.length && !meta.keepWhenEmpty) {
+      delete rooms[roomId];
+      await this.saveNamedRooms(rooms);
+      return;
+    }
+    if (members.length && !members.some(member => member.id === meta.ownerId)) {
+      meta.ownerId = members[0].id;
+      meta.ownerName = members[0].name;
+      rooms[roomId] = meta;
+      await this.saveNamedRooms(rooms);
+    }
+  }
+
+  async hashRoomPassword(password, saltHex = null) {
+    const encoder = new TextEncoder();
+    const salt = saltHex
+      ? Uint8Array.from(saltHex.match(/.{1,2}/g).map(part => parseInt(part, 16)))
+      : crypto.getRandomValues(new Uint8Array(16));
+    const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+    const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: ROOM_PASSWORD_ITERATIONS, hash: "SHA-256" }, key, 256);
+    const bytes = new Uint8Array(bits);
+    const hex = [...bytes].map(value => value.toString(16).padStart(2, "0")).join("");
+    return { salt: [...salt].map(value => value.toString(16).padStart(2, "0")).join(""), hash: hex };
+  }
+
+  async verifyRoomPassword(meta, password) {
+    if (!meta.passwordHash || !meta.passwordSalt) return false;
+    const result = await this.hashRoomPassword(password, meta.passwordSalt);
+    if (result.hash.length !== meta.passwordHash.length) return false;
+    let mismatch = 0;
+    for (let index = 0; index < result.hash.length; index++) mismatch |= result.hash.charCodeAt(index) ^ meta.passwordHash.charCodeAt(index);
+    return mismatch === 0;
+  }
+
+  async createNamedRoom(ws, data) {
+    const member = this.attachment(ws);
+    if (!member.id || member.mode !== "group") return this.send(ws, { type: "room-error", message: "Leave your one-to-one chat before creating a room." });
+    const name = String(data.name || "").replace(/[\\\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ROOM_NAME_MAX);
+    const description = String(data.description || "").replace(/[\\\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ROOM_DESCRIPTION_MAX);
+    const visibility = data.visibility === "private" ? "private" : "public";
+    const password = String(data.password || "");
+    if (name.length < 2) return this.send(ws, { type: "room-error", message: "Give your room a name with at least two characters." });
+    if (visibility === "private" && (password.length < ROOM_PASSWORD_MIN || password.length > ROOM_PASSWORD_MAX)) {
+      return this.send(ws, { type: "room-error", message: "Private room passwords must be 4 to 64 characters." });
+    }
+    const now = Date.now();
+    const createdRecently = (this.roomCreateAttempts.get(member.id) || []).filter(time => now - time < 10 * 60_000);
+    if (createdRecently.length >= 3) return this.send(ws, { type: "room-error", message: "You can create up to three rooms every ten minutes." });
+    const rooms = await this.getNamedRooms();
+    if (Object.keys(rooms).length >= 200) return this.send(ws, { type: "room-error", message: "The room directory is full for now." });
+    if (Object.values(rooms).some(room => room.name.toLowerCase() === name.toLowerCase())) {
+      return this.send(ws, { type: "room-error", message: "A room with that name already exists." });
+    }
+    const id = crypto.randomUUID();
+    const credentials = visibility === "private" ? await this.hashRoomPassword(password) : null;
+    const meta = {
+      id, name, description, visibility, keepWhenEmpty: data.keepWhenEmpty === true,
+      ownerId: member.id, ownerName: member.name,
+      passwordSalt: credentials?.salt || null, passwordHash: credentials?.hash || null,
+      createdAt: Date.now()
+    };
+    rooms[id] = meta;
+    await this.saveNamedRooms(rooms);
+    createdRecently.push(now); this.roomCreateAttempts.set(member.id, createdRecently);
+    await this.enterNamedRoom(ws, meta);
+  }
+
+  async joinNamedRoom(ws, data) {
+    const member = this.attachment(ws);
+    if (!member.id || member.mode !== "group") return this.send(ws, { type: "room-error", message: "Leave your one-to-one chat before joining a room." });
+    const roomId = String(data.roomId || "").slice(0, 64);
+    const rooms = await this.getNamedRooms();
+    const meta = rooms[roomId];
+    if (!meta) return this.send(ws, { type: "room-error", message: "That room is no longer available." });
+    if (meta.visibility === "private") {
+      const key = `${member.id}:${roomId}`;
+      const attempts = (this.roomJoinAttempts.get(key) || []).filter(time => Date.now() - time < 60_000);
+      if (attempts.length >= 6) return this.send(ws, { type: "room-error", message: "Too many password attempts. Try again in a minute." });
+      attempts.push(Date.now()); this.roomJoinAttempts.set(key, attempts);
+      const password = String(data.password || "");
+      if (!await this.verifyRoomPassword(meta, password)) return this.send(ws, { type: "room-error", message: "That password doesn't match." });
+      this.roomJoinAttempts.delete(key);
+    }
+    if (meta.id === member.customRoomId) return this.send(ws, { type: "room-entered", room: this.namedRoomView(meta), peers: this.peerList(member.roomId, member.id) });
+    if (this.namedRoomMembers(roomId).length >= MAX_PEOPLE) return this.send(ws, { type: "room-error", message: "This room is full (10/10)." });
+    await this.enterNamedRoom(ws, meta);
+  }
+
+  async enterNamedRoom(ws, meta) {
+    const member = this.attachment(ws);
+    const oldRoom = member.roomId;
+    const oldCustomRoom = member.customRoomId || null;
+    this.send(ws, { type: "bot-stop" });
+    for (const [requestId, request] of this.pendingPrivate.entries()) {
+      if (request.from === member.id || request.to === member.id) {
+        this.pendingPrivate.delete(requestId);
+        const otherId = request.from === member.id ? request.to : request.from;
+        const otherSocket = this.sockets().find(peer => this.attachment(peer).id === otherId);
+        if (otherSocket) this.send(otherSocket, { type: "private-request-expired", requestId });
+      }
+    }
+    for (const peer of this.members(oldRoom)) if (peer !== ws) this.send(peer, { type: "peer-left", id: member.id });
+    const roomId = `named:${meta.id}`;
+    ws.serializeAttachment({ ...member, roomId, mode: "group", roomScope: "custom", customRoomId: meta.id });
+    const peers = this.peerList(roomId, member.id);
+    const room = this.namedRoomView(meta);
+    this.send(ws, { type: "room-entered", room, roomId, peers });
+    for (const peer of this.members(roomId)) if (peer !== ws) this.send(peer, { type: "peer-joined", peer: { id: member.id, name: member.name } });
+    if (oldCustomRoom && oldCustomRoom !== meta.id) await this.cleanupNamedRoom(oldCustomRoom);
+    if (!oldCustomRoom) this.broadcastRoomStatus(oldRoom);
+    await this.refreshBotRooms();
+    await this.broadcastCustomRoomMembers(meta.id);
+    await this.broadcastRoomDirectory();
+  }
+
+  async leaveNamedRoom(ws) {
+    const member = this.attachment(ws);
+    if (!member.id || member.roomScope !== "custom" || !member.customRoomId) return;
+    const oldRoom = member.roomId;
+    const oldCustomRoom = member.customRoomId;
+    for (const peer of this.members(oldRoom)) if (peer !== ws) this.send(peer, { type: "peer-left", id: member.id });
+    const newRoom = this.chooseRoom(member.location, { requiredSlots: 1 });
+    ws.serializeAttachment({ ...member, roomId: newRoom, mode: "group", roomScope: "random", customRoomId: null });
+    const peers = this.peerList(newRoom, member.id);
+    this.send(ws, { type: "joined", roomId: newRoom, peers, scope: "random" });
+    for (const peer of this.members(newRoom)) if (peer !== ws) this.send(peer, { type: "peer-joined", peer: { id: member.id, name: member.name } });
+    await this.cleanupNamedRoom(oldCustomRoom);
+    this.broadcastRoomStatus(newRoom);
+    await this.rebalanceGroupRooms();
+    await this.refreshBotRooms();
+    await this.broadcastCustomRoomMembers(oldCustomRoom);
+    await this.broadcastRoomDirectory();
+  }
+
+  async updateNamedRoom(ws, data) {
+    const member = this.attachment(ws);
+    const roomId = member.customRoomId;
+    if (!roomId || member.roomScope !== "custom") return;
+    const rooms = await this.getNamedRooms();
+    const meta = rooms[roomId];
+    if (!meta || meta.ownerId !== member.id) return this.send(ws, { type: "room-error", message: "Only the room owner can change its settings." });
+    const name = String(data.name || meta.name).replace(/[\\\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ROOM_NAME_MAX);
+    const description = String(data.description || "").replace(/[\\\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ROOM_DESCRIPTION_MAX);
+    const visibility = data.visibility === "private" ? "private" : "public";
+    const password = String(data.password || "");
+    if (name.length < 2) return this.send(ws, { type: "room-error", message: "Room name must contain at least two characters." });
+    if (Object.values(rooms).some(room => room.id !== roomId && room.name.toLowerCase() === name.toLowerCase())) return this.send(ws, { type: "room-error", message: "A room with that name already exists." });
+    if (visibility === "private" && password && (password.length < ROOM_PASSWORD_MIN || password.length > ROOM_PASSWORD_MAX)) return this.send(ws, { type: "room-error", message: "Passwords must be 4 to 64 characters." });
+    if (visibility === "private" && !meta.passwordHash && !password) return this.send(ws, { type: "room-error", message: "Set a password before making this room private." });
+    let credentials = null;
+    if (visibility === "private" && password) credentials = await this.hashRoomPassword(password);
+    meta.name = name; meta.description = description; meta.visibility = visibility;
+    meta.keepWhenEmpty = data.keepWhenEmpty === true;
+    if (visibility === "public") { meta.passwordSalt = null; meta.passwordHash = null; }
+    else if (credentials) { meta.passwordSalt = credentials.salt; meta.passwordHash = credentials.hash; }
+    rooms[roomId] = meta;
+    await this.saveNamedRooms(rooms);
+    const room = this.namedRoomView(meta);
+    for (const person of this.namedRoomMembers(roomId)) this.send(person.ws, { type: "room-updated", room });
+    await this.broadcastRoomDirectory();
+  }
+
+  async deleteNamedRoom(ws) {
+    const member = this.attachment(ws);
+    const roomId = member.customRoomId;
+    if (!roomId || member.roomScope !== "custom") return;
+    const rooms = await this.getNamedRooms();
+    const meta = rooms[roomId];
+    if (!meta || meta.ownerId !== member.id) return this.send(ws, { type: "room-error", message: "Only the room owner can delete this room." });
+    delete rooms[roomId];
+    await this.saveNamedRooms(rooms);
+    const participants = this.namedRoomMembers(roomId).map(person => person.ws);
+    for (const participant of participants) {
+      const person = this.attachment(participant);
+      const oldRoom = person.roomId;
+      for (const peer of this.members(oldRoom)) if (peer !== participant) this.send(peer, { type: "peer-left", id: person.id });
+      const newRoom = this.chooseRoom(person.location, { requiredSlots: 1 });
+      participant.serializeAttachment({ ...person, roomId: newRoom, mode: "group", roomScope: "random", customRoomId: null });
+      const peers = this.peerList(newRoom, person.id);
+      this.send(participant, { type: "joined", roomId: newRoom, peers, scope: "random", notice: "This room was deleted by its owner." });
+      for (const peer of this.members(newRoom)) if (peer !== participant) this.send(peer, { type: "peer-joined", peer: { id: person.id, name: person.name } });
+      this.broadcastRoomStatus(newRoom);
+    }
+    await this.rebalanceGroupRooms();
+    await this.refreshBotRooms();
+    await this.broadcastRoomDirectory();
+  }
+
   async handleDeliveryInvite(ws, targetId) {
     const sender = this.attachment(ws);
-    if (!sender.id || sender.mode !== "group" || !targetId || targetId === sender.id) return;
+    if (!sender.id || sender.mode !== "group" || sender.roomScope === "custom" || !targetId || targetId === sender.id) return;
     const key = deliveryKey(sender.id, targetId);
     const now = Date.now();
     let until = this.deliveryEligible.get(key) || 0;
@@ -238,7 +505,7 @@ export class Matchmaker {
       return;
     }
     const recipient = this.sockets().find(peer => this.attachment(peer).id === targetId);
-    if (!recipient || this.attachment(recipient).mode !== "group") return;
+    if (!recipient || this.attachment(recipient).mode !== "group" || this.attachment(recipient).roomScope === "custom") return;
     const receiver = this.attachment(recipient);
     this.activeDeliveries.set(key, now + 5 * 60_000);
     this.send(ws, { type: "delivery-ready", peer: { id: receiver.id, name: receiver.name } });
@@ -273,8 +540,21 @@ export class Matchmaker {
     this.botRooms.add(roomId);
     this.botRequestsByRoom.set(roomId, 0);
     this.send(members[0], { type: "bot-start" });
-    this.handleBotRequest(members[0], { type: "bot-nudge", history: [], prompt: "Greet the person and ask one relaxed opening question." })
-      .catch(() => this.send(members[0], { type: "bot-unavailable", message: "Nerukko Bot is taking a little break." }));
+    this.enqueueBotRequest(members[0], { type: "bot-nudge", history: [], prompt: "Give a warm, low-pressure hello with a little personality. Keep it natural, not like a scripted welcome." })
+      .catch(() => this.send(members[0], { type: "bot-unavailable", message: "Nerukko Bot could not join just now. Try again in a moment." }));
+  }
+
+  enqueueBotRequest(ws, data) {
+    const roomId = this.attachment(ws).roomId;
+    if (!roomId) return Promise.resolve();
+    const previous = this.botRequestQueues.get(roomId) || Promise.resolve();
+    const queued = previous.catch(() => {}).then(() => this.handleBotRequest(ws, data));
+    this.botRequestQueues.set(roomId, queued);
+    const cleanup = () => {
+      if (this.botRequestQueues.get(roomId) === queued) this.botRequestQueues.delete(roomId);
+    };
+    queued.then(cleanup, cleanup);
+    return queued;
   }
 
   reserveBotDailySlot(day) {
@@ -291,14 +571,19 @@ export class Matchmaker {
 
   async handleBotRequest(ws, data) {
     const member = this.attachment(ws);
-    if (!member.id || member.mode !== "group" || !member.roomId || !this.env.GEMINI_API_KEY) return;
+    if (!member.id || member.mode !== "group" || member.roomScope === "custom" || !member.roomId || !this.env.GEMINI_API_KEY) return;
     const members = this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group");
     // Membership is authoritative. Do not depend on botRooms, which is only
     // an in-memory cache and may be empty after Durable Object hibernation.
     if (members.length !== 1 || members[0] !== ws) return;
     const now = Date.now();
-    const last = this.botLastRequest.get(member.roomId) || 0;
-    if (now - last < BOT_COOLDOWN_MS) return;
+    // Automatic nudges are rate-limited, but a real message from the person is
+    // never silently dropped by this timer. Room requests are queued in order.
+    if (data.type === "bot-nudge") {
+      const last = this.botLastRequest.get(member.roomId) || 0;
+      if (now - last < BOT_COOLDOWN_MS) return;
+      this.botLastRequest.set(member.roomId, now);
+    }
     const roomCount = this.botRequestsByRoom.get(member.roomId) || 0;
     if (roomCount >= BOT_ROOM_LIMIT) return this.send(ws, { type: "bot-unavailable", message: "Nerukko Bot has reached its chat limit for now." });
     const day = new Date().toISOString().slice(0, 10);
@@ -312,7 +597,7 @@ export class Matchmaker {
     }
     const prompt = data.type === "bot-chat"
       ? ""
-      : String(data.prompt || "Continue naturally. Offer a fresh topic or a tiny game.").slice(0, 700).trim();
+      : String(data.prompt || "Continue naturally. Add a small playful observation or invite them into a low-pressure mini-topic.").slice(0, 700).trim();
     const reply = await generateNerukkoBotReply(this.env.GEMINI_API_KEY, history, prompt);
     const stillAlone = this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group").length === 1 && this.attachment(ws).id === member.id;
     if (!stillAlone) return;
@@ -480,7 +765,10 @@ export class Matchmaker {
 
   createPrivateRequest(ws, targetId) {
     const sender = this.attachment(ws);
-    if (sender.mode !== "group" || !targetId || targetId === sender.id) return;
+    if (sender.mode !== "group" || sender.roomScope === "custom" || !targetId || targetId === sender.id) {
+      if (sender.roomScope === "custom") this.send(ws, { type: "private-error", message: "Private one-to-one requests are available in random chat." });
+      return;
+    }
     const targetSocket = this.members(sender.roomId).find(peer => this.attachment(peer).id === targetId);
     if (!targetSocket) {
       this.send(ws, { type: "private-error", message: "That person is no longer in your room." });
@@ -544,8 +832,8 @@ export class Matchmaker {
         this.send(peer, { type: "peer-left", id: requester.id });
       }
     }
-    ws.serializeAttachment({ ...recipient, roomId: newRoom, mode: "private" });
-    requesterSocket.serializeAttachment({ ...requester, roomId: newRoom, mode: "private" });
+    ws.serializeAttachment({ ...recipient, roomId: newRoom, mode: "private", roomScope: "random", customRoomId: null });
+    requesterSocket.serializeAttachment({ ...requester, roomId: newRoom, mode: "private", roomScope: "random", customRoomId: null });
     this.send(ws, { type: "private-start", roomId: newRoom, peer: { id: requester.id, name: requester.name } });
     this.send(requesterSocket, { type: "private-start", roomId: newRoom, peer: { id: recipient.id, name: recipient.name } });
     this.broadcastRoomStatus(oldRoom);
@@ -562,7 +850,7 @@ export class Matchmaker {
     const newRoomId = room;
     for (const ws of privateMembers) {
       const member = this.attachment(ws);
-      ws.serializeAttachment({ ...member, roomId: newRoomId, mode: "group" });
+      ws.serializeAttachment({ ...member, roomId: newRoomId, mode: "group", roomScope: "random", customRoomId: null });
     }
     const groupSockets = this.members(newRoomId);
     const allPeople = groupSockets.map(ws => this.attachment(ws));
@@ -610,7 +898,7 @@ export class Matchmaker {
     const oldRoom = member.roomId;
     const wasPrivate = member.mode === "private";
     const oldRoomPeers = this.members(oldRoom).filter(peer => peer !== ws);
-    if (offline && !wasPrivate) {
+    if (offline && !wasPrivate && member.roomScope !== "custom") {
       const expires = Date.now() + DELIVERY_TTL_MS;
       for (const peer of oldRoomPeers) {
         const other = this.attachment(peer);
@@ -619,7 +907,7 @@ export class Matchmaker {
         await this.ctx.storage.put(`delivery:${key}`, expires);
       }
     }
-    try { ws.serializeAttachment({ id: null, name: "", roomId: null, location: null, mode: "group" }); } catch {}
+    try { ws.serializeAttachment({ id: null, name: "", roomId: null, location: null, mode: "group", roomScope: null, customRoomId: null }); } catch {}
 
     for (const [id, request] of this.pendingPrivate.entries()) {
       if (request.from === member.id || request.to === member.id) {
@@ -631,22 +919,27 @@ export class Matchmaker {
     }
     this.requestRate.delete(member.id);
     for (const peer of this.members(oldRoom)) {
-      if (offline && !wasPrivate) this.send(peer, { type: "peer-offline", peer: { id: member.id, name: member.name } });
+      if (offline && !wasPrivate && member.roomScope !== "custom") this.send(peer, { type: "peer-offline", peer: { id: member.id, name: member.name } });
       else this.send(peer, { type: "peer-left", id: member.id });
     }
     this.broadcastRoomStatus(oldRoom);
+    if (member.customRoomId) {
+      await this.cleanupNamedRoom(member.customRoomId);
+      await this.broadcastCustomRoomMembers(member.customRoomId);
+    }
 
     if (wasPrivate) {
       const remaining = this.members(oldRoom).find(peer => this.attachment(peer).mode === "private");
       if (remaining) {
         const person = this.attachment(remaining);
         const roomId = this.chooseRoom(person.location, { requiredSlots: 1, exclude: new Set([oldRoom]) });
-        remaining.serializeAttachment({ ...person, roomId, mode: "group" });
+        remaining.serializeAttachment({ ...person, roomId, mode: "group", roomScope: "random", customRoomId: null });
         this.syncRoom(roomId);
       }
     }
     if (rebalance) await this.rebalanceGroupRooms();
     await this.refreshBotRooms();
+    if (member.customRoomId) await this.broadcastRoomDirectory();
   }
 
   webSocketClose(ws) { return this.runSerial(() => this.remove(ws, { offline: true })); }
