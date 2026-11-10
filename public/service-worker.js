@@ -1,4 +1,4 @@
-const CACHE_NAME = "nerukko-shell-v11";
+const CACHE_NAME = "nerukko-shell-v12";
 const APP_SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", event => {
