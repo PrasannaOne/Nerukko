@@ -4,8 +4,15 @@ import { buildGeminiContents, clampBotReply, generateNerukkoBotReply } from "../
 
 assert.equal(
   clampBotReply("One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree"),
-  "One two three four five six seven eight"
+  "One two three four five six seven eight nine ten"
 );
+assert.equal(clampBotReply("Aw that sounds lovely, tell me more about your trip to the hills please"), "Aw that sounds lovely, tell me more about your trip");
+assert.equal(clampBotReply("Love that! Honestly I think you should absolutely go for it tomorrow"), "Love that!");
+assert.equal(clampBotReply("Hey, so glad you stopped by to chat with us and the"), "Hey, so glad you stopped by to chat with us");
+assert.equal(clampBotReply("It really made my day to hear from you and"), "It really made my day to hear from you and");
+assert.equal(clampBotReply("That is a great idea, you should totally try it with the"), "That is a great idea, you should totally try it");
+assert.ok(clampBotReply("a b c d e f g h i j k l").split(" ").length <= 10);
+assert.equal(clampBotReply("Nice to meet you!"), "Nice to meet you!");
 
 const firstUserTurn = buildGeminiContents([
   { role: "model", text: "Hey there!" },
@@ -45,7 +52,7 @@ try {
   assert.equal(requestedBody.contents[0].role, "user");
   assert.equal(requestedBody.contents[0].parts[0].text, "Hlo");
   const persona = requestedBody.systemInstruction.parts[0].text;
-  assert.ok(persona.includes("usually 2–6 words") && persona.includes("never more than 8"),
+  assert.ok(persona.includes("usually 4–8 words") && persona.includes("never more than 10") && persona.includes("warm, kind and upbeat"),
     "The Bot prompt should enforce tiny, natural chat replies");
 
   const socket = {

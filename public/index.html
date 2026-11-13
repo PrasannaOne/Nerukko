@@ -270,6 +270,62 @@
       .modal-panel { border-radius: 17px; }
     }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition-duration:.01ms !important; animation-duration:.01ms !important; } }
+
+    /* ===== V14 refinements: no sideways scroll, compact bubbles, sticker bubbles, all screen sizes ===== */
+    html, body { overflow-x: hidden; }
+    .app-shell { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+    .messages { overflow-x: hidden; overflow-y: auto; padding: 6px 8px 8px; gap: 2px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+    .message { display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 8px; max-width: min(86%, 560px); padding: 5px 9px 4px; }
+    .message > .message-author, .message > .quoted-message, .message > .pending-note, .message > .pending-sticker-note { flex: 0 0 100%; min-width: 0; }
+    .message > .message-body { flex: 0 1 auto; min-width: 0; margin-top: 1px; }
+    .message > .message-time { flex: none; margin: 0 0 1px auto; padding-left: 4px; }
+    .message.media-message { display: block; }
+    .message.media-message > .message-time { margin: 3px 0 0; }
+    .message.sticker-message { display: block; width: fit-content; max-width: none; padding: 0; background: transparent; border-radius: 0; }
+    .message.sticker-message .message-author { display: inline-flex; margin: 0 0 3px 2px; }
+    .message.sticker-message .message-time { margin: 1px 3px 0 0; }
+    .message-media.sticker-media { display: block; width: clamp(92px, 32vw, 132px); height: auto; aspect-ratio: 1 / 1; max-width: none; max-height: none; margin: 0; object-fit: contain; border-radius: 0; background: transparent; }
+    .message-media { max-width: min(260px, 62vw); }
+    .message-body { overflow-wrap: anywhere; word-break: break-word; }
+    .empty-state { max-width: 100%; }
+    .message .reply-swipe-indicator { display: none; }
+    .message.swiping .reply-swipe-indicator { display: grid; }
+    .messages { touch-action: pan-y; overscroll-behavior-x: none; }
+    .composer-field { min-height: 46px; }
+    .composer-editor { min-height: 44px; padding-top: 11px; padding-bottom: 11px; }
+    .send-button { width: 46px; height: 46px; }
+    .entry-view { max-height: 100%; overflow-y: auto; overflow-x: hidden; }
+    .sticker-result img { padding: 2px; }
+    .person-row .small-action.has-unread { border-color: var(--accent); color: var(--accent); }
+    .person-info small.unread { color: var(--accent); font-weight: 700; }
+
+    @media (min-width: 700px) {
+      .app-shell { width: min(780px, 100%); padding-left: 24px; padding-right: 24px; }
+      .messages { padding: 8px 12px 10px; gap: 3px; }
+      .message { max-width: min(74%, 560px); }
+      .message-body { font-size: 15.5px; }
+      .sticker-panel:not(.is-creating) { left: 0; right: 0; margin: 0 auto; width: min(480px, calc(100% - 24px)); bottom: 84px; }
+      .composer-field { min-height: 50px; }
+      .send-button { width: 50px; height: 50px; }
+    }
+    @media (min-width: 1100px) {
+      .app-shell { width: min(860px, 100%); border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+    }
+    @media (max-width: 360px) {
+      .app-shell { padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right)); }
+      .brand { font-size: 18px; }
+      .top-actions { gap: 2px; }
+      .message { max-width: 90%; }
+      .sticker-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-height: 520px) and (orientation: landscape) {
+      .topbar-inner { min-height: 38px; }
+      .entry-view { padding: 8px 0 16px; }
+      .composer-field { min-height: 42px; }
+      .composer-editor { min-height: 40px; padding-top: 9px; padding-bottom: 9px; max-height: 80px; }
+      .send-button { width: 42px; height: 42px; }
+      .sticker-panel:not(.is-creating) { height: 64dvh; min-height: 0; }
+    }
   </style>
 </head>
 <body>
@@ -303,7 +359,7 @@
           <input class="text-input" id="nameInput" maxlength="24" autocomplete="nickname" placeholder="Choose a nickname" aria-label="Choose a nickname" required>
           <button class="primary-button" id="joinButton" type="submit">Enter chat</button>
         </form>
-        <p class="entry-location-note">Location is how Nerukko finds nearby people and rooms. The server uses an approximate location for matching and discovery; it is not shown to other members. A room’s approximate creation point is retained only while that room exists. If you decline permission, random chat still works through the fallback matching pool, but nearby Rooms need location.</p>
+        <p class="entry-location-note">Location is how Nerukko finds nearby people and rooms. The server uses an approximate location for matching and discovery; it is not shown to other members. A room’s approximate creation point is retained only while that room exists. If you decline permission, Nerukko uses the rough city-level area of your internet connection so random chat can still find people near you; it is never shown to anyone, and nearby Rooms still need real location.</p>
         <div class="entry-state" id="entryState" aria-live="polite"></div>
       </section>
 
@@ -436,7 +492,7 @@
         <div class="theme-options"><button class="theme-choice" type="button" data-theme-choice="dark">Dark</button><button class="theme-choice" type="button" data-theme-choice="light">Light</button></div>
       </div>
       <div class="setting-section">
-        <div class="setting-row"><div style="flex:1"><span class="setting-label">Location</span><div class="setting-copy">Location is part of how Nerukko works. It helps match you with nearby people and show nearby rooms. The server uses an approximate location for nearby matching and room discovery. It is not shown to other members; a room’s approximate creation point is retained only while that room exists. If you decline permission, random matching uses the fallback pool and Rooms remain unavailable.</div></div><button class="setting-action" id="locationButton" type="button">Enable</button></div>
+        <div class="setting-row"><div style="flex:1"><span class="setting-label">Location</span><div class="setting-copy">Location is part of how Nerukko works. It helps match you with nearby people and show nearby rooms. The server uses an approximate location for nearby matching and room discovery. It is not shown to other members; a room’s approximate creation point is retained only while that room exists. If you decline permission, matching uses the rough city-level area of your internet connection instead, and Rooms remain unavailable.</div></div><button class="setting-action" id="locationButton" type="button">Enable</button></div>
       </div>
       <div class="setting-section">
         <span class="setting-label">Blocked users</span>
@@ -454,7 +510,7 @@
       </div>
       <div class="about-section">
         <h3>How it works</h3>
-        <p>Random groups and nearby rooms hold up to seven people. Location is the normal way Nerukko finds nearby people and rooms. It is used only for matching and discovery, never shown to other members. If permission is declined, random matching uses the fallback priority system.</p>
+        <p>Random groups and nearby rooms hold up to seven people. Location is the normal way Nerukko finds nearby people and rooms. It is used only for matching and discovery, never shown to other members. If permission is declined, random matching uses the rough city-level area of your connection instead.</p>
       </div>
       <div class="about-section">
         <h3>Messages and privacy</h3>
@@ -462,7 +518,7 @@
       </div>
       <div class="about-section">
         <h3>Private chats and stickers</h3>
-        <p>One accepted invitation moves two people into a separate one-to-one conversation. Nearby Rooms shows up to ten public and ten private rooms in your area. Rooms are fixed to their creation location and disappear when empty, immediately or after at most 24 hours. Images and GIFs are private-only; lightweight stickers work in group, room and private chats. Stickers you create are saved on your device, and pending stickers wait locally until a person arrives.</p>
+        <p>One accepted invitation moves two people into a separate one-to-one conversation. Nearby Rooms shows up to ten public and ten private rooms in your area. Rooms are fixed to their creation location and disappear when empty, immediately or after at most 24 hours. Images and GIFs are private-only, and photos are shrunk automatically before sending; lightweight stickers work in group, room and private chats. Stickers you create are saved on your device, and pending stickers wait locally until a person arrives.</p>
       </div>
       <div class="about-section">
         <h3>Nerukko Bot</h3>
@@ -566,7 +622,10 @@
     received: 'nerukko_received_delivery_ids', stickerRecent: 'nerukko_sticker_recent_v1',
     stickerFavorites: 'nerukko_sticker_favorites_v1', blocked: 'nerukko_blocked_users_v1', friends:'nerukko_friends_v1', dmHistory:'nerukko_dm_history_v1'
   };
-  const MAX_MEDIA_BYTES = 2 * 1024 * 1024;
+  const MAX_MEDIA_BYTES = 2 * 1024 * 1024;      // stickers and shrunk photos on the wire
+  const MAX_IMAGE_BYTES = 8 * 1024 * 1024;      // GIFs cannot be shrunk, so they get more room
+  const MAX_PICK_BYTES = 30 * 1024 * 1024;      // biggest photo we will try to shrink
+  const TARGET_PHOTO_BYTES = 1_200_000;
   const MEDIA_CHUNK_BYTES = 12 * 1024;
   const state = {
     id: getOrCreateId(), name: '', profileAvatar: storage.getItem('nerukko_profile_avatar_v1') || '', remoteAvatars: new Map(), ws: null, roomId: null, mode: 'group', location: null, customRoom: null, roomListings: [],
@@ -578,8 +637,74 @@
     replyTarget: null, botActive: false, botHistory: [],
     autoReconnect: false, reconnectTimer: null, reconnectAttempt: 0,
     heartbeat: null, locationRefresh: null, deliveryTimer: null, lastLocationUpdate: 0, cooldownUntil: 0,
-    remoteTyping: new Map(), typingTimer: null, lastTypingSent: 0
+    remoteTyping: new Map(), typingTimer: null, lastTypingSent: 0,
+    offlineDm: false, groupDom: null, groupUrls: null, peerRate: new Map(), leaveTimer: 0
   };
+
+  function readStoredArray(key) {
+    try { const value = JSON.parse(storage.getItem(key) || '[]'); return Array.isArray(value) ? value : []; }
+    catch { return []; }
+  }
+  function allowPeerPacket(peerId, limit = 40, windowMs = 5000) {
+    const now = Date.now(); const entry = state.peerRate.get(peerId);
+    if (!entry || now - entry.start > windowMs) { state.peerRate.set(peerId, { start:now, count:1 }); return true; }
+    entry.count++; return entry.count <= limit;
+  }
+  function unreadCount(peerId) {
+    const list = Array.isArray(state.dmHistory[peerId]) ? state.dmHistory[peerId] : [];
+    return list.filter(item => item && item.unread).length;
+  }
+  function totalUnreadFriends() { return [...state.friends.keys()].filter(id => unreadCount(id) > 0).length; }
+  function markDmRead(peerId) {
+    const list = Array.isArray(state.dmHistory[peerId]) ? state.dmHistory[peerId] : [];
+    let changed = false;
+    for (const item of list) if (item && item.unread) { item.unread = false; changed = true; }
+    if (changed) { saveDmHistory(); renderFriendsList(); updateDrawer(); }
+  }
+  function storeDirectMessage(peerId, item) {
+    const list = Array.isArray(state.dmHistory[peerId]) ? state.dmHistory[peerId] : [];
+    if (list.some(entry => entry.id === item.id)) return;
+    list.push(item); state.dmHistory[peerId] = list.slice(-100); saveDmHistory();
+  }
+  function dropOfflineDmStash() {
+    for (const url of state.groupUrls || []) URL.revokeObjectURL(url);
+    state.groupDom = null; state.groupUrls = null; state.offlineDm = false;
+  }
+  function enterOfflineDm(friend) {
+    if (!friend?.id) return;
+    if (!state.offlineDm) {
+      state.groupDom = document.createDocumentFragment();
+      const box = $('messages');
+      while (box.firstChild) state.groupDom.append(box.firstChild);
+      state.groupUrls = state.mediaUrls; state.mediaUrls = [];
+    }
+    state.offlineDm = true; state.mode = 'private'; state.activePrivate = { id:friend.id, name:friend.name };
+    restorePrivateHistory(state.activePrivate);
+    renderPendingStickerMessages();
+    refreshRoomBar(); updateDrawer(); closeDrawer();
+  }
+  function exitOfflineDm() {
+    if (!state.offlineDm) return;
+    const saved = state.groupDom, urls = state.groupUrls;
+    state.offlineDm = false; state.groupDom = null; state.groupUrls = null;
+    state.mode = 'group'; state.activePrivate = null;
+    clearMessages();
+    state.mediaUrls = urls || [];
+    if (saved && [...saved.children].some(node => node.classList?.contains('message'))) { $('emptyState')?.remove(); $('messages').append(saved); }
+    refreshRoomBar(); updateDrawer();
+    $('messages').scrollTop = $('messages').scrollHeight;
+  }
+  function leavePrivateChat() {
+    if (state.offlineDm) { exitOfflineDm(); closeDrawer(); showToast('Back in random chat.'); return; }
+    sendServer({ type:'private-end' }); closeDrawer(); showToast('Leaving conversation…');
+    clearTimeout(state.leaveTimer);
+    state.leaveTimer = setTimeout(() => {
+      if (state.mode !== 'private') return;
+      // The server never confirmed (out of sync). Rejoin cleanly instead of leaving the person stuck.
+      try { state.ws?.close(4001, 'Resync'); } catch {}
+      state.mode = 'group'; state.activePrivate = null; clearMessages(); refreshRoomBar(); updateDrawer();
+    }, 3000);
+  }
 
   function loadFriends() {
     try {
@@ -612,11 +737,12 @@
     clearMessages();
     if (!peer?.id) return;
     const list = Array.isArray(state.dmHistory[peer.id]) ? state.dmHistory[peer.id] : [];
-    if (!list.length) return;
+    if (!list.length) { markDmRead(peer.id); return; }
     $('emptyState')?.remove();
     for (const item of list.slice(-100)) {
-      if (item.kind === 'text') addMessage(item.name,item.text,item.mine, item.mine ? state.id : peer.id,{messageId:item.id,replyTo:item.replyTo,skipHistory:true});
+      if (item.kind === 'text') addMessage(item.name,item.text,item.mine, item.mine ? state.id : peer.id,{messageId:item.id,replyTo:item.replyTo,skipHistory:true,dm:true});
     }
+    updatePendingNote(); markDmRead(peer.id);
     $('messages').scrollTop = $('messages').scrollHeight;
   }
   function renderFriendsList() {
@@ -625,14 +751,16 @@
     if (!state.friends.size) { const empty=document.createElement('div'); empty.className='drawer-empty'; empty.textContent='Accepted private friends will stay here.'; host.append(empty); return; }
     for (const friend of state.friends.values()) {
       const online = state.remotePeers.has(friend.id);
+      const unread = unreadCount(friend.id);
       const row=document.createElement('div'); row.className='person-row';
       const avatar=makeAvatarNode(friend.id,'person-avatar'); row.append(avatar);
       const info=document.createElement('div'); info.className='person-info';
       const name=document.createElement('strong'); name.textContent=friend.name;
-      const sub=document.createElement('small'); sub.textContent=online?'Online nearby':'Not online';
+      const sub=document.createElement('small'); sub.textContent=unread ? `${unread} new message${unread===1?'':'s'}` : (online?'Online nearby':'Not online · you can still message');
+      if (unread) sub.className='unread';
       info.append(name,sub); row.append(info);
-      const action=document.createElement('button'); action.type='button'; action.className='small-action'; action.textContent=online?'Chat':'History';
-      action.addEventListener('click',()=>{ if(online){state.selectedProfile={id:friend.id,name:friend.name};requestPrivate();} else { state.mode='private'; state.activePrivate={id:friend.id,name:friend.name}; clearMessages(); restorePrivateHistory(state.activePrivate); refreshRoomBar(); closeDrawer(); showToast('Not online · Showing saved history'); } });
+      const action=document.createElement('button'); action.type='button'; action.className='small-action'+(unread?' has-unread':''); action.textContent=online?'Chat':'Message';
+      action.addEventListener('click',()=>{ if(online){state.selectedProfile={id:friend.id,name:friend.name};requestPrivate();} else { enterOfflineDm({id:friend.id,name:friend.name}); } });
       row.append(action); host.append(row);
     }
   }
@@ -701,7 +829,7 @@
     state.mediaUrls = [];
     $('messages').replaceChildren();
     const empty = document.createElement('div'); empty.className = 'empty-state'; empty.id = 'emptyState';
-    empty.textContent = state.mode === 'private' ? (state.remotePeers?.size ? 'Say hello.' : 'Not online') : 'No users found'; $('messages').append(empty);
+    empty.textContent = state.offlineDm ? "Not online · messages will send when they're back" : state.mode === 'private' ? (state.remotePeers?.size ? 'Say hello.' : 'Not online') : (state.remotePeers?.size ? 'Say hello.' : 'No users found'); $('messages').append(empty);
   }
 
   function makeAvatarNode(id, className = 'message-avatar') {
@@ -807,7 +935,6 @@
         article.classList.add('swiping');
         const travel = Math.min(directed,42);
         article.style.transform = `translateX(${direction * travel}px)`;
-        indicator.style.transform = `translateY(-50%) scale(1) translateX(${-direction * travel}px)`;
       } else if (Math.abs(dy) > 26) {
         article.classList.remove('swiping'); article.style.transform = ''; indicator.style.transform = ''; start = null;
       }
@@ -822,6 +949,7 @@
     article.addEventListener('pointerup', finish);
     article.addEventListener('pointercancel', () => { start=null; article.classList.remove('swiping'); article.style.transform=''; indicator.style.transform=''; });
   }
+  $('messages').addEventListener('scroll', () => { const box = $('messages'); if (box.scrollLeft) box.scrollLeft = 0; }, { passive:true });
   function isNearMessageBottom() {
     const box = $('messages');
     return box.scrollHeight - box.scrollTop - box.clientHeight < 140;
@@ -833,9 +961,8 @@
     try { return new Intl.DateTimeFormat(undefined, { hour:'numeric', minute:'2-digit' }).format(new Date()); }
     catch { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
   }
-  function applyMessageGrouping(article, name, peerId, mine, allowGroup = true) {
+  function applyMessageGrouping(article, name, peerId, mine, allowGroup = true, box = $('messages')) {
     const senderKey = String(peerId || (mine ? state.id : `name:${name || 'Guest'}`));
-    const box = $('messages');
     const previous = box.lastElementChild;
     const recentSameSender = previous?.classList?.contains('message') && previous.dataset.senderKey === senderKey &&
       Date.now() - Number(previous.dataset.createdAt || 0) < 90_000 && allowGroup && !article.querySelector('.quoted-message');
@@ -850,27 +977,32 @@
     time.textContent = formatMessageTime();
     article.append(time);
   }
+  function messageHost(isDm = false) {
+    return state.offlineDm && !isDm && state.groupDom ? state.groupDom : $('messages');
+  }
   function addMessage(name, text, mine = false, peerId = null, options = {}) {
     if (!mine && isBlocked(peerId)) return null;
-    const shouldScroll = isNearMessageBottom();
-    $('emptyState')?.remove();
+    const host = messageHost(!!options.dm);
+    const live = host === $('messages');
+    const shouldScroll = live && isNearMessageBottom();
+    if (live) $('emptyState')?.remove();
     const messageId = String(options.messageId || createId());
     const article = document.createElement('article'); article.className = 'message' + (mine ? ' mine' : '');
     article.dataset.messageId = messageId;
     const quote = quoteBlock(options.replyTo); if (quote) article.append(quote);
-    applyMessageGrouping(article, name, peerId, mine, !options.replyTo);
+    applyMessageGrouping(article, name, peerId, mine, !options.replyTo, host);
     if (!mine && !article.classList.contains('grouped')) article.prepend(messageAuthor(name, peerId || null));
     const body = document.createElement('div'); body.className = 'message-body'; body.textContent = text;
-    article.append(body); appendMessageTime(article); $('messages').append(article);
-    if (state.mode === 'private' && state.activePrivate?.id && !options.skipHistory) rememberPrivateMessage(state.activePrivate.id,{id:messageId,kind:'text',name:String(name||'Guest'),text:String(text),mine:!!mine,replyTo:options.replyTo||null,at:Date.now()});
+    article.append(body); appendMessageTime(article); host.append(article);
+    if (state.mode === 'private' && state.activePrivate?.id && !options.skipHistory && (!state.offlineDm || options.dm)) rememberPrivateMessage(state.activePrivate.id,{id:messageId,kind:'text',name:String(name||'Guest'),text:String(text),mine:!!mine,replyTo:options.replyTo||null,at:Date.now()});
     enableSwipeReply(article, { id:messageId, name:String(name || 'Guest'), text:String(text).slice(0,1000) }, mine);
-    preserveMessageScroll(shouldScroll);
+    if (live) preserveMessageScroll(shouldScroll);
     if (options.pending) updatePendingNote();
     return article;
   }
   function restorePendingMessages() {
     const existing = new Set([...$('messages').querySelectorAll('.message[data-message-id]')].map(node => node.dataset.messageId));
-    for (const item of state.pendingDeliveries) if (!existing.has(item.id)) {
+    for (const item of state.pendingDeliveries) if (!item.dm && !existing.has(item.id)) {
       addMessage(item.name || state.name, item.text, true, state.id, { messageId:item.id, replyTo:item.replyTo, pending:true });
     }
     updatePendingNote();
@@ -899,22 +1031,28 @@
     if (!channel || channel.readyState !== 'open') return;
     const items = state.pendingDeliveries.filter(item => item.recipients.some(person => person.id === peerId));
     for (const item of items) {
-      try { channel.send(JSON.stringify({ type:'chat', name:item.name, text:item.text, messageId:item.id, replyTo:item.replyTo || null, deliveryId:item.id })); }
+      try { channel.send(JSON.stringify({ type:'chat', name:item.name, text:item.text, messageId:item.id, replyTo:item.replyTo || null, deliveryId:item.id, dm:!!item.dm })); }
       catch (error) { console.warn('Pending message could not be handed off.', error); }
     }
   }
 
-  function addMediaMessage(name, peerId, blob, mine = false, mediaKind = 'image') {
+  function addMediaMessage(name, peerId, blob, mine = false, mediaKind = 'image', options = {}) {
     if (!mine && isBlocked(peerId)) return null;
-    const shouldScroll = isNearMessageBottom();
-    $('emptyState')?.remove();
-    const article = document.createElement('article'); article.className = 'message' + (mine ? ' mine' : '');
-    applyMessageGrouping(article, name, peerId, mine, true);
+    const host = messageHost(!!options.dm);
+    const live = host === $('messages');
+    const shouldScroll = live && isNearMessageBottom();
+    if (live) $('emptyState')?.remove();
+    const article = document.createElement('article');
+    article.className = 'message media-message' + (mediaKind === 'sticker' ? ' sticker-message' : '') + (mine ? ' mine' : '');
+    applyMessageGrouping(article, name, peerId, mine, true, host);
     if (!mine && !article.classList.contains('grouped')) article.append(messageAuthor(name, peerId || null));
+    if (mediaKind === 'sticker') article.classList.remove('grouped');
     const image = document.createElement('img'); image.className = 'message-media' + (mediaKind === 'sticker' ? ' sticker-media' : '');
-    const url = URL.createObjectURL(blob); state.mediaUrls.push(url); image.src = url; image.alt = mediaKind === 'sticker' ? 'Sticker' : 'Shared image'; image.loading = 'lazy';
+    const url = URL.createObjectURL(blob);
+    if (live) state.mediaUrls.push(url); else (state.groupUrls ||= []).push(url);
+    image.src = url; image.alt = mediaKind === 'sticker' ? 'Sticker' : 'Shared image'; image.loading = 'lazy';
     image.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
-    article.append(image); appendMessageTime(article); $('messages').append(article); preserveMessageScroll(shouldScroll);
+    article.append(image); appendMessageTime(article); host.append(article); if (live) preserveMessageScroll(shouldScroll);
     return article;
   }
 
@@ -973,12 +1111,13 @@
       $('privateName').textContent = state.activePrivate.name || 'Private chat';
       $('privateAvatar').textContent = initial(state.activePrivate.name);
     }
-    $('attachButton').hidden = state.mode !== 'private';
-    $('cameraButton').hidden = state.mode !== 'private';
+    $('attachButton').hidden = state.mode !== 'private' || state.offlineDm;
+    $('cameraButton').hidden = state.mode !== 'private' || state.offlineDm;
     $('stickerButton').hidden = false;
     const count = state.privateRequests.size;
-    $('requestDot').hidden = count === 0;
-    $('requestDot').textContent = count > 9 ? '9+' : String(count);
+    const dotCount = count + totalUnreadFriends();
+    $('requestDot').hidden = dotCount === 0;
+    $('requestDot').textContent = dotCount > 9 ? '9+' : String(dotCount);
     $('peopleSection').hidden = state.mode !== 'group';
     $('privateRequestsSection').hidden = state.customRoom !== null || state.mode !== 'group';
     refreshRoomBar(); renderFriendsList();
@@ -1044,7 +1183,7 @@
     $('roomBar').hidden = !(room || privateChat);
     if (privateChat) {
       $('roomBarName').replaceChildren(); const nameWrap=document.createElement('span'); nameWrap.className='private-name-wrap'; nameWrap.append(makeAvatarNode(state.activePrivate.id,'private-name-avatar')); const nameText=document.createElement('span'); nameText.textContent=state.activePrivate.name || 'Private conversation'; nameWrap.append(nameText); $('roomBarName').append(nameWrap);
-      $('roomBarMeta').textContent = 'Private conversation';
+      $('roomBarMeta').textContent = state.offlineDm ? 'Offline · will send when they are back' : 'Private conversation';
       $('roomSettingsButton').hidden = false;
       $('roomSettingsButton').title = 'Conversation settings';
       $('roomSettingsButton').setAttribute('aria-label', 'Conversation settings');
@@ -1211,8 +1350,9 @@
     }
     try {
       const packet = JSON.parse(data);
+      if (!packet || typeof packet !== 'object' || !allowPeerPacket(peer.id)) return;
       if (packet.type === 'profile') {
-        const avatar = typeof packet.avatar === 'string' && packet.avatar.startsWith('data:image/') && packet.avatar.length <= 18000 ? packet.avatar : '';
+        const avatar = typeof packet.avatar === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(packet.avatar) && packet.avatar.length <= 18000 ? packet.avatar : '';
         state.remoteAvatars.set(peer.id, avatar);
         if (typeof packet.name === 'string' && packet.name.trim()) { peer.name = packet.name.trim().slice(0,24); if(state.friends.has(peer.id)){state.friends.get(peer.id).name=peer.name;saveFriends();} }
         refreshAvatarDisplays(peer.id);
@@ -1220,9 +1360,25 @@
         updateDrawer(); return;
       }
       if (packet.type === 'chat' && typeof packet.text === 'string') {
-        const seen = packet.deliveryId ? new Set(JSON.parse(storage.getItem(STORAGE.received) || '[]')) : null;
+        const seen = packet.deliveryId ? new Set(readStoredArray(STORAGE.received)) : null;
         if (!packet.deliveryId || !seen.has(packet.deliveryId)) {
-          addMessage(String(packet.name || peer.name || 'Guest').slice(0, 24), packet.text.slice(0, 1000), false, peer.id, { messageId:packet.messageId, replyTo:packet.replyTo || null });
+          const text = packet.text.slice(0, 1000);
+          const senderName = String(packet.name || peer.name || 'Guest').slice(0, 24);
+          const replyTo = packet.replyTo || null;
+          if (packet.dm === true) {
+            // A direct message that was waiting for this person to come online.
+            if (state.friends.has(peer.id) && !isBlocked(peer.id)) {
+              const messageId = String(packet.messageId || packet.deliveryId || createId());
+              const viewing = state.mode === 'private' && state.activePrivate?.id === peer.id;
+              if (viewing) addMessage(senderName, text, false, peer.id, { messageId, replyTo, dm:true });
+              else {
+                storeDirectMessage(peer.id, { id:messageId, kind:'text', name:senderName, text, mine:false, replyTo, at:Date.now(), unread:true });
+                renderFriendsList(); updateDrawer(); showToast(`New message from ${senderName}`);
+              }
+            }
+          } else {
+            addMessage(senderName, text, false, peer.id, { messageId:packet.messageId, replyTo });
+          }
           if (packet.deliveryId && seen) { seen.add(packet.deliveryId); storage.setItem(STORAGE.received, JSON.stringify([...seen].slice(-200))); }
         }
         if (packet.deliveryId) state.channels.get(peer.id)?.send(JSON.stringify({ type:'delivery-ack', deliveryId:packet.deliveryId }));
@@ -1230,7 +1386,7 @@
       if (packet.type === 'delivery-ack' && typeof packet.deliveryId === 'string') removePendingRecipient(packet.deliveryId, peer.id);
       if (packet.type === 'typing' && typeof packet.active === 'boolean') setRemoteTyping(peer, packet.active);
       const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
-      if (packet.type === 'media-start' && (state.mode === 'private' || (packet.kind === 'sticker' && packet.mime === 'image/webp')) && typeof packet.transferId === 'string' && allowedMedia.includes(String(packet.mime)) && Number(packet.size) > 0 && Number(packet.size) <= MAX_MEDIA_BYTES) {
+      if (packet.type === 'media-start' && (state.mode === 'private' || (packet.kind === 'sticker' && packet.mime === 'image/webp')) && typeof packet.transferId === 'string' && allowedMedia.includes(String(packet.mime)) && Number(packet.size) > 0 && Number(packet.size) <= (packet.kind === 'sticker' ? MAX_MEDIA_BYTES : MAX_IMAGE_BYTES)) {
         const transferKey = `${peer.id}:${packet.transferId}`;
         const transfer = { size: Number(packet.size), mime: String(packet.mime), kind: packet.kind === 'sticker' ? 'sticker' : 'image', chunks: [], received: 0, timer: null };
         transfer.timer = setTimeout(() => state.incomingMedia.delete(transferKey), 60_000);
@@ -1284,8 +1440,10 @@
     switch (data.type) {
       case 'joined': {
         const wasNamedRoom = !!state.customRoom;
+        const wasPrivate = state.mode === 'private' || state.offlineDm;
+        clearTimeout(state.leaveTimer); dropOfflineDmStash();
         state.customRoom = null; refreshRoomBar();
-        if (wasNamedRoom || data.notice) clearMessages();
+        if (wasNamedRoom || wasPrivate || data.notice) clearMessages();
         state.roomId = data.roomId; state.mode = 'group'; state.activePrivate = null;
         syncPeers(data.peers || [], 'group', data.roomId); renderPendingStickerMessages();
         $('entryView').hidden = true; $('chatView').hidden = false; restorePendingMessages(); sendDeliveryInvites();
@@ -1295,6 +1453,7 @@
         break;
       }
       case 'room-entered':
+        clearTimeout(state.leaveTimer); dropOfflineDmStash();
         state.privateRequests.clear(); state.outgoingRequests.clear(); state.offlinePeers.clear(); state.deliveryPeers.clear();
         state.customRoom = data.room || null; state.mode = 'group'; state.roomId = data.roomId;
         clearMessages(); syncPeers(data.peers || [], 'group', data.roomId); refreshRoomBar(); renderPendingStickerMessages();
@@ -1332,10 +1491,22 @@
         break;
       case 'delivery-expired': showToast('A pending message expired before they returned.'); break;
       case 'signal': handleSignal(data.from, data.payload || {}).catch(error => console.warn('Signalling failed.', error)); break;
-      case 'room-reset':
+      case 'room-reset': {
+        clearTimeout(state.leaveTimer);
+        if (state.offlineDm && data.mode === 'group') {
+          // Keep the open direct-message view; only the hidden group underneath changed.
+          const dm = state.activePrivate;
+          for (const url of state.groupUrls || []) URL.revokeObjectURL(url);
+          state.groupDom = document.createDocumentFragment(); state.groupUrls = [];
+          syncPeers(data.peers || [], 'group', data.roomId);
+          state.mode = 'private'; state.activePrivate = dm; refreshRoomBar(); updateDrawer();
+          break;
+        }
+        dropOfflineDmStash();
         clearMessages(); syncPeers(data.peers || [], data.mode, data.roomId); renderPendingStickerMessages();
         if (data.mode === 'group') showToast('Your nearby group has refreshed.');
         break;
+      }
       case 'private-request':
         if (data.request?.id) {
           state.privateRequests.set(data.request.id, data.request); updateDrawer();
@@ -1356,6 +1527,7 @@
       case 'private-request-closed':
         state.privateRequests.delete(data.requestId); state.outgoingRequests.delete(data.requestId); updateDrawer(); break;
       case 'private-start':
+        clearTimeout(state.leaveTimer); dropOfflineDmStash();
         state.customRoom = null; state.selectedProfile = null; clearMessages(); state.activePrivate = data.peer || null; rememberFriend(data.peer); refreshRoomBar();
         state.privateRequests.clear(); state.outgoingRequests.clear();
         syncPeers([data.peer], 'private', data.roomId); restorePrivateHistory(data.peer); renderPendingStickerMessages(); closeDrawer(); showToast('Private chat started. You have left the group.'); break;
@@ -1439,7 +1611,7 @@
   }
   function updateTypingPresence() {
     const editor = $('messageEditor');
-    const active = !!editor.innerText.trim() && !(state.mode === 'group' && state.botActive && !state.remotePeers.size);
+    const active = !!editor.innerText.trim() && !state.offlineDm && !(state.mode === 'group' && state.botActive && !state.remotePeers.size);
     const now = Date.now();
     if (active && now - state.lastTypingSent > 900) {
       for (const channel of state.channels.values()) if (channel.readyState === 'open') {
@@ -1521,6 +1693,18 @@
     const messageId = createId();
     const replyTo = state.replyTarget ? { id:state.replyTarget.id, name:state.replyTarget.name, text:state.replyTarget.text.slice(0,180) } : null;
 
+    if (state.offlineDm && state.activePrivate) {
+      const friend = state.activePrivate;
+      if (isBlocked(friend.id)) { showToast('You blocked this person.'); return; }
+      state.pendingDeliveries.push({ id:messageId, name:state.name, text, replyTo, recipients:[{ id:friend.id, name:friend.name }], dm:true, createdAt:Date.now() });
+      state.pendingDeliveries = state.pendingDeliveries.slice(-100);
+      savePendingDeliveries();
+      addMessage(state.name, text, true, state.id, { messageId, replyTo, pending:true, dm:true });
+      editor.replaceChildren(); clearReply(); requestAnimationFrame(()=>editor.focus({preventScroll:true}));
+      sendDeliveryInvites();
+      return;
+    }
+
     if (state.mode === 'group' && state.botActive && !state.remotePeers.size) {
       addMessage(state.name, text, true, state.id, { messageId, replyTo });
       state.botHistory.push({ role:'user', text }); state.botHistory = state.botHistory.slice(-12);
@@ -1554,11 +1738,55 @@
     if (waits >= 400 || channel.readyState !== 'open') throw new Error('Media channel stopped accepting data.');
   }
 
+  async function prepareImageForSend(file) {
+    // Photos are shrunk automatically so the size limit never gets in the way. GIFs stay as they are.
+    if (!file || file.type === 'image/gif') return file;
+    if (file.size <= 350 * 1024) return file;
+    let bitmap = null;
+    try {
+      try { bitmap = await createImageBitmap(file, { imageOrientation:'from-image' }); }
+      catch { bitmap = await createImageBitmap(file); }
+      let maxSide = 1600, quality = 0.82;
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+        const width = Math.max(1, Math.round(bitmap.width * scale)), height = Math.max(1, Math.round(bitmap.height * scale));
+        const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+        const context = canvas.getContext('2d');
+        context.drawImage(bitmap, 0, 0, width, height);
+        let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+        if (!blob || blob.type !== 'image/webp') {
+          // Some browsers (Safari) cannot save WebP: use JPEG on a white background instead.
+          context.globalCompositeOperation = 'destination-over'; context.fillStyle = '#fff'; context.fillRect(0, 0, width, height);
+          blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+        }
+        if (blob && blob.size <= TARGET_PHOTO_BYTES) {
+          const extension = blob.type === 'image/webp' ? 'webp' : 'jpg';
+          return new File([blob], `photo.${extension}`, { type: blob.type });
+        }
+        quality = Math.max(0.5, quality - 0.08); maxSide = Math.round(maxSide * 0.8);
+      }
+    } catch (error) { console.warn('Photo could not be shrunk.', error); }
+    finally { bitmap?.close?.(); }
+    return file.size <= MAX_MEDIA_BYTES ? file : null;
+  }
+
   async function sendMedia(file, { sticker = false } = {}) {
+    if (state.offlineDm) {
+      if (!sticker) { showToast('Images need them to be online.'); return false; }
+      if (!file || file.type !== 'image/webp' || file.size > 512 * 1024) { showToast('Stickers must be WebP images under 512 KB.'); return false; }
+      return queuePendingSticker(file);
+    }
     if (state.mode !== 'private' && !sticker) { showToast('Images and GIFs are available in private chats.'); return false; }
     const allowedMedia = ['image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/avif'];
     if (!file || !allowedMedia.includes(file.type)) { showToast('Choose a GIF, PNG, JPG or WebP image.'); return false; }
-    if (file.size > MAX_MEDIA_BYTES) { showToast('Keep images and GIFs under 2 MB for now.'); return false; }
+    if (!sticker) {
+      if (file.size > MAX_PICK_BYTES) { showToast('That image is too large. Choose one under 30 MB.'); return false; }
+      if (file.type !== 'image/gif' && file.size > 1.5 * 1024 * 1024) showToast('Preparing your photo…');
+      const prepared = await prepareImageForSend(file);
+      if (!prepared) { showToast('Could not prepare that photo. Try a different one.'); return false; }
+      file = prepared;
+      if (file.type === 'image/gif' ? file.size > MAX_IMAGE_BYTES : file.size > MAX_MEDIA_BYTES) { showToast(file.type === 'image/gif' ? 'Keep GIFs under 8 MB.' : 'That photo could not be made small enough.'); return false; }
+    } else if (file.size > MAX_MEDIA_BYTES) { showToast('Keep stickers under 2 MB.'); return false; }
     const mime = file.type || 'image/png';
     if (sticker && mime !== 'image/webp') { showToast('Stickers must be WebP images.'); return false; }
     if (sticker && file.size > 512 * 1024) { showToast('Keep stickers under 512 KB for group chats.'); return false; }
@@ -1767,7 +1995,7 @@
     for (const item of state.pendingStickers.filter(saved => saved.scope === scope)) {
       const exists = document.querySelector(`[data-pending-sticker-id="${item.id}"]`);
       if (exists) continue;
-      const article = addMediaMessage(state.name, state.id, item.blob, true, 'sticker');
+      const article = addMediaMessage(state.name, state.id, item.blob, true, 'sticker', { dm:state.offlineDm });
       markPendingStickerMessage(item.id, article);
     }
   }
@@ -1779,13 +2007,13 @@
     const record = { id:createId(), blob:file, name:file.name || 'nerukko-sticker.webp', createdAt:Date.now(), scope:currentStickerScope() };
     await savePendingStickerRecord(record);
     state.pendingStickers.push(record);
-    const article = addMediaMessage(state.name, state.id, file, true, 'sticker');
+    const article = addMediaMessage(state.name, state.id, file, true, 'sticker', { dm:state.offlineDm });
     markPendingStickerMessage(record.id, article);
     showToast('Sticker saved here. It will send when someone joins.');
     return record;
   }
   async function flushPendingStickers() {
-    if (state.pendingStickerFlush || !state.pendingStickers.some(item => item.scope === currentStickerScope())) return;
+    if (state.offlineDm || state.pendingStickerFlush || !state.pendingStickers.some(item => item.scope === currentStickerScope())) return;
     state.pendingStickerFlush = true;
     try {
       if (state.mode === 'group' && !state.customRoom && state.botActive && !state.remotePeers.size) {
@@ -2125,7 +2353,7 @@
     openRoomsView(); $('currentRoomMembers').hidden = false;
   });
   $('leaveNamedRoom').addEventListener('click', () => {
-    if (state.mode === 'private') { sendServer({ type:'private-end' }); closeDrawer(); showToast('Leaving conversation…'); return; }
+    if (state.mode === 'private') { leavePrivateChat(); return; }
     sendServer({ type:'room-leave' }); showToast('Returning to random chat…');
   });
   $('roomSettingsButton').addEventListener('click', () => {
@@ -2145,7 +2373,7 @@
   $('profileReport').addEventListener('click', reportSelected);
   $('profileBlock').addEventListener('click', blockSelected);
   $('blockPrivateUser').addEventListener('click', blockSelected);
-  $('returnToGroup').addEventListener('click', () => { sendServer({ type: 'private-end' }); closeDrawer(); showToast('Leaving conversation…'); });
+  $('returnToGroup').addEventListener('click', leavePrivateChat);
 
   $('moreButton').addEventListener('click', () => {
     const opening = $('mainMenu').hidden; $('mainMenu').hidden = !opening; $('moreButton').setAttribute('aria-expanded', String(opening));

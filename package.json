@@ -1,9 +1,13 @@
 {
   "name": "nerukko",
-  "version": "13.0.0",
+  "version": "14.1.0",
   "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node tests/matcher-check.mjs && node tests/bot-check.mjs && node tests/sticker-check.mjs && node tests/rooms-check.mjs && node tests/profile-check.mjs && node tests/v13-check.mjs"
+    "test": "node tests/matcher-check.mjs && node tests/bot-check.mjs && node tests/sticker-check.mjs && node tests/rooms-check.mjs && node tests/profile-check.mjs && node tests/v13-check.mjs && node tests/v14-check.mjs && node tests/v14-1-check.mjs"
+  },
+  "dependencies": {
+    "wrangler": "^4.161.0"
   }
 }

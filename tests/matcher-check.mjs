@@ -63,16 +63,26 @@ function matcherWith(sockets = []) {
   await matcher.rebalanceGroupRooms();
   const roomIds = new Set([...a, ...b].map(person => person.a.roomId));
   if (roomIds.size !== 1) throw new Error('Compatible 2 + 3 groups should merge into one room');
-  if (![...a, ...b].every(person => person.sent.some(packet => JSON.parse(packet).type === 'room-reset'))) throw new Error('All merged participants should receive a room reset');
+  const mover = (a.length >= b.length ? b : a), stayer = (a.length >= b.length ? a : b);
+  if (!mover.every(person => person.sent.some(packet => JSON.parse(packet).type === 'room-reset'))) throw new Error('People who move rooms should receive a room reset');
+  if (stayer.some(person => person.sent.some(packet => JSON.parse(packet).type === 'room-reset'))) throw new Error('People who stay should keep their chat and not be reset');
+  if (!stayer.every(person => person.sent.some(packet => JSON.parse(packet).type === 'peer-joined'))) throw new Error('People who stay should see newcomers arrive');
 }
 
-// Distant location-based rooms should not be merged just to pack seats.
+// Partial rooms merge even when far apart (nobody is near), but never beyond 7 seats.
 {
   const a = [socket('u'.repeat(32), 'distant-a', { lat: 12, lon: 77 }), socket('v'.repeat(32), 'distant-a', { lat: 12.0001, lon: 77 })];
   const b = [socket('w'.repeat(32), 'distant-b', { lat: 12.02, lon: 77 }), socket('x'.repeat(32), 'distant-b', { lat: 12.021, lon: 77 })];
   const { matcher } = matcherWith([...a, ...b]);
   await matcher.rebalanceGroupRooms();
-  if (new Set([...a, ...b].map(person => person.a.roomId)).size !== 2) throw new Error('Distant groups should remain separate');
+  if (new Set([...a, ...b].map(person => person.a.roomId)).size !== 1) throw new Error('Small distant groups should merge into one room');
+}
+{
+  const a = Array.from({ length: 4 }, (_, i) => socket(String(i).repeat(32), 'big-a', { lat: 12, lon: 77 + i * 0.00001 }));
+  const b = Array.from({ length: 4 }, (_, i) => socket(String(i + 4).repeat(32), 'big-b', { lat: 40, lon: -74 }));
+  const { matcher } = matcherWith([...a, ...b]);
+  await matcher.rebalanceGroupRooms();
+  if (new Set([...a, ...b].map(person => person.a.roomId)).size !== 2) throw new Error('Rooms must never merge past 7 people');
 }
 
 // Private requests only move the two participants after the recipient accepts.
@@ -220,10 +230,10 @@ function matcherWith(sockets = []) {
   if (signal?.from !== sender.a.id) throw new Error('Delivery-only peers should be allowed to exchange WebRTC signals across rooms');
 }
 
-// Bot output stays tiny and clamps every response to eight words.
+// Bot output stays tiny and clamps every response to ten words.
 {
   const reply = clampBotReply('One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour');
-  if (reply.split(/\s+/).length !== 8) throw new Error('Nerukko Bot replies must be limited to eight words');
+  if (reply.split(/\s+/).length !== 10) throw new Error('Nerukko Bot replies must be limited to ten words');
   if (clampBotReply('  hello\nthere  ') !== 'hello there') throw new Error('Nerukko Bot output should be a single clean line');
 }
 

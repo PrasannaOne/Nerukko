@@ -35,7 +35,7 @@ if (!html.includes('id="mediaBackdrop"') && !html.includes('id="uploadMedia"')) 
 // Storage and cache checks protect returning users from stale UI and storage restrictions.
 if (!html.includes("function createSafeStorage()") || !html.includes("function createId()")) throw new Error("Safe browser storage/ID fallback is missing.");
 if (!html.includes("updateViaCache:'none'")) throw new Error("Service-worker update strategy is missing.");
-if (!serviceWorker.includes('nerukko-shell-v13') || !serviceWorker.includes('cache: "reload"')) throw new Error("Fresh app-shell cache version is missing.");
+if (!serviceWorker.includes('nerukko-shell-v14') || !serviceWorker.includes('cache: "reload"')) throw new Error("Fresh app-shell cache version is missing.");
 if (!worker.includes('Cache-Control') || !worker.includes('no-store, no-cache, must-revalidate')) throw new Error("Worker must prevent stale HTML/service-worker responses.");
 
 // About and ownership details.
@@ -79,7 +79,7 @@ if (!html.includes('id="saveStickerFavourite"')) throw new Error('Sticker creato
 if (!html.includes('height:min(40dvh,340px)') || !html.includes('grid-template-columns:repeat(4')) throw new Error("Sticker tray should be compact with a four-column grid.");
 if (!html.includes('function updateTypingPresence()') || !html.includes("packet.type === 'typing'")) throw new Error("Ephemeral typing indicator is missing.");
 if (!html.includes('function appendMessageTime(article)') || !html.includes('message.grouped') || !html.includes('function isNearMessageBottom()')) throw new Error("Message grouping/timestamps/scroll preservation are missing.");
-if (!serviceWorker.includes("nerukko-shell-v13")) throw new Error("V13 service-worker cache version is missing.");
+if (!serviceWorker.includes("nerukko-shell-v14")) throw new Error("V13 service-worker cache version is missing.");
 if (!html.includes("updateViaCache:'none'")) throw new Error("Service-worker updates should bypass HTTP cache.");
 if (!html.includes('quota-limited') || !html.includes('memory.set(key, safeValue)')) throw new Error('Storage wrapper must survive runtime quota errors.');
 if (/remove\.bg|background.?remov|rembg|bria\.ai/i.test(html)) throw new Error("Sticker creator must not add background-removal services.");

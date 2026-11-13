@@ -16,6 +16,6 @@ assert.ok(html.includes("$('profileImageInput').click()"), 'Tapping the profile 
 assert.ok(!html.includes('id="settingsName"'), 'Username editing must be removed from Settings.');
 assert.ok(!html.includes('id="stickerOutline"'), 'The confusing white-outline toggle must be removed.');
 assert.ok(!html.includes('function scheduleBotNudge'), 'The Bot must not send repetitive timed nudges.');
-assert.ok(serviceWorker.includes('nerukko-shell-v13'), 'The service worker must use the V13 cache namespace.');
+assert.ok(serviceWorker.includes('nerukko-shell-v14'), 'The service worker must use the V14 cache namespace.');
 assert.ok(html.includes('width:20px; height:20px; fill:currentColor; stroke:none;'), 'Room settings must use a conventional filled gear icon.');
 console.log('Nerukko V13 profile checks passed.');

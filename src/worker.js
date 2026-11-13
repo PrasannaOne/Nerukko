@@ -8,7 +8,12 @@ export default {
         return new Response("Expected WebSocket", { status: 426 });
       }
       const id = env.MATCHMAKER.idFromName("global-lobby");
-      return env.MATCHMAKER.get(id).fetch(request);
+      // Fallback for people who decline location: Cloudflare's rough city-level guess from the connection.
+      const headers = new Headers(request.headers);
+      headers.delete(IP_LOCATION_HEADER);
+      const guess = ipLocationFrom(request);
+      if (guess) headers.set(IP_LOCATION_HEADER, `${guess.lat},${guess.lon}`);
+      return env.MATCHMAKER.get(id).fetch(new Request(request, { headers }));
     }
     const response = await env.ASSETS.fetch(request);
     if (request.method === "GET" && ["/", "/index.html", "/service-worker.js"].includes(url.pathname) && response.ok) {
@@ -22,6 +27,24 @@ export default {
 };
 
 const MAX_PEOPLE = 7;
+const IP_LOCATION_HEADER = "x-nerukko-ip-location";
+// City-level only: rounded to 0.1 degree (about 11 km). Never sent to other people.
+function roundIpCoordinate(value) { return Math.round(value * 10) / 10; }
+function ipLocationFrom(request) {
+  const cf = request.cf;
+  if (!cf || cf.latitude == null || cf.longitude == null) return null;
+  const lat = Number(cf.latitude), lon = Number(cf.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  if (lat === 0 && lon === 0) return null;
+  return { lat: roundIpCoordinate(lat), lon: roundIpCoordinate(lon) };
+}
+function parseIpLocationHeader(value) {
+  if (!value) return null;
+  const [latText, lonText] = String(value).split(",");
+  const lat = Number(latText), lon = Number(lonText);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+  return { lat: roundIpCoordinate(lat), lon: roundIpCoordinate(lon) };
+}
 const ROOM_NAME_MAX = 36;
 const ROOM_DESCRIPTION_MAX = 120;
 const ROOM_PASSWORD_MIN = 4;
@@ -38,6 +61,7 @@ const BOT_ROOM_LIMIT = 24;
 const BOT_COOLDOWN_MS = 45_000;
 
 function deliveryKey(a, b) { return [String(a), String(b)].sort().join(":"); }
+const ROOM_MERGE_PASSES = 12;
 
 export class Matchmaker {
   constructor(ctx, env) {
@@ -58,11 +82,12 @@ export class Matchmaker {
     this.serialQueue = Promise.resolve();
   }
 
-  async fetch() {
+  async fetch(request) {
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     this.ctx.acceptWebSocket(server);
-    server.serializeAttachment({ id: null, name: "", roomId: null, location: null, mode: "group" });
+    const ipLocation = parseIpLocationHeader(request.headers.get(IP_LOCATION_HEADER));
+    server.serializeAttachment({ id: null, name: "", roomId: null, location: null, mode: "group", ipLocation });
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -148,9 +173,11 @@ export class Matchmaker {
         }
       }
 
-      const location = this.cleanLocation(data.location);
+      const exact = this.cleanLocation(data.location);
+      const ipLocation = current.ipLocation || null;
+      const location = exact || ipLocation;
       const roomId = this.chooseRoom(location, { requiredSlots: 1 });
-      ws.serializeAttachment({ id, name, roomId, location, mode: "group", roomScope: "random", customRoomId: null });
+      ws.serializeAttachment({ id, name, roomId, location, approx: !exact && !!ipLocation, ipLocation, mode: "group", roomScope: "random", customRoomId: null });
       const peers = this.peerList(roomId, id);
       this.send(ws, { type: "joined", roomId, peers });
       for (const peer of this.members(roomId)) {
@@ -203,10 +230,11 @@ export class Matchmaker {
     }
 
     if (data.type === "location-update") {
-      const location = this.cleanLocation(data.location);
-      if (!location && data.location !== null) return;
-      ws.serializeAttachment({ ...current, location });
-      if (!location && current.customRoomId) {
+      const exact = this.cleanLocation(data.location);
+      if (!exact && data.location !== null) return;
+      const location = exact || current.ipLocation || null;
+      ws.serializeAttachment({ ...current, location, approx: !exact && !!location });
+      if (!exact && current.customRoomId) {
         await this.leaveNamedRoom(ws);
         return;
       }
@@ -275,7 +303,7 @@ export class Matchmaker {
       const members = this.namedRoomMembers(roomId);
       if (!meta.location && !members.length) { delete rooms[roomId]; changed = true; continue; }
       if (!meta.location && members.length) {
-        const locatedMember = members.find(member => member.location);
+        const locatedMember = members.find(member => member.location && !member.approx);
         if (locatedMember) { meta.location = { ...locatedMember.location }; changed = true; }
         else if (meta.emptyPolicy !== "immediate") { meta.emptyPolicy = "immediate"; changed = true; }
       }
@@ -333,7 +361,7 @@ export class Matchmaker {
   async sendRoomDirectory(ws, storedRooms = null) {
     const stored = storedRooms || await this.cleanupExpiredNamedRooms();
     const member = this.attachment(ws);
-    if (!member.location) {
+    if (!member.location || member.approx) {
       this.send(ws, { type: "rooms-list", rooms: [], requiresLocation: true });
       return;
     }
@@ -414,7 +442,7 @@ export class Matchmaker {
   async createNamedRoom(ws, data) {
     const member = this.attachment(ws);
     if (!member.id || member.mode !== "group") return this.send(ws, { type: "room-error", message: "Leave your one-to-one chat before creating a room." });
-    if (!member.location) return this.send(ws, { type: "room-error", message: "Enable location in Settings to create or discover nearby rooms." });
+    if (!member.location || member.approx) return this.send(ws, { type: "room-error", message: "Enable location in Settings to create or discover nearby rooms." });
     const name = String(data.name || "").replace(/[\\\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ROOM_NAME_MAX);
     const description = String(data.description || "").replace(/[\\\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, ROOM_DESCRIPTION_MAX);
     const visibility = data.visibility === "private" ? "private" : "public";
@@ -452,7 +480,7 @@ export class Matchmaker {
     const member = this.attachment(ws);
     if (!member.id || member.mode !== "group") return this.send(ws, { type: "room-error", message: "Leave your one-to-one chat before joining a room." });
     const roomId = String(data.roomId || "").slice(0, 64);
-    if (!member.location) return this.send(ws, { type: "room-error", message: "Enable location in Settings to join nearby rooms." });
+    if (!member.location || member.approx) return this.send(ws, { type: "room-error", message: "Enable location in Settings to join nearby rooms." });
     const rooms = await this.cleanupExpiredNamedRooms();
     const meta = rooms[roomId];
     if (!meta) return this.send(ws, { type: "room-error", message: "That room is no longer available." });
@@ -582,6 +610,14 @@ export class Matchmaker {
     await this.rebalanceGroupRooms();
     await this.refreshBotRooms();
     await this.broadcastRoomDirectory();
+  }
+
+  async allowDelivery(a, b) {
+    if (!a || !b || a === b) return;
+    const key = deliveryKey(a, b);
+    const expires = Date.now() + DELIVERY_TTL_MS;
+    this.deliveryEligible.set(key, expires);
+    await this.ctx.storage.put(`delivery:${key}`, expires);
   }
 
   async handleDeliveryInvite(ws, targetId) {
@@ -779,6 +815,7 @@ export class Matchmaker {
     const members = this.members(roomId).map(ws => this.attachment(ws));
     if (members.length < 2) return { kind: "waiting", label: "Waiting" };
     if (members.some(member => !member.location)) return { kind: "open", label: "Open circle" };
+    if (members.some(member => member.approx)) return { kind: "wider", label: "Wider circle" };
     let widestGap = 0;
     for (let i = 0; i < members.length; i++) {
       for (let j = i + 1; j < members.length; j++) {
@@ -810,49 +847,101 @@ export class Matchmaker {
     this.broadcastRoomStatus(roomId);
   }
 
-  canMergeRooms(a, b) {
+  // How well two partial rooms belong together. Everything that fits in 7 seats may merge,
+  // but nearby groups (or groups that both skipped location) are always joined first.
+  mergeAffinity(a, b) {
     const noA = a.people.filter(person => !person.location).length;
     const noB = b.people.filter(person => !person.location).length;
-    // Shared no-location preference is a strong compatibility signal.
-    if (noA > 0 && noB > 0) return true;
+    if (noA > 0 && noB > 0) return 2000;
     const locA = a.people.filter(person => person.location).map(person => person.location);
     const locB = b.people.filter(person => person.location).map(person => person.location);
-    if (!locA.length || !locB.length) return false;
+    if (!locA.length || !locB.length) return 0;
     let widest = 0;
-    for (const left of locA) for (const right of locB) {
-      widest = Math.max(widest, this.distance(left, right));
+    for (const left of locA) for (const right of locB) widest = Math.max(widest, this.distance(left, right));
+    return widest <= NEARBY_METERS ? 2000 : 0;
+  }
+
+  canMergeRooms(a, b) {
+    return a.people.length + b.people.length <= MAX_PEOPLE;
+  }
+
+  // Move people into another room without wiping the chat of the people who stay:
+  // movers get a fresh room, stayers only see newcomers arrive.
+  moveMembers(movers, fromRoomId, toRoomId) {
+    const stayers = this.members(toRoomId);
+    const oldMates = this.members(fromRoomId).filter(ws => !movers.some(person => person.ws === ws));
+    for (const person of movers) {
+      person.ws.serializeAttachment({ ...this.attachment(person.ws), roomId: toRoomId });
     }
-    return widest <= NEARBY_METERS;
+    for (const request of this.pendingPrivate.values()) {
+      if (request.roomId === fromRoomId) request.roomId = toRoomId;
+    }
+    const everyone = this.members(toRoomId).map(ws => this.attachment(ws));
+    for (const person of movers) {
+      const self = this.attachment(person.ws);
+      this.send(person.ws, {
+        type: "room-reset", roomId: toRoomId, mode: self.mode,
+        peers: everyone.filter(other => other.id !== self.id).map(other => ({ id: other.id, name: other.name }))
+      });
+    }
+    for (const ws of stayers) for (const person of movers) {
+      const self = this.attachment(person.ws);
+      this.send(ws, { type: "peer-joined", peer: { id: self.id, name: self.name } });
+    }
+    for (const ws of oldMates) for (const person of movers) {
+      this.send(ws, { type: "peer-left", id: this.attachment(person.ws).id });
+    }
+    this.broadcastRoomStatus(toRoomId);
+    if (oldMates.length) this.broadcastRoomStatus(fromRoomId);
   }
 
   async rebalanceGroupRooms() {
-    // Consolidate compatible partial rooms (e.g. 2 + 3) and force a clean
-    // peer-connection rebuild on every affected phone after changing membership.
-    for (let pass = 0; pass < 10; pass++) {
+    // 1) Merge partial rooms (2 + 3, or people from far away when nobody is near).
+    for (let pass = 0; pass < ROOM_MERGE_PASSES; pass++) {
       const rooms = [...this.roomMap("group").entries()]
         .map(([roomId, people]) => ({ roomId, people }));
       let best = null;
       for (let i = 0; i < rooms.length; i++) {
         for (let j = i + 1; j < rooms.length; j++) {
           const a = rooms[i], b = rooms[j];
+          if (!this.canMergeRooms(a, b)) continue;
           const total = a.people.length + b.people.length;
-          if (total > MAX_PEOPLE || !this.canMergeRooms(a, b)) continue;
           const closest = this.closestRoomGap(a.people, b.people);
-          const score = total * 1000 + (total === MAX_PEOPLE ? 500 : 0) - Math.min(closest, 1000);
+          const score = this.mergeAffinity(a, b) + total * 1000 + (total === MAX_PEOPLE ? 500 : 0) - Math.min(closest, 1000);
           if (!best || score > best.score) best = { a, b, score };
         }
       }
       if (!best) break;
-      const keepId = best.a.roomId;
-      for (const person of best.b.people) {
-        person.ws.serializeAttachment({ ...this.attachment(person.ws), roomId: keepId });
-      }
-      for (const request of this.pendingPrivate.values()) {
-        if (request.roomId === best.b.roomId) request.roomId = keepId;
-      }
-      this.syncRoom(keepId);
-      // No socket should remain in the now-empty old room.
+      const keep = best.a.people.length >= best.b.people.length ? best.a : best.b;
+      const leave = keep === best.a ? best.b : best.a;
+      this.moveMembers(leave.people, leave.roomId, keep.roomId);
     }
+    // 2) Pull anyone who is alone among strangers toward a room with a neighbour of theirs.
+    for (let pass = 0; pass < ROOM_MERGE_PASSES; pass++) {
+      if (!this.pullOneIsolatedMember()) break;
+    }
+  }
+
+  pullOneIsolatedMember() {
+    const rooms = [...this.roomMap("group").entries()].map(([roomId, people]) => ({ roomId, people }));
+    for (const from of rooms) {
+      if (from.people.length < 2) continue;
+      for (const person of from.people) {
+        if (!person.location) continue;
+        const others = from.people.filter(other => other !== person && other.location);
+        const nearestHere = others.length ? Math.min(...others.map(other => this.distance(person.location, other.location))) : Infinity;
+        if (nearestHere <= NEARBY_METERS) continue;
+        let best = null;
+        for (const to of rooms) {
+          if (to === from || to.people.length >= MAX_PEOPLE) continue;
+          const distances = to.people.filter(other => other.location).map(other => this.distance(person.location, other.location));
+          const nearestThere = distances.length ? Math.min(...distances) : Infinity;
+          if (nearestThere <= NEARBY_METERS && (!best || nearestThere < best.distance)) best = { to, distance: nearestThere };
+        }
+        if (best) { this.moveMembers([person], from.roomId, best.to.roomId); return true; }
+      }
+    }
+    return false;
   }
 
   closestRoomGap(a, b) {
@@ -946,6 +1035,7 @@ export class Matchmaker {
         this.send(peer, { type: "peer-left", id: requester.id });
       }
     }
+    await this.allowDelivery(requester.id, recipient.id);
     ws.serializeAttachment({ ...recipient, roomId: newRoom, mode: "private", roomScope: "random", customRoomId: null });
     requesterSocket.serializeAttachment({ ...requester, roomId: newRoom, mode: "private", roomScope: "random", customRoomId: null });
     this.send(ws, { type: "private-start", roomId: newRoom, peer: { id: requester.id, name: requester.name } });
@@ -960,6 +1050,7 @@ export class Matchmaker {
     if (!privateMembers.length) return;
     const exclude = new Set([roomId]);
     const first = this.attachment(privateMembers[0]);
+    if (privateMembers.length === 2) await this.allowDelivery(first.id, this.attachment(privateMembers[1]).id);
     const room = this.chooseRoom(first.location, { requiredSlots: privateMembers.length, exclude });
     const newRoomId = room;
     for (const ws of privateMembers) {
@@ -1024,6 +1115,9 @@ export class Matchmaker {
         this.deliveryEligible.set(key, expires);
         await this.ctx.storage.put(`delivery:${key}`, expires);
       }
+    }
+    if (wasPrivate) {
+      for (const peer of oldRoomPeers) await this.allowDelivery(member.id, this.attachment(peer).id);
     }
     try { ws.serializeAttachment({ id: null, name: "", roomId: null, location: null, mode: "group", roomScope: null, customRoomId: null }); } catch {}
 

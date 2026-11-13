@@ -3,13 +3,23 @@
  * Room membership, request limits and Bot lifecycle live in worker.js.
  */
 const MODEL = "gemini-3.5-flash-lite";
-const MAX_WORDS = 8;
+const MAX_WORDS = 10;
+// Words that sound unfinished when a reply is cut off right after them.
+const DANGLING = new Set(["a","an","the","and","but","or","so","to","of","in","on","at","with","for","that","if","because","my","your","is","are","was","i","as","than","then"]);
 const MAX_HISTORY_ITEMS = 12;
 const MAX_TEXT_LENGTH = 700;
 
 export function clampBotReply(value) {
   const clean = String(value || "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
-  return clean.split(" ").filter(Boolean).slice(0, MAX_WORDS).join(" ");
+  const words = clean.split(" ").filter(Boolean);
+  if (words.length <= MAX_WORDS) return words.join(" ");
+  // Too long: prefer ending on a finished sentence, otherwise cut cleanly without a dangling word.
+  const head = words.slice(0, MAX_WORDS);
+  let lastStop = -1;
+  head.forEach((word, index) => { if (/[.!?]["')\]]*$/.test(word)) lastStop = index; });
+  if (lastStop >= 1) return head.slice(0, lastStop + 1).join(" ");
+  while (head.length > 2 && DANGLING.has(head[head.length - 1].toLowerCase().replace(/[^a-z]/g, ""))) head.pop();
+  return head.join(" ").replace(/[,;:\-–—]+$/, "");
 }
 
 /**
@@ -75,11 +85,11 @@ export async function generateNerukkoBotReply(apiKey, history, prompt) {
       body: JSON.stringify({
         systemInstruction: {
           parts: [{
-            text: `You are Nerukko Bot, an AI participant in a casual anonymous chat. Sound like a real person texting: relaxed, observant, warm, occasionally funny. Keep every reply tiny: usually 2–6 words, never more than 8. One short sentence or fragment only. No paragraphs, explanations, lists, introductions, or customer-support language. React to the actual message and its tone. Sometimes just react; do not force a question or try to keep the conversation alive at all costs. Avoid generic openers, repeated greetings, scripted icebreakers, and follow-up questions stacked together. If the person sends a sticker, react to the gesture without guessing its image. Never claim to be human. Be comfortable with silence.`
+            text: `You are Nerukko Bot, an AI participant in a friendly anonymous chat. Be warm, kind and upbeat, like a welcoming friend who is genuinely glad someone showed up. Keep every reply short: usually 4–8 words, never more than 10. One complete, friendly sentence only. No paragraphs, explanations, lists, or customer-support language. React to what the person actually said, show real interest, and match their energy. If they seem down, be gentle and encouraging. Occasionally add light humor or one small emoji, never more. Ask a simple question only now and then, never stacked. Avoid generic openers, repeated greetings, and scripted icebreakers. If the person sends a sticker, react to the gesture without guessing its image. If someone mentions hurting themselves, say you care and suggest talking to someone they trust. If someone is rude, stay calm and kind. Never claim to be human; if asked, say you're a friendly AI bot.`
           }]
         },
         contents: buildGeminiContents(history, prompt),
-        generationConfig: { temperature: 0.96, topP: 0.94, maxOutputTokens: 32 }
+        generationConfig: { temperature: 0.9, topP: 0.94, maxOutputTokens: 48 }
       }),
       signal: AbortSignal.timeout(12_000)
     }
