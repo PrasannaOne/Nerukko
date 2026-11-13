@@ -1,0 +1,141 @@
+name: Deploy Nerukko from an uploaded zip
+
+# How to use: upload a zip named exactly Nerukko.zip to the ROOT of this repository on GitHub.
+# This workflow unpacks it, runs the checks, deploys it to Cloudflare, then updates the repository
+# files to match and deletes Nerukko.zip. Zips with any other name are ignored and never unpacked.
+# If the checks fail, nothing is deployed.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Nerukko.zip"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: nerukko-zip-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find Nerukko.zip
+        id: find
+        run: |
+          set -euo pipefail
+          if [ ! -f "Nerukko.zip" ]; then
+            echo "Nerukko.zip is not in the repository root, so there is nothing to deploy."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "zip=Nerukko.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for the regular deploy to finish
+        if: steps.find.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The regular workflow also runs on every push. Let it finish first so the zip always wins.
+          for i in $(seq 1 60); do
+            others=$(gh run list --repo "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA" --limit 30 --json databaseId,status \
+              --jq "[.[] | select(.status != \"completed\" and .databaseId != ${GITHUB_RUN_ID})] | length" || echo 0)
+            if [ "$others" = "0" ]; then exit 0; fi
+            echo "Waiting for $others other workflow run(s)..."
+            sleep 10
+          done
+
+      - name: Unpack the zip
+        if: steps.find.outputs.found == 'true'
+        env:
+          ZIP: ${{ steps.find.outputs.zip }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/release && mkdir -p /tmp/release
+          unzip -q "$ZIP" -d /tmp/release
+          rm -rf /tmp/release/__MACOSX
+          root=/tmp/release
+          # A zip made from a folder has one folder inside: step into it.
+          if [ ! -f "$root/package.json" ]; then
+            dirs=$(find "$root" -mindepth 1 -maxdepth 1 -type d | wc -l)
+            files=$(find "$root" -mindepth 1 -maxdepth 1 -type f | wc -l)
+            if [ "$dirs" = "1" ] && [ "$files" = "0" ]; then root=$(find "$root" -mindepth 1 -maxdepth 1 -type d); fi
+          fi
+          if [ ! -f "$root/package.json" ] || [ ! -f "$root/wrangler.jsonc" ] || [ ! -f "$root/src/worker.js" ] || [ ! -d "$root/public" ]; then
+            echo "This zip does not look like a Nerukko project (package.json, wrangler.jsonc, src/worker.js or public/ is missing)."
+            exit 1
+          fi
+          echo "root=$root" >> "$GITHUB_ENV"
+
+      - name: Set up Node
+        if: steps.find.outputs.found == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run the checks
+        if: steps.find.outputs.found == 'true'
+        working-directory: ${{ env.root }}
+        run: npm test
+
+      - name: Prepare bundled sticker assets
+        if: steps.find.outputs.found == 'true'
+        working-directory: ${{ env.root }}
+        run: |
+          mkdir -p public/Stickers
+          cp Stickers/*.zip public/Stickers/
+
+      - name: Upload Gemini API key to Worker secret
+        if: steps.find.outputs.found == 'true'
+        working-directory: ${{ env.root }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "GEMINI_API_KEY repository secret is missing."
+            exit 1
+          fi
+          printf '%s' "$GEMINI_API_KEY" | npx --yes wrangler@4 secret put GEMINI_API_KEY --config wrangler.jsonc
+
+      - name: Deploy Worker
+        if: steps.find.outputs.found == 'true'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ${{ env.root }}
+          wranglerVersion: "4"
+          command: deploy --config wrangler.jsonc
+
+      - name: Update the repository to match and remove the zip
+        if: steps.find.outputs.found == 'true'
+        env:
+          ZIP: ${{ steps.find.outputs.zip }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Keep .git, the workflow files, README, LICENSE and any other root zips; replace everything else.
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '.github' ! -name '*.zip' ! -iname 'README*' ! -iname 'LICENSE*' -exec rm -rf {} +
+          (cd "$root" && tar --exclude='./.git' --exclude='./.github' -cf - .) | tar -xf -
+          rm -rf public/Stickers
+          git rm -f --ignore-unmatch -- "$ZIP"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Repository already matches the zip."
+          else
+            git commit -m "Deploy from $ZIP"
+            git push
+          fi
