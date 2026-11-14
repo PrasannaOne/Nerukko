@@ -10,8 +10,8 @@
   <link rel="icon" href="/icon-192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <meta name="theme-color" content="#111116">
-  <meta name="description" content="Meet people nearby in small, anonymous group chats. No account, no pressure. Just say hello on Nerukko.">
-  <title>Nerukko · Closer, together</title>
+  <meta name="description" content="Meet people nearby in small, anonymous group chats. No account, no pressure. Just say hello on Neruko.">
+  <title>Neruko · Closer, together</title>
   <style>
     :root {
       color-scheme: dark;
@@ -326,6 +326,71 @@
       .send-button { width: 42px; height: 42px; }
       .sticker-panel:not(.is-creating) { height: 64dvh; min-height: 0; }
     }
+
+    /* ===== V16 polish: crisp type, tidy panels, heart button ===== */
+    html { -webkit-text-size-adjust: 100%; }
+    body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+    .heart-button { text-decoration: none; }
+    .heart-button svg { fill: #ff5d7a; stroke: #ff5d7a; stroke-width: 1.4; }
+    .heart-button:active svg { transform: scale(.9); }
+    .icon-button svg { stroke-width: 1.8; }
+    .entry-location-note { max-width: 330px; font-size: 12px; line-height: 1.5; }
+    .room-explanation { font-size: 12px; line-height: 1.45; margin: 4px 0 10px; }
+    .setting-copy, .about-intro p, .about-section p { font-size: 12.5px; line-height: 1.5; }
+    .setting-label { font-size: 11.5px; font-weight: 650; letter-spacing: .02em; text-transform: uppercase; }
+    .modal-head h2 { font-size: 17px; font-weight: 750; letter-spacing: -.01em; }
+    .about-section h3 { margin: 16px 0 2px; font-size: 13px; font-weight: 750; letter-spacing: .005em; }
+    .about-panel { padding: 16px 18px 14px; }
+    .modal-panel { border-radius: 18px; box-shadow: 0 18px 54px #0007; }
+    .person-row, .room-card, .setting-row { border-color: color-mix(in srgb, var(--line) 80%, transparent); }
+    button, .small-action, .setting-action { -webkit-tap-highlight-color: transparent; }
+    .message-body { font-size: 15px; line-height: 1.38; }
+    .message-time { font-size: 10px; opacity: .72; }
+
+    /* ===== Message actions ===== */
+    .message, .message * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    .message-media { -webkit-user-drag: none; }
+    .reactions { flex: 0 0 100%; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .message.mine .reactions { justify-content: flex-end; }
+    .reaction-chip { padding: 1px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); color: var(--text); font: inherit; font-size: 12.5px; line-height: 1.55; }
+    .reaction-chip.mine { border-color: var(--accent); background: #c4a7ff24; }
+    .message.deleted { opacity: .72; }
+    .message.deleted .message-body { color: var(--muted); font-style: italic; }
+    .message-menu { position: fixed; inset: 0; z-index: 90; background: #0b0b10bd; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+    .menu-stack { position: absolute; display: flex; flex-direction: column; gap: 8px; max-width: calc(100vw - 20px); }
+    .menu-stack.mine { align-items: flex-end; }
+    .menu-stack:not(.mine) { align-items: flex-start; }
+    .menu-clone { position: relative; margin: 0 !important; max-height: 34vh; overflow: hidden; box-shadow: 0 12px 34px #0009; animation: menu-pop .14s ease-out; }
+    .menu-clone.grouped .message-author { display: inline-flex; }
+    .reaction-bar { display: flex; gap: 2px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); box-shadow: 0 10px 30px #0008; animation: menu-pop .14s ease-out; }
+    .react-btn { width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: transparent; font-size: 23px; line-height: 1; transition: transform .1s ease; }
+    .react-btn:active { transform: scale(1.2); }
+    .react-btn.on { background: #c4a7ff33; }
+    .menu-card { min-width: 224px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface-2); box-shadow: 0 12px 34px #0009; overflow: hidden; animation: menu-pop .14s ease-out; }
+    .menu-item { display: flex; align-items: center; gap: 14px; width: 100%; padding: 13px 16px; border: 0; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); background: transparent; color: var(--text); font: inherit; font-size: 15px; text-align: left; }
+    .menu-item:first-child { border-top: 0; }
+    .menu-item:active { background: #ffffff10; }
+    .menu-item.danger { color: var(--danger); }
+    .menu-item svg { width: 21px; height: 21px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .message-menu.sheet { display: grid; align-items: end; justify-items: center; padding: 16px 16px max(16px, env(safe-area-inset-bottom)); }
+    .sheet-card { width: min(360px, 100%); }
+    @keyframes menu-pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+    .select-bar { position: fixed; z-index: 80; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(756px, calc(100% - 20px)); display: flex; gap: 8px; align-items: center; }
+    .select-bar[hidden] { display: none; }
+    .select-bar::before { content: ''; position: fixed; z-index: -1; left: 0; right: 0; top: 0; height: calc(max(8px, env(safe-area-inset-top)) + 62px); background: var(--bg); }
+    .select-pill { height: 46px; display: flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); color: var(--text); box-shadow: 0 6px 20px #0006; }
+    .select-close { width: 46px; justify-content: center; padding: 0; }
+    .select-count { flex: 1; padding: 0 18px; font-size: 16px; font-weight: 700; }
+    .select-actions { padding: 0 4px; }
+    .select-actions button { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: transparent; color: var(--text); border-radius: 50%; }
+    .select-actions button[hidden] { display: none; }
+    .select-pill svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    body.selecting .message { cursor: pointer; }
+    body.selecting .message::after { content: ''; position: absolute; top: -5px; right: -6px; width: 18px; height: 18px; border: 2px solid var(--muted); border-radius: 50%; background: var(--surface); z-index: 2; }
+    body.selecting .message.mine::after { right: auto; left: -6px; }
+    body.selecting .message.selected { outline: 2px solid var(--accent); outline-offset: 1px; }
+    body.selecting .message.selected::after { content: '✓'; display: grid; place-items: center; border-color: var(--accent); background: var(--accent); color: var(--accent-ink); font-size: 11px; font-weight: 900; line-height: 1; }
+    body.selecting .reply-swipe-indicator { display: none !important; }
   </style>
 </head>
 <body>
@@ -336,8 +401,11 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
           <span class="request-dot" id="requestDot" hidden>0</span>
         </button>
-        <a class="brand" href="/" aria-label="Nerukko home">Nerukko</a>
+        <a class="brand" href="/" aria-label="Neruko home">Neruko</a>
         <nav class="top-actions" aria-label="App actions">
+          <a class="icon-button heart-button" href="https://prasannaone.github.io/" target="_blank" rel="noopener noreferrer" aria-label="Visit Prasanna's site" title="Made by Prasanna">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.4-9.2-9.1C1.7 8.2 3.6 5 6.8 5c1.9 0 3.5 1.1 5.2 3 1.7-1.9 3.3-3 5.2-3 3.2 0 5.1 3.2 4 6.4-1.7 4.7-9.2 9.1-9.2 9.1Z"/></svg>
+          </a>
           <button class="icon-button" id="inviteAction" type="button" aria-label="Invite a friend" title="Invite a friend">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.7 10.6 15.3 6.4M8.7 13.4 15.3 17.6"/></svg>
           </button>
@@ -359,7 +427,7 @@
           <input class="text-input" id="nameInput" maxlength="24" autocomplete="nickname" placeholder="Choose a nickname" aria-label="Choose a nickname" required>
           <button class="primary-button" id="joinButton" type="submit">Enter chat</button>
         </form>
-        <p class="entry-location-note">Location is how Nerukko finds nearby people and rooms. The server uses an approximate location for matching and discovery; it is not shown to other members. A room’s approximate creation point is retained only while that room exists. If you decline permission, Nerukko uses the rough city-level area of your internet connection so random chat can still find people near you; it is never shown to anyone, and nearby Rooms still need real location.</p>
+        <p class="entry-location-note">Location helps find people near you and is never shown to others. If you decline, the rough city-level area of your internet connection is used instead.</p>
         <div class="entry-state" id="entryState" aria-live="polite"></div>
       </section>
 
@@ -417,7 +485,7 @@
           </section>
           <section class="drawer-section" id="roomsSection">
             <h3>Nearby rooms</h3>
-            <p class="room-explanation">Rooms stay at the location where they were created. Only nearby rooms appear here.</p>
+            <p class="room-explanation">Only rooms near you appear here.</p>
             <button class="small-action primary" id="openRoomsView" type="button">Browse rooms</button>
           </section>
           <section class="drawer-section" id="friendsSection"><h3>Friends</h3><div id="friendsList"></div></section>
@@ -434,7 +502,7 @@
         </div>
         <div id="roomsView" hidden>
           <button class="profile-back" id="roomsBack" type="button">← Back to menu</button>
-          <p class="room-explanation">Only nearby rooms are shown. Public rooms are open; private rooms require a password. Every room holds up to seven people.</p>
+          <p class="room-explanation">Public rooms are open. Private rooms need a password. Up to 7 people each.</p>
           <button class="small-action primary" id="showCreateRoom" type="button">＋ Create room</button>
           <form class="room-create-form" id="roomCreateForm" hidden>
             <label class="room-form-label">Room name<input class="room-form-input" id="newRoomName" maxlength="36" required placeholder="e.g. Late Night Talks"></label>
@@ -463,7 +531,7 @@
           <div class="profile-avatar" id="profileAvatar">?</div>
           <div class="profile-name" id="profileName">Guest</div>
           <div class="profile-actions">
-            <button class="small-action primary" id="profilePrivate" type="button">Request private chat</button>
+            <button class="small-action primary" id="profilePrivate" type="button">Add friend</button>
             <button class="small-action" id="profileBlock" type="button">Block</button>
             <button class="small-action danger" id="profileReport" type="button">Report</button>
           </div>
@@ -476,11 +544,11 @@
     <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="profileSettingsTitle">
       <div class="modal-head"><h2 id="profileSettingsTitle">Your profile</h2><button class="close-button" id="closeProfileSettings" type="button" aria-label="Close profile">×</button></div>
       <button class="profile-edit-avatar" id="chooseProfileAvatar" type="button" aria-label="Choose profile picture from gallery"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg></button>
-      <p class="setting-copy" style="text-align:center;margin:0 0 16px">Tap the icon to choose a picture from your gallery.</p>
+      <p class="setting-copy" style="text-align:center;margin:0 0 16px">Tap the picture to change it.</p>
       <label class="setting-label" for="profileNameInput">Username</label>
       <div class="setting-row"><input class="text-input" id="profileNameInput" maxlength="24" autocomplete="nickname"><button class="setting-action" id="saveProfileButton" type="button">Save</button></div>
       <input id="profileImageInput" type="file" accept="image/*" hidden>
-      <p class="setting-copy" style="margin-top:12px">Your profile is saved on this device and shared directly with people you chat with. Nerukko does not require your real name.</p>
+      <p class="setting-copy" style="margin-top:12px">Saved on this device. No real name needed.</p>
     </section>
   </div>
 
@@ -492,7 +560,7 @@
         <div class="theme-options"><button class="theme-choice" type="button" data-theme-choice="dark">Dark</button><button class="theme-choice" type="button" data-theme-choice="light">Light</button></div>
       </div>
       <div class="setting-section">
-        <div class="setting-row"><div style="flex:1"><span class="setting-label">Location</span><div class="setting-copy">Location is part of how Nerukko works. It helps match you with nearby people and show nearby rooms. The server uses an approximate location for nearby matching and room discovery. It is not shown to other members; a room’s approximate creation point is retained only while that room exists. If you decline permission, matching uses the rough city-level area of your internet connection instead, and Rooms remain unavailable.</div></div><button class="setting-action" id="locationButton" type="button">Enable</button></div>
+        <div class="setting-row"><div style="flex:1"><span class="setting-label">Location</span><div class="setting-copy">Helps find people near you. Never shown to others. If you decline, the rough city-level area of your internet connection is used and Rooms stay unavailable.</div></div><button class="setting-action" id="locationButton" type="button">Enable</button></div>
       </div>
       <div class="setting-section">
         <span class="setting-label">Blocked users</span>
@@ -506,27 +574,27 @@
       <div class="modal-head"><h2 id="aboutTitle">About</h2><button class="close-button" id="closeAbout" type="button" aria-label="Close About">×</button></div>
       <div class="about-intro">
         <strong>Closer, together.</strong>
-        <p>A small place for easy conversations. Join without an account and leave whenever you like.</p>
+        <p>Small, anonymous chats with people near you. No account needed.</p>
       </div>
       <div class="about-section">
         <h3>How it works</h3>
-        <p>Random groups and nearby rooms hold up to seven people. Location is the normal way Nerukko finds nearby people and rooms. It is used only for matching and discovery, never shown to other members. If permission is declined, random matching uses the rough city-level area of your connection instead.</p>
+        <p>Groups and rooms hold up to 7 people. Your location is only used for matching and is never shown to others. If you decline, the rough city-level area of your internet connection is used.</p>
       </div>
       <div class="about-section">
         <h3>Messages and privacy</h3>
-        <p>Messages travel directly between browsers over encrypted WebRTC when a connection is available. The Worker coordinates rooms but does not store ordinary chat messages. Pending text stays in your browser until delivery or expiry. Accepted friends and up to 100 recent text messages per private friend are saved locally on this device.</p>
+        <p>Chats go directly between browsers over encrypted WebRTC and are not stored on a server. Friends and your last 100 messages with each friend stay on this device only.</p>
       </div>
       <div class="about-section">
         <h3>Private chats and stickers</h3>
-        <p>One accepted invitation moves two people into a separate one-to-one conversation. Nearby Rooms shows up to ten public and ten private rooms in your area. Rooms are fixed to their creation location and disappear when empty, immediately or after at most 24 hours. Images and GIFs are private-only, and photos are shrunk automatically before sending; lightweight stickers work in group, room and private chats. Stickers you create are saved on your device, and pending stickers wait locally until a person arrives.</p>
+        <p>Send a friend request once, then message each other whenever you are both online, even while in other chats. Messages are not kept for offline delivery. Photos are shrunk before sending and GIFs can be up to 2 MB. Stickers work everywhere.</p>
       </div>
       <div class="about-section">
-        <h3>Nerukko Bot</h3>
-        <p>The Bot is AI, not a person. Bot messages and recent conversation context are sent to Google Gemini to generate replies. Replies may be imperfect and usage is capped.</p>
+        <h3>Neruko Bot</h3>
+        <p>The bot is AI, not a person. Your messages and recent conversation context are sent to Google Gemini to write replies. Replies can be imperfect and usage is capped.</p>
       </div>
       <div class="about-section">
         <h3>Safety and connection</h3>
-        <p>Block hides a person and their messages only from your own view. Two independent reports in the same room trigger a temporary cooldown: five minutes for the first incident, ten for the second, and fifteen for later incidents. STUN-only connections may not work on some restrictive networks.</p>
+        <p>Block hides someone from you only. Two reports in a room trigger a short cooldown (5, 10, then 15 minutes). Some strict networks may block connections.</p>
       </div>
       <footer class="about-footer">
         <span class="about-credit">Crafted by Prasanna <span aria-label="love">❤️</span></span>
@@ -623,7 +691,7 @@
     stickerFavorites: 'nerukko_sticker_favorites_v1', blocked: 'nerukko_blocked_users_v1', friends:'nerukko_friends_v1', dmHistory:'nerukko_dm_history_v1'
   };
   const MAX_MEDIA_BYTES = 2 * 1024 * 1024;      // stickers and shrunk photos on the wire
-  const MAX_IMAGE_BYTES = 8 * 1024 * 1024;      // GIFs cannot be shrunk, so they get more room
+  const MAX_IMAGE_BYTES = 2 * 1024 * 1024;      // GIFs cannot be shrunk, so they are capped
   const MAX_PICK_BYTES = 30 * 1024 * 1024;      // biggest photo we will try to shrink
   const TARGET_PHOTO_BYTES = 1_200_000;
   const MEDIA_CHUNK_BYTES = 12 * 1024;
@@ -634,11 +702,12 @@
     pendingCandidates: new Map(), incomingMedia: new Map(), mediaUrls: [], privateRequests: new Map(),
     outgoingRequests: new Map(), activePrivate: null, selectedProfile: null,
     offlinePeers: new Map(), deliveryPeers: new Set(), pendingDeliveries: loadPendingDeliveries(), friends:loadFriends(), dmHistory:loadDmHistory(),
-    replyTarget: null, botActive: false, botHistory: [],
+    replyTarget: null, botActive: false, botHistory: [], botQueue: Promise.resolve(), botAskedAt: 0, botFollowupTimer: 0, botFollowupSent: false,
     autoReconnect: false, reconnectTimer: null, reconnectAttempt: 0,
-    heartbeat: null, locationRefresh: null, deliveryTimer: null, lastLocationUpdate: 0, cooldownUntil: 0,
+    heartbeat: null, locationRefresh: null, deliveryTimer: null, lastLocationUpdate: 0,
+    lastLocationAttemptAt: 0, locationRequestPromise: null, cooldownUntil: 0,
     remoteTyping: new Map(), typingTimer: null, lastTypingSent: 0,
-    offlineDm: false, groupDom: null, groupUrls: null, peerRate: new Map(), leaveTimer: 0
+    reactions: new Map(), selecting: false, selected: new Set(), editTarget: null, offlineDm: false, groupDom: null, groupUrls: null, peerRate: new Map(), leaveTimer: 0, privatePeers:new Map(), privatePeerPromises:new Map(), privateCandidates:new Map(), iceProvider:'unknown', peerIceProviders:new Map(), peerFallbacks:new Set(), peerFallbackPromises:new Map(), peerDisconnectTimers:new Map()
   };
 
   function readStoredArray(key) {
@@ -682,6 +751,7 @@
     restorePrivateHistory(state.activePrivate);
     renderPendingStickerMessages();
     refreshRoomBar(); updateDrawer(); closeDrawer();
+    void connectPrivatePeer(friend);
   }
   function exitOfflineDm() {
     if (!state.offlineDm) return;
@@ -726,7 +796,7 @@
     saveFriends();
   }
   function rememberPrivateMessage(peerId, item) {
-    if (!peerId || state.mode !== 'private') return;
+    if (!peerId) return;
     const list = Array.isArray(state.dmHistory[peerId]) ? state.dmHistory[peerId] : [];
     if (list.some(entry => entry.id === item.id)) return;
     list.push(item);
@@ -740,7 +810,7 @@
     if (!list.length) { markDmRead(peer.id); return; }
     $('emptyState')?.remove();
     for (const item of list.slice(-100)) {
-      if (item.kind === 'text') addMessage(item.name,item.text,item.mine, item.mine ? state.id : peer.id,{messageId:item.id,replyTo:item.replyTo,skipHistory:true,dm:true});
+      if (item.kind === 'text') addMessage(item.name,item.text,item.mine, item.mine ? state.id : peer.id,{messageId:item.id,replyTo:item.replyTo,skipHistory:true,dm:true,at:item.at,edited:item.edited});
     }
     updatePendingNote(); markDmRead(peer.id);
     $('messages').scrollTop = $('messages').scrollHeight;
@@ -748,19 +818,18 @@
   function renderFriendsList() {
     const host = $('friendsList'); if (!host) return;
     host.replaceChildren();
-    if (!state.friends.size) { const empty=document.createElement('div'); empty.className='drawer-empty'; empty.textContent='Accepted private friends will stay here.'; host.append(empty); return; }
+    if (!state.friends.size) { const empty=document.createElement('div'); empty.className='drawer-empty'; empty.textContent='Friends stay here. Add someone once, then message whenever you are both online.'; host.append(empty); return; }
     for (const friend of state.friends.values()) {
-      const online = state.remotePeers.has(friend.id);
       const unread = unreadCount(friend.id);
       const row=document.createElement('div'); row.className='person-row';
       const avatar=makeAvatarNode(friend.id,'person-avatar'); row.append(avatar);
       const info=document.createElement('div'); info.className='person-info';
       const name=document.createElement('strong'); name.textContent=friend.name;
-      const sub=document.createElement('small'); sub.textContent=unread ? `${unread} new message${unread===1?'':'s'}` : (online?'Online nearby':'Not online · you can still message');
+      const sub=document.createElement('small'); sub.textContent=unread ? `${unread} new message${unread===1?'':'s'}` : 'Private chat · available across Neruko';
       if (unread) sub.className='unread';
       info.append(name,sub); row.append(info);
-      const action=document.createElement('button'); action.type='button'; action.className='small-action'+(unread?' has-unread':''); action.textContent=online?'Chat':'Message';
-      action.addEventListener('click',()=>{ if(online){state.selectedProfile={id:friend.id,name:friend.name};requestPrivate();} else { enterOfflineDm({id:friend.id,name:friend.name}); } });
+      const action=document.createElement('button'); action.type='button'; action.className='small-action'+(unread?' has-unread':''); action.textContent=unread?'Open':'Chat';
+      action.addEventListener('click',()=>enterOfflineDm({id:friend.id,name:friend.name}));
       row.append(action); host.append(row);
     }
   }
@@ -825,6 +894,7 @@
   }
 
   function clearMessages() {
+    exitSelection(); closeMessageMenu(); cancelEdit(); state.reactions.clear();
     for (const url of state.mediaUrls) URL.revokeObjectURL(url);
     state.mediaUrls = [];
     $('messages').replaceChildren();
@@ -843,7 +913,7 @@
   function messageAuthor(name, id) {
     const author = document.createElement('button');
     author.className = 'message-author' + (id === state.id ? ' self' : '');
-    author.type = 'button'; author.append(makeAvatarNode(id));
+    author.type = 'button'; if (id) author.append(makeAvatarNode(id));
     const label = document.createElement('span'); label.textContent = name || 'Guest'; author.append(label);
     if (id && id !== state.id) {
       author.dataset.profileId = id;
@@ -900,8 +970,9 @@
     const last = articles.at(-1);
     if (last) { const note = document.createElement('small'); note.className = 'pending-note'; note.textContent = "Pending · Will send when they're online"; last.append(note); }
   }
-  function clearReply() { state.replyTarget = null; $('replyPreview').hidden = true; }
+  function clearReply() { if (state.editTarget) cancelEdit(); state.replyTarget = null; $('replyPreview').hidden = true; }
   function setReplyTarget(target) {
+    if (state.editTarget) cancelEdit();
     state.replyTarget = target;
     $('replyName').textContent = `Replying to ${target.name || 'Guest'}`;
     $('replyText').textContent = target.text;
@@ -915,6 +986,350 @@
     const preview = document.createElement('span'); preview.textContent = replyTo.text.slice(0, 180);
     quote.append(author, preview); return quote;
   }
+  // ===== Message actions: reactions, copy, select, edit, delete (own messages only) =====
+  const REACTIONS = ['❤️', '👍', '👎', '😂', '😮', '😢'];
+  const EDIT_WINDOW_MS = 15 * 60 * 1000;
+  const ICONS = {
+    copy: '<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/>',
+    select: '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.8L16 9.5"/>',
+    edit: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>'
+  };
+  const iconSvg = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+  const dmPeerId = () => ((state.offlineDm || state.mode === 'private') && state.activePrivate?.id) || null;
+  const isBotContext = () => state.mode === 'group' && state.botActive && !state.remotePeers.size && !dmPeerId();
+
+  function findArticle(id) {
+    const selector = `[data-message-id="${CSS.escape(String(id))}"]`;
+    return $('messages').querySelector(selector) || state.groupDom?.querySelector?.(selector) || null;
+  }
+  function articleText(article) { return article.querySelector('.message-body')?.textContent || ''; }
+  function canEdit(article) {
+    return article.classList.contains('mine') && article.dataset.kind === 'text' && !article.classList.contains('deleted') && !!article.dataset.messageId
+      && Date.now() - Number(article.dataset.sentAt || 0) <= EDIT_WINDOW_MS;
+  }
+
+  // -- reactions
+  function reactionsFor(id) { let map = state.reactions.get(id); if (!map) { map = new Map(); state.reactions.set(id, map); } return map; }
+  function renderReactions(article) {
+    article.querySelector(':scope > .reactions')?.remove();
+    const map = state.reactions.get(article.dataset.messageId);
+    if (!map || !map.size) return;
+    const counts = new Map();
+    for (const emoji of map.values()) counts.set(emoji, (counts.get(emoji) || 0) + 1);
+    const row = document.createElement('div'); row.className = 'reactions';
+    for (const [emoji, count] of counts) {
+      const chip = document.createElement('button'); chip.type = 'button';
+      chip.className = 'reaction-chip' + (map.get(state.id) === emoji ? ' mine' : '');
+      chip.textContent = count > 1 ? `${emoji} ${count}` : emoji;
+      chip.addEventListener('click', event => { event.stopPropagation(); toggleReaction(article.dataset.messageId, emoji); });
+      row.append(chip);
+    }
+    article.append(row);
+  }
+  function toggleReaction(id, emoji) {
+    const article = findArticle(id); if (!article || article.classList.contains('deleted')) return;
+    const map = reactionsFor(id);
+    const next = map.get(state.id) === emoji ? null : emoji;
+    if (next) map.set(state.id, next); else map.delete(state.id);
+    renderReactions(article);
+    sendMessageAction({ type:'react', messageId:id, emoji:next });
+  }
+
+  // -- sending and receiving the small action packets
+  function sendMessageAction(action) {
+    const friendId = dmPeerId();
+    if (friendId) {
+      const channel = state.privatePeers.get(friendId)?.channel;
+      if (channel?.readyState === 'open') {
+        try { channel.send(JSON.stringify({ type:'private-action', action:action.type, messageId:action.messageId, emoji:action.emoji, text:action.text })); return; } catch {}
+      }
+      sendServer({ type:'private-action', to:friendId, action:action.type, messageId:action.messageId, emoji:action.emoji, text:action.text });
+      return;
+    }
+    if (isBotContext()) return; // the bot cannot receive these, so the change stays on your screen
+    const packet = JSON.stringify(action);
+    for (const [peerId, channel] of state.channels) {
+      if (channel.readyState === 'open' && state.remotePeers.has(peerId)) { try { channel.send(packet); } catch {} }
+    }
+  }
+  function patchDmHistory(peerId, id, patch, scope = 'theirs') {
+    const list = Array.isArray(state.dmHistory[peerId]) ? state.dmHistory[peerId] : null; if (!list) return;
+    const index = list.findIndex(item => item && item.id === id); if (index < 0) return;
+    const item = list[index];
+    if (scope === 'theirs' && item.mine) return;
+    if (scope === 'mine' && !item.mine) return;
+    if (patch && Date.now() - Number(item.at || 0) > EDIT_WINDOW_MS + 60_000) return;
+    if (patch) list[index] = { ...item, ...patch }; else list.splice(index, 1);
+    saveDmHistory();
+  }
+  function setArticleText(article, text, edited) {
+    const body = article.querySelector('.message-body'); if (body) body.textContent = text;
+    if (edited) {
+      const time = article.querySelector('.message-time');
+      if (time) { if (!time.dataset.base) time.dataset.base = time.textContent; time.textContent = `edited · ${time.dataset.base}`; }
+    }
+  }
+  function markDeleted(article) {
+    const time = article.querySelector('.message-time');
+    const label = time?.dataset.base || time?.textContent || '';
+    article.querySelectorAll('img.message-media').forEach(image => { try { URL.revokeObjectURL(image.src); } catch {} });
+    const author = article.querySelector(':scope > .message-author');
+    article.replaceChildren(...(author ? [author] : []));
+    article.classList.add('deleted'); article.classList.remove('sticker-message', 'media-message', 'selected');
+    article.dataset.kind = 'deleted';
+    state.reactions.delete(article.dataset.messageId);
+    const body = document.createElement('div'); body.className = 'message-body'; body.textContent = 'Message deleted';
+    const stamp = document.createElement('time'); stamp.className = 'message-time'; stamp.textContent = label;
+    article.append(body, stamp);
+  }
+  function applyRemoteAction(senderId, action, isDm) {
+    const id = String(action.messageId || '').slice(0, 64); if (!id) return;
+    const article = findArticle(id);
+    if (action.type === 'react') {
+      if (!article || article.classList.contains('deleted')) return;
+      const map = reactionsFor(id);
+      if (action.emoji == null) map.delete(senderId);
+      else if (REACTIONS.includes(action.emoji)) map.set(senderId, action.emoji);
+      else return;
+      renderReactions(article); return;
+    }
+    if (action.type === 'edit') {
+      const text = String(action.text || '').replace(/\u00a0/g, ' ').trim().slice(0, 1000); if (!text) return;
+      if (article) {
+        if (article.dataset.senderId !== senderId || article.dataset.kind !== 'text') return;
+        if (Date.now() - Number(article.dataset.sentAt || 0) > EDIT_WINDOW_MS + 60_000) return;
+        setArticleText(article, text, true);
+      }
+      if (isDm) patchDmHistory(senderId, id, { text, edited:true }, 'theirs');
+      return;
+    }
+    if (action.type === 'delete') {
+      if (article) { if (article.dataset.senderId !== senderId) return; markDeleted(article); }
+      if (isDm) patchDmHistory(senderId, id, null, 'theirs');
+    }
+  }
+  function handleDmAction(friendId, packet) {
+    if (!packet || !state.friends.has(friendId) || isBlocked(friendId) || !allowPeerPacket(`dm:${friendId}`)) return;
+    if (!['react', 'edit', 'delete'].includes(packet.action)) return;
+    applyRemoteAction(friendId, { type:packet.action, messageId:packet.messageId, emoji:packet.emoji, text:packet.text }, true);
+  }
+
+  // -- copy
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); }
+    catch {
+      const box = document.createElement('textarea'); box.value = text; box.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.append(box); box.select(); try { document.execCommand('copy'); } catch {} box.remove();
+    }
+    showToast('Copied');
+  }
+
+  // -- edit (your own text messages)
+  function startEdit(article) {
+    if (!canEdit(article)) { showToast('Messages can be edited for 15 minutes.'); return; }
+    state.editTarget = { id:article.dataset.messageId };
+    const text = articleText(article);
+    $('replyName').textContent = 'Editing message'; $('replyText').textContent = text; $('replyPreview').hidden = false;
+    state.replyTarget = null;
+    const editor = $('messageEditor'); editor.textContent = text; editor.focus();
+    const range = document.createRange(); range.selectNodeContents(editor); range.collapse(false);
+    const selection = getSelection(); selection.removeAllRanges(); selection.addRange(range);
+    editor.dispatchEvent(new Event('input', { bubbles:true }));
+  }
+  function cancelEdit() {
+    if (!state.editTarget) return;
+    state.editTarget = null;
+    $('messageEditor').replaceChildren(); $('replyPreview').hidden = true;
+    $('messageEditor').dispatchEvent(new Event('input', { bubbles:true }));
+  }
+  function submitEdit(text) {
+    const { id } = state.editTarget;
+    const article = findArticle(id);
+    state.editTarget = null; $('replyPreview').hidden = true;
+    const editor = $('messageEditor'); editor.replaceChildren();
+    if (!article || !canEdit(article)) { showToast('That message can no longer be edited.'); return; }
+    if (text !== articleText(article)) {
+      setArticleText(article, text, true);
+      if (dmPeerId()) patchDmHistory(dmPeerId(), id, { text, edited:true }, 'mine');
+      sendMessageAction({ type:'edit', messageId:id, text });
+    }
+    requestAnimationFrame(() => editor.focus({ preventScroll:true }));
+  }
+
+  // -- delete
+  function removePending(id) {
+    if (!state.pendingDeliveries.some(item => item.id === id)) return;
+    state.pendingDeliveries = state.pendingDeliveries.filter(item => item.id !== id); savePendingDeliveries();
+  }
+  function deleteForMe(articles) {
+    for (const article of articles) {
+      const id = article.dataset.messageId;
+      if (id) { state.reactions.delete(id); removePending(id); if (dmPeerId()) patchDmHistory(dmPeerId(), id, null, 'any'); }
+      state.selected.delete(id); article.remove();
+    }
+  }
+  function deleteForEveryone(articles) {
+    for (const article of articles) {
+      const id = article.dataset.messageId;
+      if (!id || !article.classList.contains('mine') || article.classList.contains('deleted')) continue;
+      sendMessageAction({ type:'delete', messageId:id });
+      removePending(id);
+      if (dmPeerId()) patchDmHistory(dmPeerId(), id, null, 'mine');
+      markDeleted(article);
+    }
+  }
+
+  // -- the long-press menu
+  function closeMessageMenu() { document.getElementById('messageMenu')?.remove(); }
+  function menuCard(items) {
+    const card = document.createElement('div'); card.className = 'menu-card';
+    for (const item of items) {
+      const button = document.createElement('button'); button.type = 'button';
+      button.className = 'menu-item' + (item.danger ? ' danger' : '');
+      button.innerHTML = item.icon ? iconSvg(item.icon) : '';
+      const label = document.createElement('span'); label.textContent = item.label; button.append(label);
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        if (item.confirm && !button.dataset.armed) { button.dataset.armed = '1'; label.textContent = 'Tap again to confirm'; return; }
+        closeMessageMenu(); item.run();
+      });
+      card.append(button);
+    }
+    return card;
+  }
+  function menuItemsFor(article) {
+    const mine = article.classList.contains('mine'), kind = article.dataset.kind, hasId = !!article.dataset.messageId;
+    const items = [];
+    if (kind === 'text') items.push({ label:'Copy', icon:'copy', run:() => copyText(articleText(article)) });
+    items.push({ label:'Select', icon:'select', run:() => enterSelection(article) });
+    if (canEdit(article)) items.push({ label:'Edit', icon:'edit', run:() => startEdit(article) });
+    if (mine && hasId && !isBotContext()) {
+      items.push({ label:'Delete for me', icon:'trash', danger:true, run:() => deleteForMe([article]) });
+      items.push({ label:'Delete for everyone', icon:'trash', danger:true, confirm:true, run:() => deleteForEveryone([article]) });
+    } else items.push({ label:'Delete', icon:'trash', danger:true, run:() => deleteForMe([article]) });
+    return items;
+  }
+  function openMessageMenu(article) {
+    closeMessageMenu();
+    if (!article || state.selecting || article.classList.contains('deleted')) return;
+    const mine = article.classList.contains('mine'), id = article.dataset.messageId;
+    const rect = article.getBoundingClientRect();
+    const layer = document.createElement('div'); layer.id = 'messageMenu'; layer.className = 'message-menu';
+    const stack = document.createElement('div'); stack.className = 'menu-stack' + (mine ? ' mine' : '');
+    if (id) {
+      const bar = document.createElement('div'); bar.className = 'reaction-bar';
+      const current = state.reactions.get(id)?.get(state.id);
+      for (const emoji of REACTIONS) {
+        const button = document.createElement('button'); button.type = 'button';
+        button.className = 'react-btn' + (current === emoji ? ' on' : ''); button.textContent = emoji; button.setAttribute('aria-label', `React ${emoji}`);
+        button.addEventListener('click', event => { event.stopPropagation(); closeMessageMenu(); toggleReaction(id, emoji); });
+        bar.append(button);
+      }
+      stack.append(bar);
+    }
+    const clone = article.cloneNode(true);
+    clone.classList.add('menu-clone'); clone.classList.remove('swiping', 'selected', 'grouped'); clone.removeAttribute('data-message-id'); clone.style.transform = '';
+    clone.querySelectorAll('.reply-swipe-indicator,.reactions').forEach(node => node.remove());
+    clone.style.width = `${Math.ceil(rect.width)}px`;
+    stack.append(clone, menuCard(menuItemsFor(article)));
+    layer.append(stack); document.body.append(layer);
+    const vw = innerWidth, vh = innerHeight, pad = 10;
+    stack.style.left = mine ? 'auto' : `${Math.max(pad, Math.min(rect.left, vw - pad - 230))}px`;
+    stack.style.right = mine ? `${Math.max(pad, vw - rect.right)}px` : 'auto';
+    const barHeight = stack.firstElementChild?.classList.contains('reaction-bar') ? stack.firstElementChild.offsetHeight + 8 : 0;
+    const total = stack.offsetHeight;
+    stack.style.top = `${Math.max(pad, Math.min(rect.top - barHeight, vh - pad - total))}px`;
+    const openedAt = Date.now();
+    layer.addEventListener('click', event => { if (event.target === layer && Date.now() - openedAt > 350) closeMessageMenu(); });
+  }
+  function enableMessageMenu(article) {
+    let timer = 0, startPoint = null, fired = false;
+    const cancel = () => { clearTimeout(timer); timer = 0; startPoint = null; };
+    article.addEventListener('pointerdown', event => {
+      if (state.selecting || event.button !== 0 || !event.isPrimary || event.target.closest('button,a')) return;
+      startPoint = { x:event.clientX, y:event.clientY }; fired = false;
+      timer = setTimeout(() => {
+        fired = true; timer = 0;
+        article.classList.remove('swiping'); article.style.transform = '';
+        if (navigator.vibrate) navigator.vibrate(10);
+        openMessageMenu(article);
+      }, 420);
+    });
+    article.addEventListener('pointermove', event => { if (startPoint && Math.hypot(event.clientX - startPoint.x, event.clientY - startPoint.y) > 9) cancel(); });
+    for (const type of ['pointerup', 'pointercancel', 'pointerleave']) article.addEventListener(type, cancel);
+    article.addEventListener('contextmenu', event => { event.preventDefault(); if (!fired && !state.selecting) openMessageMenu(article); });
+    article.addEventListener('click', event => {
+      if (!state.selecting || event.target.closest('.reaction-chip')) return;
+      event.preventDefault(); event.stopPropagation(); toggleSelect(article);
+    }, true);
+  }
+
+  // -- select mode (a bar replaces the header, like Telegram)
+  function ensureSelectBar() {
+    let bar = document.getElementById('selectBar');
+    if (bar) return bar;
+    bar = document.createElement('div'); bar.id = 'selectBar'; bar.className = 'select-bar'; bar.hidden = true;
+    bar.innerHTML = `<button type="button" class="select-pill select-close" data-act="close" aria-label="Cancel selection">${iconSvg('close')}</button>
+      <div class="select-pill select-count" id="selectCount"></div>
+      <div class="select-pill select-actions">
+        <button type="button" data-act="edit" aria-label="Edit">${iconSvg('edit')}</button>
+        <button type="button" data-act="copy" aria-label="Copy">${iconSvg('copy')}</button>
+        <button type="button" data-act="delete" aria-label="Delete">${iconSvg('trash')}</button>
+      </div>`;
+    bar.addEventListener('click', event => {
+      const action = event.target.closest('[data-act]')?.dataset.act; if (!action) return;
+      const chosen = selectedArticles();
+      if (action === 'close') exitSelection();
+      else if (action === 'copy') { copyText(chosen.filter(a => a.dataset.kind === 'text').map(articleText).join('\n')); exitSelection(); }
+      else if (action === 'edit' && chosen.length === 1) { const only = chosen[0]; exitSelection(); startEdit(only); }
+      else if (action === 'delete') confirmSelectionDelete(chosen);
+    });
+    document.body.append(bar); return bar;
+  }
+  function selectedArticles() { return [...$('messages').querySelectorAll('.message.selected')]; }
+  function updateSelectionBar() {
+    const chosen = selectedArticles();
+    const bar = ensureSelectBar();
+    $('selectCount').textContent = `${chosen.length} selected`;
+    bar.querySelector('[data-act="edit"]').hidden = !(chosen.length === 1 && canEdit(chosen[0]));
+    bar.querySelector('[data-act="copy"]').hidden = !chosen.some(a => a.dataset.kind === 'text');
+  }
+  function enterSelection(article) {
+    closeMessageMenu(); state.selecting = true; state.selected = new Set();
+    document.body.classList.add('selecting'); ensureSelectBar().hidden = false;
+    toggleSelect(article);
+  }
+  function toggleSelect(article) {
+    if (article.classList.contains('deleted')) return;
+    article.classList.toggle('selected');
+    if (!selectedArticles().length) { exitSelection(); return; }
+    updateSelectionBar();
+  }
+  function exitSelection() {
+    state.selecting = false; state.selected = new Set();
+    document.body.classList.remove('selecting');
+    document.querySelectorAll('.message.selected').forEach(node => node.classList.remove('selected'));
+    const bar = document.getElementById('selectBar'); if (bar) bar.hidden = true;
+  }
+  function confirmSelectionDelete(chosen) {
+    if (!chosen.length) return;
+    const allMine = chosen.every(a => a.classList.contains('mine') && a.dataset.messageId && !a.classList.contains('deleted')) && !isBotContext();
+    const items = [{ label:allMine ? 'Delete for me' : 'Delete', icon:'trash', danger:true, run:() => { deleteForMe(chosen); exitSelection(); } }];
+    if (allMine) items.push({ label:'Delete for everyone', icon:'trash', danger:true, confirm:true, run:() => { deleteForEveryone(chosen); exitSelection(); } });
+    closeMessageMenu();
+    const layer = document.createElement('div'); layer.id = 'messageMenu'; layer.className = 'message-menu sheet';
+    const card = menuCard(items); card.classList.add('sheet-card'); layer.append(card); document.body.append(layer);
+    layer.addEventListener('click', event => { if (event.target === layer) closeMessageMenu(); });
+  }
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (document.getElementById('messageMenu')) closeMessageMenu(); else if (state.selecting) exitSelection();
+  });
+  addEventListener('resize', closeMessageMenu);
+  $('messages').addEventListener('scroll', closeMessageMenu, { passive:true });
+
   function enableSwipeReply(article, target, mine = false) {
     let start = null;
     const direction = mine ? -1 : 1;
@@ -924,7 +1339,7 @@
     indicator.textContent = mine ? '↪' : '↩';
     article.append(indicator);
     article.addEventListener('pointerdown', event => {
-      if (event.target.closest('button,a,img') || event.button !== 0 || !event.isPrimary) return;
+      if (state.selecting || event.target.closest('button,a,img') || event.button !== 0 || !event.isPrimary) return;
       start = { id:event.pointerId, x:event.clientX, y:event.clientY };
     });
     article.addEventListener('pointermove', event => {
@@ -943,7 +1358,7 @@
       if (!start || event.pointerId !== start.id) return;
       const dx = event.clientX - start.x;
       article.classList.remove('swiping'); article.style.transform = ''; indicator.style.transform = '';
-      if (dx * direction >= 54) { setReplyTarget(target); if (navigator.vibrate) navigator.vibrate(12); }
+      if (dx * direction >= 54 && !article.classList.contains('deleted')) { setReplyTarget(target); if (navigator.vibrate) navigator.vibrate(12); }
       start = null;
     };
     article.addEventListener('pointerup', finish);
@@ -988,7 +1403,7 @@
     if (live) $('emptyState')?.remove();
     const messageId = String(options.messageId || createId());
     const article = document.createElement('article'); article.className = 'message' + (mine ? ' mine' : '');
-    article.dataset.messageId = messageId;
+    article.dataset.messageId = messageId; article.dataset.kind = 'text'; article.dataset.senderId = mine ? state.id : String(peerId || ''); article.dataset.sentAt = String(options.at || Date.now());
     const quote = quoteBlock(options.replyTo); if (quote) article.append(quote);
     applyMessageGrouping(article, name, peerId, mine, !options.replyTo, host);
     if (!mine && !article.classList.contains('grouped')) article.prepend(messageAuthor(name, peerId || null));
@@ -996,6 +1411,8 @@
     article.append(body); appendMessageTime(article); host.append(article);
     if (state.mode === 'private' && state.activePrivate?.id && !options.skipHistory && (!state.offlineDm || options.dm)) rememberPrivateMessage(state.activePrivate.id,{id:messageId,kind:'text',name:String(name||'Guest'),text:String(text),mine:!!mine,replyTo:options.replyTo||null,at:Date.now()});
     enableSwipeReply(article, { id:messageId, name:String(name || 'Guest'), text:String(text).slice(0,1000) }, mine);
+    enableMessageMenu(article);
+    if (options.edited) setArticleText(article, String(text), true);
     if (live) preserveMessageScroll(shouldScroll);
     if (options.pending) updatePendingNote();
     return article;
@@ -1052,7 +1469,9 @@
     if (live) state.mediaUrls.push(url); else (state.groupUrls ||= []).push(url);
     image.src = url; image.alt = mediaKind === 'sticker' ? 'Sticker' : 'Shared image'; image.loading = 'lazy';
     image.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
-    article.append(image); appendMessageTime(article); host.append(article); if (live) preserveMessageScroll(shouldScroll);
+    article.dataset.kind = mediaKind === 'sticker' ? 'sticker' : 'image'; article.dataset.senderId = mine ? state.id : String(peerId || ''); article.dataset.sentAt = String(Date.now());
+    if (options.messageId) article.dataset.messageId = String(options.messageId).slice(0, 64);
+    article.append(image); appendMessageTime(article); host.append(article); enableMessageMenu(article); if (live) preserveMessageScroll(shouldScroll);
     return article;
   }
 
@@ -1300,8 +1719,99 @@
   }
   function closeModal(id) { $(id).hidden = true; }
 
+  const ICE_CACHE_MS = 15 * 60 * 1000;   // TURN credentials expire, so refresh them regularly
+  const ICE_RETRY_MS = 10 * 1000;        // after a failed lookup, try again soon
+  let iceServersPromise = null;
+  let iceFetchedAt = 0;
+  const peerCreationPromises = new Map();
+  function getIceServers() {
+    if (iceServersPromise && Date.now() - iceFetchedAt > ICE_CACHE_MS) iceServersPromise = null;
+    if (!iceServersPromise) {
+      iceFetchedAt = Date.now();
+      const failed = () => { iceFetchedAt = Date.now() - ICE_CACHE_MS + ICE_RETRY_MS; };
+      iceServersPromise = fetch('/api/ice', { cache: 'no-store' })
+        .then(response => response.ok ? response.json() : null)
+        .then(data => {
+          const servers = Array.isArray(data?.iceServers) && data.iceServers.length ? data.iceServers : null;
+          state.iceProvider = data?.provider || 'stun-only';
+          if (!servers) failed();
+          return servers;
+        })
+        .catch(error => { state.iceProvider = 'stun-only'; failed(); console.warn('Could not load relay configuration; using STUN only.', error); return null; });
+    }
+    return iceServersPromise;
+  }
+  const providerIceCache = new Map();
+  async function getProviderIceServers(provider) {
+    const cached = providerIceCache.get(provider);
+    if (cached && Date.now() - cached.at < ICE_CACHE_MS) return cached.request;
+    const request = fetch(`/api/ice?provider=${encodeURIComponent(provider)}`, { cache: 'no-store' })
+      .then(async response => { if (!response.ok) throw new Error(`${provider} TURN credentials unavailable`); const data = await response.json(); if (!Array.isArray(data?.iceServers) || !data.iceServers.length) throw new Error(`${provider} returned no TURN servers`); return data.iceServers; })
+      .catch(error => { if (providerIceCache.get(provider)?.request === request) providerIceCache.delete(provider); throw error; });
+    providerIceCache.set(provider, { request, at: Date.now() });
+    return request;
+  }
+  function createGroupPeer(peer, iceServers, provider) {
+    const pc = new RTCPeerConnection({ iceServers, iceTransportPolicy: 'all' });
+    state.peers.set(peer.id, pc);
+    state.peerIceProviders.set(peer.id, provider || state.iceProvider);
+    pc.onicecandidate = event => { if (event.candidate) sendSignal(peer.id, { candidate: event.candidate, iceProvider: state.peerIceProviders.get(peer.id) }); };
+    pc.ondatachannel = event => attachChannel(peer, event.channel);
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === 'connected') {
+        const timer = state.peerDisconnectTimers.get(peer.id); if (timer) clearTimeout(timer);
+        state.peerDisconnectTimers.delete(peer.id); state.peerFallbacks.delete(peer.id);
+      } else if (pc.connectionState === 'disconnected') {
+        if (!state.peerDisconnectTimers.has(peer.id)) {
+          const timer = setTimeout(() => {
+            state.peerDisconnectTimers.delete(peer.id);
+            if (state.peers.get(peer.id) === pc && pc.connectionState === 'disconnected') {
+              if (state.peerIceProviders.get(peer.id) === 'turnix' && state.id.localeCompare(peer.id) < 0) void fallbackGroupPeer(peer);
+              else showToast('Connection interrupted. Trying to recover…');
+            }
+          }, 8000);
+          state.peerDisconnectTimers.set(peer.id, timer);
+        }
+      } else if (pc.connectionState === 'failed') {
+        const timer = state.peerDisconnectTimers.get(peer.id); if (timer) clearTimeout(timer);
+        state.peerDisconnectTimers.delete(peer.id);
+        if (state.peerIceProviders.get(peer.id) === 'turnix' && state.id.localeCompare(peer.id) < 0) void fallbackGroupPeer(peer);
+        else showToast('Connection failed. Reconnect or try another network.');
+      }
+    };
+    return pc;
+  }
+  async function fallbackGroupPeer(peer) {
+    if (!peer?.id || state.peerFallbacks.has(peer.id) || state.peerFallbackPromises.has(peer.id) || isBlocked(peer.id)) return;
+    const task = (async () => {
+      state.peerFallbacks.add(peer.id);
+      try {
+        const servers = await getProviderIceServers('metered');
+        if (!state.remotePeers.has(peer.id) || isBlocked(peer.id)) return;
+        const old = state.peers.get(peer.id);
+        const pc = createGroupPeer(peer, servers, 'metered');
+        if (old) { old.onicecandidate = null; old.ondatachannel = null; old.onconnectionstatechange = null; try { old.close(); } catch {} }
+        state.channels.delete(peer.id); state.pendingCandidates.delete(peer.id);
+        if (state.id.localeCompare(peer.id) < 0) {
+          attachChannel(peer, pc.createDataChannel('nerukko-chat'));
+          await pc.setLocalDescription(await pc.createOffer({ iceRestart: true }));
+          sendSignal(peer.id, { description: pc.localDescription, iceProvider: 'metered' });
+          showToast('Switching this connection to backup TURN…');
+        }
+      } catch (error) {
+        state.peerFallbacks.delete(peer.id);
+        console.warn('Metered fallback failed for peer connection.', error);
+        showToast('Both TURN routes failed. Reconnect or try another network.');
+      }
+    })();
+    state.peerFallbackPromises.set(peer.id, task);
+    try { await task; } finally { state.peerFallbackPromises.delete(peer.id); }
+  }
+
   function syncPeers(peers, mode, roomId) {
     state.peers.forEach(pc => { try { pc.close(); } catch {} });
+    state.peerIceProviders.clear(); state.peerFallbacks.clear(); state.peerFallbackPromises.clear();
+    for (const timer of state.peerDisconnectTimers.values()) clearTimeout(timer); state.peerDisconnectTimers.clear();
     for (const transfer of state.incomingMedia.values()) clearTimeout(transfer.timer);
     state.peers.clear(); state.channels.clear(); state.pendingCandidates.clear(); state.incomingMedia.clear(); state.remoteAvatars.clear();
     for (const [id, entry] of state.remoteTyping) if (entry.timer) clearTimeout(entry.timer);
@@ -1311,10 +1821,16 @@
     if (roomId) state.roomId = roomId;
     state.activePrivate = state.mode === 'private' ? (state.remotePeers.values().next().value || null) : null;
     updateDrawer();
-    for (const peer of state.remotePeers.values()) makePeer(peer);
+    for (const peer of state.remotePeers.values()) void makePeer(peer);
   }
 
   function sendSignal(to, payload) { sendServer({ type: 'signal', to, payload }); }
+  function sendPrivateSignal(to,payload){sendServer({type:'private-signal',to,payload});}
+  async function fetchPrivateTurn(provider){return getProviderIceServers(provider);}
+  function closePrivatePeer(id){const e=state.privatePeers.get(id);if(e){try{e.pc.close();}catch{}state.privatePeers.delete(id);}state.privateCandidates.delete(id);}
+  async function connectPrivatePeer(friend,preferred='turnix',waitForConnection=true){if(!friend?.id||isBlocked(friend.id)||!state.friends.has(friend.id))return null;const old=state.privatePeers.get(friend.id);if(old&&['connecting','connected'].includes(old.pc.connectionState))return old;if(state.privatePeerPromises.has(friend.id))return state.privatePeerPromises.get(friend.id);const task=(async()=>{for(const provider of (preferred==='metered'?['metered']:['turnix','metered'])){let servers;try{servers=await fetchPrivateTurn(provider);}catch(e){console.info(provider+' TURN unavailable; fallback.',e);continue;}if(!state.friends.has(friend.id))return null;closePrivatePeer(friend.id);const pc=new RTCPeerConnection({iceServers:servers,iceTransportPolicy:'relay'});const entry={pc,provider,channel:null};state.privatePeers.set(friend.id,entry);let settled=false;const ready=new Promise(resolve=>{const timer=setTimeout(()=>{if(!settled){settled=true;resolve(false);}},12000);pc.onconnectionstatechange=()=>{if(pc.connectionState==='connected'&&!settled){settled=true;clearTimeout(timer);resolve(true);}if(pc.connectionState==='failed'&&!settled){settled=true;clearTimeout(timer);resolve(false);}else if(pc.connectionState==='failed'&&settled&&provider==='turnix'&&state.id.localeCompare(friend.id)<0&&!entry.fallbackStarted){entry.fallbackStarted=true;closePrivatePeer(friend.id);void connectPrivatePeer(friend,'metered',true).then(result=>{if(!result)showToast('Private TURN backup failed. Using live relay.');});}};});pc.onicecandidate=e=>{if(e.candidate)sendPrivateSignal(friend.id,{candidate:e.candidate});};pc.ondatachannel=e=>attachPrivateChannel(friend,e.channel,entry);if(state.id.localeCompare(friend.id)<0){attachPrivateChannel(friend,pc.createDataChannel('nerukko-private',{ordered:true}),entry);try{await pc.setLocalDescription(await pc.createOffer());sendPrivateSignal(friend.id,{description:pc.localDescription,provider});}catch(e){closePrivatePeer(friend.id);continue;}}if(!waitForConnection)return entry;if(await ready)return entry;closePrivatePeer(friend.id);}showToast('Direct private connection unavailable. Using live relay.');return null;})();state.privatePeerPromises.set(friend.id,task);try{return await task;}finally{state.privatePeerPromises.delete(friend.id);}}
+  function attachPrivateChannel(friend,ch,entry){entry.channel=ch;ch.binaryType='arraybuffer';ch.onmessage=e=>{try{const p=JSON.parse(e.data);if(p?.type==='private-action'){handleDmAction(friend.id,p);return;}if(p?.type!=='private-text'||!state.friends.has(friend.id)||isBlocked(friend.id))return;const item={id:String(p.messageId||createId()),kind:'text',name:String(friend.name||'Guest'),text:String(p.text||'').slice(0,1000),mine:false,replyTo:p.replyTo||null,at:Number(p.at)||Date.now(),unread:true};storeDirectMessage(friend.id,item);if(state.offlineDm&&state.activePrivate?.id===friend.id){addMessage(item.name,item.text,false,friend.id,{messageId:item.id,replyTo:item.replyTo,dm:true});markDmRead(friend.id);}else{renderFriendsList();updateDrawer();showToast('New message from '+item.name);}}catch{}};ch.onclose=()=>{if(entry.channel===ch)entry.channel=null;};}
+  async function handlePrivateSignal(from,p){if(isBlocked(from)||!state.friends.has(from))return;let e=state.privatePeers.get(from);if(e&&p.provider&&e.provider!==p.provider){closePrivatePeer(from);e=null;}if(!e&&p.provider)e=await connectPrivatePeer(state.friends.get(from),p.provider==='metered'?'metered':'turnix',false);if(!e)return;const pc=e.pc;try{if(p.description){await pc.setRemoteDescription(p.description);if(p.description.type==='offer'){await pc.setLocalDescription(await pc.createAnswer());sendPrivateSignal(from,{description:pc.localDescription,provider:e.provider});}const q=state.privateCandidates.get(from)||[];state.privateCandidates.delete(from);for(const c of q){try{await pc.addIceCandidate(c);}catch{}}}else if(p.candidate){if(pc.remoteDescription)await pc.addIceCandidate(p.candidate);else{const q=state.privateCandidates.get(from)||[];q.push(p.candidate);state.privateCandidates.set(from,q);}}}catch(err){console.warn('Private signalling failed.',err);}}
 
   function attachChannel(peer, channel) {
     state.channels.set(peer.id, channel); channel.binaryType = 'arraybuffer';
@@ -1344,13 +1860,14 @@
         clearTimeout(transfer.timer);
         const blob = new Blob(transfer.chunks, { type: transfer.mime });
         state.incomingMedia.delete(transferKey);
-        addMediaMessage(peer.name || 'Guest', peer.id, blob, false, transfer.kind);
+        addMediaMessage(peer.name || 'Guest', peer.id, blob, false, transfer.kind, { messageId: transferKey.slice(peer.id.length + 1) });
       }
       return;
     }
     try {
       const packet = JSON.parse(data);
       if (!packet || typeof packet !== 'object' || !allowPeerPacket(peer.id)) return;
+      if (packet.type === 'react' || packet.type === 'edit' || packet.type === 'delete') { applyRemoteAction(peer.id, packet, false); return; }
       if (packet.type === 'profile') {
         const avatar = typeof packet.avatar === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(packet.avatar) && packet.avatar.length <= 18000 ? packet.avatar : '';
         state.remoteAvatars.set(peer.id, avatar);
@@ -1395,36 +1912,47 @@
     } catch (error) { console.warn('Ignored an unreadable peer message.', error); }
   }
 
-  function makePeer(peer) {
-    if (!peer?.id || peer.id === state.id || isBlocked(peer.id) || state.peers.has(peer.id)) return state.peers.get(peer?.id);
-    const pc = new RTCPeerConnection({ iceServers: [
-      { urls: 'stun:stun.cloudflare.com:3478' },
-      { urls: 'stun:stun.l.google.com:19302' }
-    ] });
-    state.peers.set(peer.id, pc);
-    pc.onicecandidate = event => { if (event.candidate) sendSignal(peer.id, { candidate: event.candidate }); };
-    pc.ondatachannel = event => attachChannel(peer, event.channel);
-    pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'failed') showToast('A direct connection failed. Some networks may not connect without a relay.');
-    };
-    if (state.id.localeCompare(peer.id) < 0) {
-      const channel = pc.createDataChannel('nerukko-chat'); attachChannel(peer, channel);
-      pc.createOffer().then(offer => pc.setLocalDescription(offer))
-        .then(() => sendSignal(peer.id, { description: pc.localDescription }))
-        .catch(error => console.warn('Could not start peer connection.', error));
-    }
-    return pc;
+  async function makePeer(peer) {
+    if (!peer?.id || peer.id === state.id || isBlocked(peer.id)) return null;
+    if (state.peers.has(peer.id)) return state.peers.get(peer.id);
+    if (peerCreationPromises.has(peer.id)) return peerCreationPromises.get(peer.id);
+    const creation = (async () => {
+      const iceServers = await getIceServers() || [
+        { urls: 'stun:stun.cloudflare.com:3478' },
+        { urls: 'stun:stun.l.google.com:19302' }
+      ];
+      if (state.peers.has(peer.id) || isBlocked(peer.id)) return state.peers.get(peer.id) || null;
+      const pc = createGroupPeer(peer, iceServers, state.iceProvider);
+      if (state.id.localeCompare(peer.id) < 0) {
+        const channel = pc.createDataChannel('nerukko-chat'); attachChannel(peer, channel);
+        pc.createOffer().then(offer => pc.setLocalDescription(offer))
+          .then(() => sendSignal(peer.id, { description: pc.localDescription, iceProvider: state.peerIceProviders.get(peer.id) }))
+          .catch(error => console.warn('Could not start peer connection.', error));
+      }
+      return pc;
+    })();
+    peerCreationPromises.set(peer.id, creation);
+    try { return await creation; }
+    finally { peerCreationPromises.delete(peer.id); }
   }
 
   async function handleSignal(from, payload) {
     if (isBlocked(from)) return;
     const peer = state.remotePeers.get(from) || { id: from, name: 'Guest' };
-    let pc = state.peers.get(from); if (!pc) pc = makePeer(peer); if (!pc) return;
+    let pc = state.peers.get(from);
+    if (payload.iceProvider === 'metered' && state.peerIceProviders.get(from) !== 'metered') {
+      const servers = await getProviderIceServers('metered');
+      const old = pc;
+      pc = createGroupPeer(peer, servers, 'metered');
+      if (old) { old.onicecandidate = null; old.ondatachannel = null; old.onconnectionstatechange = null; try { old.close(); } catch {} }
+      state.channels.delete(from); state.pendingCandidates.delete(from);
+    }
+    if (!pc) pc = await makePeer(peer); if (!pc) return;
     if (payload.description) {
       await pc.setRemoteDescription(payload.description);
       if (payload.description.type === 'offer') {
         const answer = await pc.createAnswer(); await pc.setLocalDescription(answer);
-        sendSignal(from, { description: pc.localDescription });
+        sendSignal(from, { description: pc.localDescription, iceProvider: state.peerIceProviders.get(from) });
       }
       const queued = state.pendingCandidates.get(from) || []; state.pendingCandidates.delete(from);
       for (const candidate of queued) { try { await pc.addIceCandidate(candidate); } catch (error) { console.warn('Could not add queued ICE candidate.', error); } }
@@ -1468,7 +1996,7 @@
       case 'room-error': showToast(data.message || 'Room action could not be completed.'); break;
       case 'peer-joined':
         if (data.peer?.id && !isBlocked(data.peer.id) && !state.remotePeers.has(data.peer.id)) {
-          state.remotePeers.set(data.peer.id, data.peer); state.offlinePeers.delete(data.peer.id); updateDrawer(); renderFriendsList(); makePeer(data.peer);
+          state.remotePeers.set(data.peer.id, data.peer); state.offlinePeers.delete(data.peer.id); updateDrawer(); renderFriendsList(); void makePeer(data.peer);
         }
         break;
       case 'peer-renamed': {
@@ -1481,13 +2009,13 @@
       case 'peer-left':
         clearRemoteTyping(data.id);
         state.remotePeers.delete(data.id); state.remoteAvatars.delete(data.id); state.peers.get(data.id)?.close(); state.peers.delete(data.id);
-        state.channels.delete(data.id); state.pendingCandidates.delete(data.id); state.incomingMedia.delete(data.id); state.offlinePeers.delete(data.id); updateDrawer(); renderFriendsList(); break;
+        state.channels.delete(data.id); state.pendingCandidates.delete(data.id); state.peerIceProviders.delete(data.id); state.peerFallbacks.delete(data.id); const disconnectTimer=state.peerDisconnectTimers.get(data.id); if(disconnectTimer)clearTimeout(disconnectTimer); state.peerDisconnectTimers.delete(data.id); state.incomingMedia.delete(data.id); state.offlinePeers.delete(data.id); updateDrawer(); renderFriendsList(); break;
       case 'peer-offline':
-        if (data.peer?.id) { clearRemoteTyping(data.peer.id); state.remotePeers.delete(data.peer.id); state.remoteAvatars.delete(data.peer.id); state.offlinePeers.set(data.peer.id, data.peer); state.peers.get(data.peer.id)?.close(); state.peers.delete(data.peer.id); state.channels.delete(data.peer.id); updateDrawer(); renderFriendsList(); }
+        if (data.peer?.id) { clearRemoteTyping(data.peer.id); state.remotePeers.delete(data.peer.id); state.remoteAvatars.delete(data.peer.id); state.offlinePeers.set(data.peer.id, data.peer); state.peers.get(data.peer.id)?.close(); state.peers.delete(data.peer.id); state.channels.delete(data.peer.id); state.peerIceProviders.delete(data.peer.id); state.peerFallbacks.delete(data.peer.id); const disconnectTimer=state.peerDisconnectTimers.get(data.peer.id); if(disconnectTimer)clearTimeout(disconnectTimer); state.peerDisconnectTimers.delete(data.peer.id); updateDrawer(); renderFriendsList(); }
         break;
       case 'delivery-ready':
       case 'delivery-invite':
-        if (data.peer?.id && !isBlocked(data.peer.id)) { state.offlinePeers.delete(data.peer.id); state.deliveryPeers.add(data.peer.id); makePeer({ ...data.peer, delivery:true }); flushDeliveryQueue(data.peer.id); }
+        if (data.peer?.id && !isBlocked(data.peer.id)) { state.offlinePeers.delete(data.peer.id); state.deliveryPeers.add(data.peer.id); void makePeer({ ...data.peer, delivery:true }); flushDeliveryQueue(data.peer.id); }
         break;
       case 'delivery-expired': showToast('A pending message expired before they returned.'); break;
       case 'signal': handleSignal(data.from, data.payload || {}).catch(error => console.warn('Signalling failed.', error)); break;
@@ -1526,44 +2054,69 @@
       case 'private-request-expired':
       case 'private-request-closed':
         state.privateRequests.delete(data.requestId); state.outgoingRequests.delete(data.requestId); updateDrawer(); break;
-      case 'private-start':
-        clearTimeout(state.leaveTimer); dropOfflineDmStash();
-        state.customRoom = null; state.selectedProfile = null; clearMessages(); state.activePrivate = data.peer || null; rememberFriend(data.peer); refreshRoomBar();
+      case 'friend-added':
+        rememberFriend(data.peer);
         state.privateRequests.clear(); state.outgoingRequests.clear();
-        syncPeers([data.peer], 'private', data.roomId); restorePrivateHistory(data.peer); renderPendingStickerMessages(); closeDrawer(); showToast('Private chat started. You have left the group.'); break;
+        updateDrawer(); renderFriendsList();
+        showToast(`${data.peer?.name || 'Friend'} added. You can message anytime while both online.`);
+        break;
+      case 'private-signal': void handlePrivateSignal(data.from,data.payload||{}); break;
+      case 'private-message': {
+        if (!data.from || isBlocked(data.from) || !state.friends.has(data.from)) break;
+        const peer = state.friends.get(data.from);
+        const item = { id:String(data.messageId || createId()), kind:'text', name:String(data.name || peer.name || 'Guest').slice(0,24), text:String(data.text || '').slice(0,1000), mine:false, replyTo:data.replyTo || null, at:Number(data.at) || Date.now(), unread:true };
+        storeDirectMessage(data.from, item);
+        if (state.offlineDm && state.activePrivate?.id === data.from) {
+          addMessage(item.name, item.text, false, data.from, { messageId:item.id, replyTo:item.replyTo, dm:true });
+          markDmRead(data.from);
+        } else {
+          renderFriendsList(); updateDrawer(); showToast(`New message from ${item.name}`);
+        }
+        break;
+      }
+      case 'private-message-sent': break;
+      case 'private-action': if (data.from) handleDmAction(String(data.from), data); break;
+      case 'private-message-error': showToast(data.message || 'Private message could not be sent.'); break;
       case 'private-error': showToast(data.message || 'Could not send the request.'); break;
       case 'report-received':
-        showToast('Report received. Thank you for helping keep Nerukko comfortable.'); break;
+        showToast('Report received. Thank you for helping keep Neruko comfortable.'); break;
       case 'blocked': {
         state.cooldownUntil = Number(data.until) || Date.now() + (Number(data.durationMinutes) || 5) * 60_000;
         const minutes = Number(data.durationMinutes) || Math.max(1, Math.ceil((state.cooldownUntil - Date.now()) / 60_000));
-        showToast(`You have been paused from Nerukko for ${minutes} minutes.`);
+        showToast(`You have been paused from Neruko for ${minutes} minutes.`);
         break;
       }
       case 'error': showToast(data.message || 'Something went wrong.'); break;
       case 'bot-start':
-        state.botActive = true; state.botHistory = []; flushPendingStickers(); break;
+        state.botActive = true; state.botHistory = []; state.botAskedAt = Date.now(); state.botFollowupSent = false; clearBotFollowup(); flushPendingStickers(); break;
       case 'bot-stop':
-        state.botActive = false; state.botHistory = []; break;
+        state.botActive = false; state.botHistory = []; clearBotFollowup(); setBotTyping(false); break;
       case 'bot-message':
         if (data.stickerId) {
           const stickerId = String(data.stickerId);
           deletePendingStickerRecord(stickerId).then(() => { state.pendingStickers = state.pendingStickers.filter(item => item.id !== stickerId); document.querySelector(`[data-pending-sticker-id="${stickerId}"] .pending-sticker-note`)?.remove(); });
         }
-        if (state.botActive && typeof data.text === 'string') {
-          addMessage('Nerukko Bot', data.text, false, null, { messageId:data.messageId || createId() });
-          state.botHistory.push({ role:'model', text:data.text }); state.botHistory = state.botHistory.slice(-12);
-        }
+        if (typeof data.text === 'string') queueBotMessage(data);
         break;
-      case 'bot-unavailable': showToast(data.message || (data.stickerId ? 'Your sticker is saved here and will reach the group when someone joins.' : 'Nerukko Bot could not reply just now. Try again in a moment.')); break;
+      case 'bot-unavailable': showToast(data.message || (data.stickerId ? 'Your sticker is saved here and will reach the group when someone joins.' : 'Neruko Bot could not reply just now. Try again in a moment.')); break;
       case 'pong': break;
     }
   }
 
-  function getPosition({ promptUser = false, maximumAge = 300000 } = {}) {
-    return new Promise(resolve => {
-      if (!navigator.geolocation) return resolve(null);
-      if (!promptUser && storage.getItem(STORAGE.location) !== 'granted') return resolve(null);
+  // Location is sampled once on entry/page load, then at most once every five
+  // minutes while connected. Reconnects and visibility events reuse the latest
+  // sample instead of repeatedly prompting the device location provider.
+  const LOCATION_REFRESH_INTERVAL_MS = 300_000;
+  function getPosition({ promptUser = false, maximumAge = LOCATION_REFRESH_INTERVAL_MS } = {}) {
+    if (!navigator.geolocation) return Promise.resolve(null);
+    if (!promptUser && storage.getItem(STORAGE.location) !== 'granted') return Promise.resolve(null);
+    if (state.locationRequestPromise) return state.locationRequestPromise;
+    const elapsed = Date.now() - state.lastLocationAttemptAt;
+    if (state.lastLocationAttemptAt && elapsed < LOCATION_REFRESH_INTERVAL_MS && !(promptUser && storage.getItem(STORAGE.location) === 'denied')) {
+      return Promise.resolve(state.location);
+    }
+    state.lastLocationAttemptAt = Date.now();
+    state.locationRequestPromise = new Promise(resolve => {
       navigator.geolocation.getCurrentPosition(position => {
         const location = { lat: position.coords.latitude, lon: position.coords.longitude };
         state.location = location; state.locationAllowed = true;
@@ -1573,13 +2126,14 @@
         if (error.code === error.PERMISSION_DENIED) { state.locationAllowed = false; state.location = null; storage.setItem(STORAGE.location, 'denied'); $('locationButton').textContent = 'Enable'; $('locationButton').disabled = false; state.roomListings = []; renderRoomDirectory(); if (state.ws?.readyState === WebSocket.OPEN) sendServer({ type:'location-update', location:null }); updateDrawer(); }
         resolve(null);
       }, { enableHighAccuracy: false, maximumAge, timeout: 6500 });
-    });
+    }).finally(() => { state.locationRequestPromise = null; });
+    return state.locationRequestPromise;
   }
 
   function startPresence() {
     clearInterval(state.heartbeat); state.heartbeat = setInterval(() => sendServer({ type: 'ping' }), 45_000);
     clearInterval(state.locationRefresh); clearInterval(state.deliveryTimer);
-    if (state.locationAllowed) state.locationRefresh = setInterval(refreshLocation, 300_000);
+    if (state.locationAllowed) state.locationRefresh = setInterval(refreshLocation, LOCATION_REFRESH_INTERVAL_MS);
     state.deliveryTimer = setInterval(sendDeliveryInvites, 12_000); sendDeliveryInvites();
   }
   async function refreshLocation() {
@@ -1589,6 +2143,36 @@
   }
   function stopPresence() { clearInterval(state.heartbeat); clearInterval(state.locationRefresh); clearInterval(state.deliveryTimer); state.heartbeat = state.locationRefresh = state.deliveryTimer = null; }
 
+  // Bot replies appear after a short, human-feeling pause (2-3 seconds from the moment you sent).
+  const BOT_FOLLOWUP_PROMPT = 'The person has gone quiet. Send one short, friendly follow-up that is easy to answer, such as a light question or a playful comment. Do not mention that they were quiet.';
+  function setBotTyping(on) {
+    if (on) state.remoteTyping.set('__bot', { name:'Neruko Bot' }); else state.remoteTyping.delete('__bot');
+    renderTypingHint();
+  }
+  function clearBotFollowup() { clearTimeout(state.botFollowupTimer); state.botFollowupTimer = 0; }
+  function armBotFollowup() {
+    clearBotFollowup();
+    if (state.botFollowupSent || !state.botActive) return;
+    state.botFollowupTimer = setTimeout(() => {
+      state.botFollowupTimer = 0;
+      if (!state.botActive || state.mode !== 'group' || state.customRoom || state.remotePeers.size || state.botFollowupSent) return;
+      state.botFollowupSent = true; state.botAskedAt = Date.now();
+      sendServer({ type:'bot-nudge', history:state.botHistory.slice(-12), prompt:BOT_FOLLOWUP_PROMPT });
+    }, 20000 + Math.random() * 10000);
+  }
+  function queueBotMessage(data) {
+    const wait = Math.max(500, 2000 + Math.random() * 1000 - (Date.now() - (state.botAskedAt || Date.now())));
+    state.botQueue = state.botQueue.then(async () => {
+      if (!state.botActive) return;
+      setBotTyping(true);
+      await new Promise(resolve => setTimeout(resolve, wait));
+      setBotTyping(false);
+      if (!state.botActive) return;
+      addMessage('Neruko Bot', data.text, false, null, { messageId:data.messageId || createId() });
+      state.botHistory.push({ role:'model', text:data.text }); state.botHistory = state.botHistory.slice(-12);
+      armBotFollowup();
+    }).catch(() => { setBotTyping(false); });
+  }
   function renderTypingHint() {
     const names = [...state.remoteTyping.values()].map(item => item.name).filter(Boolean);
     const hint = $('typingHint');
@@ -1690,24 +2274,26 @@
     const editor = $('messageEditor');
     const text = editor.innerText.replace(/\u00a0/g, ' ').trim().slice(0, 1000);
     if (!text) return;
+    if (state.editTarget) { submitEdit(text); return; }
     const messageId = createId();
     const replyTo = state.replyTarget ? { id:state.replyTarget.id, name:state.replyTarget.name, text:state.replyTarget.text.slice(0,180) } : null;
 
-    if (state.offlineDm && state.activePrivate) {
+    if ((state.offlineDm || state.mode === 'private') && state.activePrivate) {
       const friend = state.activePrivate;
       if (isBlocked(friend.id)) { showToast('You blocked this person.'); return; }
-      state.pendingDeliveries.push({ id:messageId, name:state.name, text, replyTo, recipients:[{ id:friend.id, name:friend.name }], dm:true, createdAt:Date.now() });
-      state.pendingDeliveries = state.pendingDeliveries.slice(-100);
-      savePendingDeliveries();
-      addMessage(state.name, text, true, state.id, { messageId, replyTo, pending:true, dm:true });
+      if (state.ws?.readyState !== WebSocket.OPEN) { showToast('Reconnecting. Your message was not sent.'); return; }
+      addMessage(state.name, text, true, state.id, { messageId, replyTo, dm:true });
+      const privateChannel=state.privatePeers.get(friend.id)?.channel;
+      if(privateChannel?.readyState==='open') privateChannel.send(JSON.stringify({type:'private-text',text,messageId,replyTo,at:Date.now()}));
+      else { sendServer({ type:'private-message', to:friend.id, text, messageId, replyTo }); void connectPrivatePeer(friend); }
       editor.replaceChildren(); clearReply(); requestAnimationFrame(()=>editor.focus({preventScroll:true}));
-      sendDeliveryInvites();
       return;
     }
 
     if (state.mode === 'group' && state.botActive && !state.remotePeers.size) {
       addMessage(state.name, text, true, state.id, { messageId, replyTo });
       state.botHistory.push({ role:'user', text }); state.botHistory = state.botHistory.slice(-12);
+      state.botAskedAt = Date.now(); state.botFollowupSent = false; clearBotFollowup();
       sendServer({ type:'bot-chat', text, history:state.botHistory.slice(-12) });
       editor.replaceChildren(); clearReply(); requestAnimationFrame(()=>editor.focus({preventScroll:true})); return;
     }
@@ -1785,7 +2371,7 @@
       const prepared = await prepareImageForSend(file);
       if (!prepared) { showToast('Could not prepare that photo. Try a different one.'); return false; }
       file = prepared;
-      if (file.type === 'image/gif' ? file.size > MAX_IMAGE_BYTES : file.size > MAX_MEDIA_BYTES) { showToast(file.type === 'image/gif' ? 'Keep GIFs under 8 MB.' : 'That photo could not be made small enough.'); return false; }
+      if (file.type === 'image/gif' ? file.size > MAX_IMAGE_BYTES : file.size > MAX_MEDIA_BYTES) { showToast(file.type === 'image/gif' ? 'Keep GIFs under 2 MB.' : 'That photo could not be made small enough.'); return false; }
     } else if (file.size > MAX_MEDIA_BYTES) { showToast('Keep stickers under 2 MB.'); return false; }
     const mime = file.type || 'image/png';
     if (sticker && mime !== 'image/webp') { showToast('Stickers must be WebP images.'); return false; }
@@ -1795,6 +2381,7 @@
     if (sticker && (!peerIds.length || channels.length !== peerIds.length)) {
       if (!peerIds.length && state.mode === 'group' && !state.customRoom && state.botActive) {
         const queued = await queuePendingSticker(file);
+        state.botAskedAt = Date.now(); state.botFollowupSent = false; clearBotFollowup();
         sendServer({ type:'bot-sticker', stickerId:queued.id, history:state.botHistory.slice(-12) });
         return true;
       }
@@ -1820,7 +2407,7 @@
         completed++;
       } catch (error) { console.warn('Media transfer failed for peer.', peerId, error); }
     }
-    if (completed) addMediaMessage(state.name, state.id, new Blob([buffer], { type:mime }), true, sticker ? 'sticker' : 'image');
+    if (completed) addMediaMessage(state.name, state.id, new Blob([buffer], { type:mime }), true, sticker ? 'sticker' : 'image', { messageId: transferId });
     else if (sticker) return queuePendingSticker(file);
     else showToast('The media could not be sent. Check the connection and try again.');
     return completed > 0 || sticker;
@@ -2277,7 +2864,7 @@
 
   async function inviteFriends() {
     const shareData = {
-      title: 'Nerukko',
+      title: 'Neruko',
       text: 'Meet people nearby in small, anonymous group chats. No account, no pressure. Just drop in and say hello.',
       url: window.location.origin && window.location.origin !== 'null' ? `${window.location.origin}/` : window.location.href
     };
@@ -2285,7 +2872,7 @@
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share(shareData);
-        showToast('Nerukko shared.');
+        showToast('Neruko shared.');
         return;
       } catch (error) {
         if (error?.name === 'AbortError') return;
@@ -2295,7 +2882,7 @@
 
     const copied = await copyInvite(`${shareData.text} ${shareData.url}`);
     if (copied) showToast('Invite link copied.');
-    else window.prompt('Copy the Nerukko invite link:', shareData.url);
+    else window.prompt('Copy the Neruko invite link:', shareData.url);
   }
 
   $('entryForm').addEventListener('submit', event => { event.preventDefault(); joinChat({ automatic: false }); });
@@ -2433,7 +3020,7 @@
 
   if ('serviceWorker' in navigator) window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register('/service-worker.js?v=13', { scope:'/', updateViaCache:'none' });
+      const registration = await navigator.serviceWorker.register('/service-worker.js?v=15', { scope:'/', updateViaCache:'none' });
       registration.update().catch(error => console.debug('Service-worker update check skipped.', error));
     } catch (error) { console.warn('Offline app shell is unavailable.', error); }
   });
