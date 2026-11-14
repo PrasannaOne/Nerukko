@@ -1,4 +1,4 @@
-name: Deploy Neruko V15.4 from an uploaded zip
+name: Deploy Neruko from an uploaded zip
 
 # How to use: upload a zip named exactly Neruko.zip to the ROOT of this repository on GitHub.
 # This workflow unpacks it, runs the checks, deploys it to Cloudflare, then updates the repository
@@ -177,4 +177,3 @@ jobs:
             git commit -m "Deploy from $ZIP"
             git push
           fi
-          
