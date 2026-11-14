@@ -1,8 +1,8 @@
-name: Deploy Nerukko from an uploaded zip
+name: Deploy Neruko V15.4 from an uploaded zip
 
-# How to use: upload a zip named exactly Nerukko.zip to the ROOT of this repository on GitHub.
+# How to use: upload a zip named exactly Neruko.zip to the ROOT of this repository on GitHub.
 # This workflow unpacks it, runs the checks, deploys it to Cloudflare, then updates the repository
-# files to match and deletes Nerukko.zip. Zips with any other name are ignored and never unpacked.
+# files to match and deletes Neruko.zip. Zips with any other name are ignored and never unpacked.
 # If the checks fail, nothing is deployed.
 
 on:
@@ -10,7 +10,7 @@ on:
     branches:
       - main
     paths:
-      - "Nerukko.zip"
+      - "Neruko.zip"
   workflow_dispatch:
 
 permissions:
@@ -18,7 +18,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: nerukko-zip-deploy
+  group: neruko-zip-deploy
   cancel-in-progress: false
 
 jobs:
@@ -29,17 +29,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Find Nerukko.zip
+      - name: Find Neruko.zip
         id: find
         run: |
           set -euo pipefail
-          if [ ! -f "Nerukko.zip" ]; then
-            echo "Nerukko.zip is not in the repository root, so there is nothing to deploy."
+          if [ ! -f "Neruko.zip" ]; then
+            echo "Neruko.zip is not in the repository root, so there is nothing to deploy."
             echo "found=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "found=true" >> "$GITHUB_OUTPUT"
-          echo "zip=Nerukko.zip" >> "$GITHUB_OUTPUT"
+          echo "zip=Neruko.zip" >> "$GITHUB_OUTPUT"
 
       - name: Wait for the regular deploy to finish
         if: steps.find.outputs.found == 'true'
@@ -72,7 +72,7 @@ jobs:
             if [ "$dirs" = "1" ] && [ "$files" = "0" ]; then root=$(find "$root" -mindepth 1 -maxdepth 1 -type d); fi
           fi
           if [ ! -f "$root/package.json" ] || [ ! -f "$root/wrangler.jsonc" ] || [ ! -f "$root/src/worker.js" ] || [ ! -d "$root/public" ]; then
-            echo "This zip does not look like a Nerukko project (package.json, wrangler.jsonc, src/worker.js or public/ is missing)."
+            echo "This zip does not look like a Neruko project (package.json, wrangler.jsonc, src/worker.js or public/ is missing)."
             exit 1
           fi
           echo "root=$root" >> "$GITHUB_ENV"
@@ -95,6 +95,30 @@ jobs:
           mkdir -p public/Stickers
           cp Stickers/*.zip public/Stickers/
 
+      - name: Validate required deployment secrets
+        if: steps.find.outputs.found == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TURNIX_API_TOKEN: ${{ secrets.TURNIX_API_TOKEN }}
+          METERED_APP_NAME: ${{ secrets.METERED_APP_NAME }}
+          METERED_TURN_API_KEY: ${{ secrets.METERED_TURN_API_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$GEMINI_API_KEY" || { echo "GEMINI_API_KEY is missing."; exit 1; }
+          test -n "$TURNIX_API_TOKEN" || { echo "TURNIX_API_TOKEN is missing."; exit 1; }
+          test -n "$METERED_APP_NAME" || { echo "METERED_APP_NAME is missing."; exit 1; }
+          test -n "$METERED_TURN_API_KEY" || { echo "METERED_TURN_API_KEY is missing."; exit 1; }
+
+      - name: Deploy Worker
+        if: steps.find.outputs.found == 'true'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ${{ env.root }}
+          wranglerVersion: "4"
+          command: deploy --config wrangler.jsonc
+
       - name: Upload Gemini API key to Worker secret
         if: steps.find.outputs.found == 'true'
         working-directory: ${{ env.root }}
@@ -109,15 +133,29 @@ jobs:
           fi
           printf '%s' "$GEMINI_API_KEY" | npx --yes wrangler@4 secret put GEMINI_API_KEY --config wrangler.jsonc
 
-      - name: Deploy Worker
+      - name: Upload TURN provider secrets to Worker
         if: steps.find.outputs.found == 'true'
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: ${{ env.root }}
-          wranglerVersion: "4"
-          command: deploy --config wrangler.jsonc
+        working-directory: ${{ env.root }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TURNIX_API_TOKEN: ${{ secrets.TURNIX_API_TOKEN }}
+          METERED_APP_NAME: ${{ secrets.METERED_APP_NAME }}
+          METERED_TURN_API_KEY: ${{ secrets.METERED_TURN_API_KEY }}
+        run: |
+          set -euo pipefail
+          # Both TURN providers are required for the configured primary/backup policy.
+          if [ -n "$TURNIX_API_TOKEN" ]; then
+            printf '%s' "$TURNIX_API_TOKEN" | npx --yes wrangler@4 secret put TURNIX_API_TOKEN --config wrangler.jsonc
+          else
+            echo "TURNIX_API_TOKEN is not configured; Turnix relay will be disabled."
+          fi
+          if [ -n "$METERED_APP_NAME" ] && [ -n "$METERED_TURN_API_KEY" ]; then
+            printf '%s' "$METERED_APP_NAME" | npx --yes wrangler@4 secret put METERED_APP_NAME --config wrangler.jsonc
+            printf '%s' "$METERED_TURN_API_KEY" | npx --yes wrangler@4 secret put METERED_TURN_API_KEY --config wrangler.jsonc
+          else
+            echo "Metered secrets are incomplete; Metered relay will be disabled."
+          fi
 
       - name: Update the repository to match and remove the zip
         if: steps.find.outputs.found == 'true'
@@ -139,3 +177,4 @@ jobs:
             git commit -m "Deploy from $ZIP"
             git push
           fi
+          
