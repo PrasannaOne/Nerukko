@@ -19,7 +19,7 @@ if (!html.includes("(state.mode === 'private' || (packet.kind === 'sticker' && p
 
 // Header and composer regression checks.
 if (!html.includes('id="inviteAction"') || !html.includes('aria-label="Invite a friend"') || !html.includes('display: grid !important')) throw new Error("Brave-resilient invite control is missing.");
-if (html.includes('id="shareButton"') || html.includes('aria-label="Share Nerukko"')) throw new Error("Share-identifying selectors/labels must not be used on the invite control.");
+if (html.includes('id="shareButton"') || html.includes('aria-label="Share Neruko"')) throw new Error("Share-identifying selectors/labels must not be used on the invite control.");
 if (!html.includes('border: 0; border-radius: 0; background: transparent')) throw new Error("Header should be unboxed and minimal.");
 if (!html.includes('class="composer-field"') || !html.includes('border-radius:50%')) throw new Error("Integrated message field or circular Send button is missing.");
 if (!html.includes('id="cameraButton"') || !html.includes('capture="environment"')) throw new Error("Private camera control is missing.");
@@ -35,7 +35,7 @@ if (!html.includes('id="mediaBackdrop"') && !html.includes('id="uploadMedia"')) 
 // Storage and cache checks protect returning users from stale UI and storage restrictions.
 if (!html.includes("function createSafeStorage()") || !html.includes("function createId()")) throw new Error("Safe browser storage/ID fallback is missing.");
 if (!html.includes("updateViaCache:'none'")) throw new Error("Service-worker update strategy is missing.");
-if (!serviceWorker.includes('nerukko-shell-v14') || !serviceWorker.includes('cache: "reload"')) throw new Error("Fresh app-shell cache version is missing.");
+if (!serviceWorker.includes('neruko-shell') || !serviceWorker.includes('cache: "reload"')) throw new Error("Stable app-shell cache name is missing.");
 if (!worker.includes('Cache-Control') || !worker.includes('no-store, no-cache, must-revalidate')) throw new Error("Worker must prevent stale HTML/service-worker responses.");
 
 // About and ownership details.
@@ -51,7 +51,7 @@ if (!html.includes('gap:3px; padding:6px 14px 8px')) throw new Error('Chat messa
 if (html.includes('id="stickerOutline"') || html.includes('White outline')) throw new Error('The confusing white-outline toggle should be removed.');
 if (!html.includes(".sticker-panel.is-creating") || !html.includes(".sticker-create-scroll") || !html.includes("overflow:hidden")) throw new Error("Sticker creator should fit in a fixed, non-scrollable panel with a fixed action row.");
 if (!html.includes("$('stickerPanel').classList.add('is-creating')") || !html.includes("$('stickerPanel').classList.remove('is-creating')")) throw new Error("Sticker creator expanded state must reset on close.");
-if (!html.includes("navigator.serviceWorker.register('/service-worker.js?v=13'")) throw new Error("Service worker registration must request V13 explicitly.");
+if (!html.includes("navigator.serviceWorker.register('/service-worker.js?v=15'")) throw new Error("Service worker registration must request V13 explicitly.");
 
 let offset = 0;
 let count = 0;
@@ -79,7 +79,7 @@ if (!html.includes('id="saveStickerFavourite"')) throw new Error('Sticker creato
 if (!html.includes('height:min(40dvh,340px)') || !html.includes('grid-template-columns:repeat(4')) throw new Error("Sticker tray should be compact with a four-column grid.");
 if (!html.includes('function updateTypingPresence()') || !html.includes("packet.type === 'typing'")) throw new Error("Ephemeral typing indicator is missing.");
 if (!html.includes('function appendMessageTime(article)') || !html.includes('message.grouped') || !html.includes('function isNearMessageBottom()')) throw new Error("Message grouping/timestamps/scroll preservation are missing.");
-if (!serviceWorker.includes("nerukko-shell-v14")) throw new Error("V13 service-worker cache version is missing.");
+if (!serviceWorker.includes("neruko-shell")) throw new Error("V13 service-worker cache version is missing.");
 if (!html.includes("updateViaCache:'none'")) throw new Error("Service-worker updates should bypass HTTP cache.");
 if (!html.includes('quota-limited') || !html.includes('memory.set(key, safeValue)')) throw new Error('Storage wrapper must survive runtime quota errors.');
 if (/remove\.bg|background.?remov|rembg|bria\.ai/i.test(html)) throw new Error("Sticker creator must not add background-removal services.");

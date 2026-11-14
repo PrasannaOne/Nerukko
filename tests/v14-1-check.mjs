@@ -76,7 +76,8 @@ assert.match(html, /packet\.kind === 'sticker' \? MAX_MEDIA_BYTES : MAX_IMAGE_BY
 assert.match(html, /rough city-level area of your internet connection/);
 
 // ---- Zip workflow.
-assert.match(workflow, /paths:\s*\n\s*- "\*\.zip"/);
+assert.match(workflow, /paths:\s*\n\s*- "Neruko\.zip"/, 'Only a zip named exactly Neruko.zip may trigger a deploy.');
+assert.ok(!workflow.includes('"*.zip"'), 'Other zips must never trigger or be unpacked.');
 assert.match(workflow, /unzip -q "\$ZIP"/);
 assert.match(workflow, /npm test/);
 assert.match(workflow, /wrangler-action@v4/);
@@ -84,10 +85,21 @@ assert.match(workflow, /--exclude='\.\/\.github'/, 'Workflow files must never be
 assert.match(workflow, /! -iname 'README\*'/, 'The repository README must survive a zip deploy.');
 assert.match(workflow, /GEMINI_API_KEY/);
 
-// ---- License.
+// ---- License (Sovereign Source License v1.1, adapted for Neruko).
 const license = fs.readFileSync(new URL('../LICENSE', import.meta.url), 'utf8');
-assert.ok(license.startsWith('Required Notice: Copyright (c) 2026 Prasanna'), 'LICENSE must start with the required notice.');
-for (const part of ['# PolyForm Noncommercial License 1.0.0', 'https://polyformproject.org/licenses/noncommercial/1.0.0', '## Noncommercial Purposes', '## Patent Defense', '## No Liability', '**Use** means anything you do with the software requiring one']) assert.ok(license.includes(part), `LICENSE is missing: ${part}`);
-assert.equal(JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).license, 'PolyForm-Noncommercial-1.0.0');
+assert.ok(license.startsWith('SOVEREIGN SOURCE LICENSE v1.1'));
+for (const part of ['Software: Neruko', 'Copyright (c) 2026 Prasanna. All Rights Reserved.', '1. LIMITED PERSONAL LICENSE', '2. RESTRICTIONS', '4. THIRD-PARTY AND OTHER MATERIALS', 'GitHub\'s Terms of Service', 'laws of India', 'END OF LICENSE']) assert.ok(license.includes(part), `LICENSE is missing: ${part}`);
+for (const gone of ['Bounce Tales', 'Nokia', 'Rovio', 'reimplementation', 'PolyForm']) assert.ok(!license.includes(gone), `LICENSE must not mention: ${gone}`);
+assert.equal(JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).license, 'SEE LICENSE IN LICENSE');
 
-console.log('Nerukko V14.1 approximate-location, photo-shrinking and zip-deploy checks passed.');
+
+// ---- Neruko rebrand.
+const manifest = JSON.parse(fs.readFileSync(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8'));
+const htmlBrand = fs.readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+const workerConfig = fs.readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8');
+assert.equal(manifest.name, 'Neruko');
+assert.equal(manifest.short_name, 'Neruko');
+assert.match(htmlBrand, /<title>Neruko · Closer, together<\/title>/);
+assert.match(workerConfig, /"name":\s*"neruko"/);
+
+console.log('Neruko approximate-location, photo-shrinking and zip-deploy checks passed.');
