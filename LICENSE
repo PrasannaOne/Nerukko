@@ -1,133 +1,40 @@
-Required Notice: Copyright (c) 2026 Prasanna (https://github.com/PrasannaOne/Nerukko)
+SOVEREIGN SOURCE LICENSE v1.1
 
-# PolyForm Noncommercial License 1.0.0
+Software: Neruko
+Copyright (c) 2026 Prasanna. All Rights Reserved.
+Official repository: https://github.com/PrasannaOne/Neruko
 
-<https://polyformproject.org/licenses/noncommercial/1.0.0>
+PREAMBLE
+This is a proprietary, source-available license. It is not an open-source license and does not grant the public the rights normally associated with open-source software. It permits limited personal use of the portions of the Software authored by the Licensor, subject to the conditions below.
 
-## Acceptance
+1. LIMITED PERSONAL LICENSE
+Subject to this License, Prasanna (the "Licensor") grants you a personal, non-exclusive, non-transferable, non-sublicensable, revocable license to view, download, run, study, and modify the Neruko source code authored by the Licensor (the "Software") solely on devices under your personal control and solely for personal, educational, and noncommercial purposes. This permission does not extend to the third-party and other materials identified in Section 4.
 
-In order to get any license under these terms, you must agree
-to them as both strict obligations and conditions to all
-your licenses.
+2. RESTRICTIONS
+Without the Licensor's prior written permission or a separate written license, you may not:
+(a) publish, host, deploy, mirror, embed, redistribute, upload, share, transfer, or otherwise make the Software or a derivative available to another person or to the public, whether through a website, application, repository, network, or other medium;
+(b) use the Software or a derivative for commercial activity, including advertising, affiliate revenue, sponsorship, donations, fees, subscriptions, paywalls, or other direct or indirect monetisation;
+(c) provide the Software or a derivative as a hosted service, SaaS product, API, managed backend, or service for third parties;
+(d) scrape, ingest, submit, or use the Software, its source code, or its architecture as training, fine-tuning, evaluation, benchmarking, or operational material for developing or operating AI/ML models or datasets.
 
-## Copyright License
+Running the Software's own built-in AI chat feature on your own device with your own service credentials is not, by itself, prohibited by clause (d). Ordinary personal use of a general-purpose AI assistant for help understanding or editing your own permitted local copy is not, by itself, a grant to publish, disclose, or otherwise use the Software in a manner prohibited by this Section. You remain responsible for any material you submit to third-party services and their terms.
 
-The licensor grants you a copyright license for the
-software to do everything you might do with the software
-that would otherwise infringe the licensor's copyright
-in it for any permitted purpose.  However, you may
-only distribute the software according to [Distribution
-License](#distribution-license) and make changes or new works
-based on the software according to [Changes and New Works
-License](#changes-and-new-works-license).
+3. RIGHTS RESERVED BY LICENSOR
+All rights not expressly granted are reserved by the Licensor. The Licensor may independently publish, host, distribute, modify, commercialise, monetise, advertise, sell, offer paid versions or hosted services, and grant other licenses to the Software, including commercial and enterprise licenses, and may transfer the Software and these rights to another person or entity. Nothing in this License limits those reserved rights.
 
-## Distribution License
+4. THIRD-PARTY AND OTHER MATERIALS
+This License applies only to the code and other project material authored by the Licensor. It grants no rights in the name "Neruko", the Licensor's name, or any logos or branding. Sticker images and other artwork in the project may be AI-generated or come from third parties; they are included only so the Software can run for personal use under Section 1, and no right to extract, reuse, or distribute them is granted. Third-party components and services (such as Cloudflare or Google's Gemini API) remain subject to their own terms, and you are responsible for obtaining any permissions they require.
 
-The licensor grants you an additional copyright license
-to distribute copies of the software.  Your license
-to distribute covers distributing the software with
-changes and new works permitted by [Changes and New Works
-License](#changes-and-new-works-license).
+5. TERMINATION
+The permissions granted by this License terminate automatically if you materially breach its conditions. Upon termination, you must stop using the Software and delete copies in your possession or control. The Licensor may reinstate permission only through an express written authorisation. Termination does not affect rights or remedies that accrued before termination.
 
-## Notices
+6. NO WARRANTY; LIMITATION OF LIABILITY
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT, TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE LICENSOR SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF DATA, PROFITS, OR GOODWILL, ARISING OUT OF OR RELATING TO THE SOFTWARE OR THIS LICENSE. Nothing in this License excludes liability that cannot lawfully be excluded.
 
-You must ensure that anyone who gets a copy of any part of
-the software from you also gets a copy of these terms or the
-URL for them above, as well as copies of any plain-text lines
-beginning with `Required Notice:` that the licensor provided
-with the software.  For example:
+7. PERMISSIONS, GITHUB AND CONTRIBUTIONS
+Any permission outside the limited grant in Section 1 must be obtained in advance in a written agreement signed or otherwise expressly authorised in writing by the Licensor. Public availability of a repository, source code, download, or project page does not by itself grant additional rights. Silence is not consent. While the Software is hosted on GitHub, GitHub's Terms of Service give other GitHub users certain limited rights, such as viewing and forking the repository within GitHub; this License does not take those rights away but grants nothing beyond them. If you send the Licensor a contribution, you give the Licensor a perpetual, worldwide, irrevocable, royalty-free license, with the right to sublicense, to use, modify, and commercialise it in any way, and you confirm that you have the right to do so.
 
-> Required Notice: Copyright Yoyodyne, Inc. (http://example.com)
+8. GENERAL TERMS
+This License is governed by the laws of India, subject to any mandatory protections or rules that cannot lawfully be excluded. If any provision is held unenforceable, the remaining provisions continue in effect to the extent permitted by law. This License is the entire agreement concerning the Software's permitted use and supersedes earlier versions only for copies expressly distributed with this version. Any amendment or additional permission must be in writing and expressly authorised by the Licensor.
 
-## Changes and New Works License
-
-The licensor grants you an additional copyright license to
-make changes and new works based on the software for any
-permitted purpose.
-
-## Patent License
-
-The licensor grants you a patent license for the software that
-covers patent claims the licensor can license, or becomes able
-to license, that you would infringe by using the software.
-
-## Noncommercial Purposes
-
-Any noncommercial purpose is a permitted purpose.
-
-## Personal Uses
-
-Personal use for research, experiment, and testing for
-the benefit of public knowledge, personal study, private
-entertainment, hobby projects, amateur pursuits, or religious
-observance, without any anticipated commercial application,
-is use for a permitted purpose.
-
-## Noncommercial Organizations
-
-Use by any charitable organization, educational institution,
-public research organization, public safety or health
-organization, environmental protection organization,
-or government institution is use for a permitted purpose
-regardless of the source of funding or obligations resulting
-from the funding.
-
-## Fair Use
-
-You may have "fair use" rights for the software under the
-law. These terms do not limit them.
-
-## No Other Rights
-
-These terms do not allow you to sublicense or transfer any of
-your licenses to anyone else, or prevent the licensor from
-granting licenses to anyone else.  These terms do not imply
-any other licenses.
-
-## Patent Defense
-
-If you make any written claim that the software infringes or
-contributes to infringement of any patent, your patent license
-for the software granted under these terms ends immediately. If
-your company makes such a claim, your patent license ends
-immediately for work on behalf of your company.
-
-## Violations
-
-The first time you are notified in writing that you have
-violated any of these terms, or done anything with the software
-not covered by your licenses, your licenses can nonetheless
-continue if you come into full compliance with these terms,
-and take practical steps to correct past violations, within
-32 days of receiving notice.  Otherwise, all your licenses
-end immediately.
-
-## No Liability
-
-***As far as the law allows, the software comes as is, without
-any warranty or condition, and the licensor will not be liable
-to you for any damages arising out of these terms or the use
-or nature of the software, under any kind of legal claim.***
-
-## Definitions
-
-The **licensor** is the individual or entity offering these
-terms, and the **software** is the software the licensor makes
-available under these terms.
-
-**You** refers to the individual or entity agreeing to these
-terms.
-
-**Your company** is any legal entity, sole proprietorship,
-or other kind of organization that you work for, plus all
-organizations that have control over, are under the control of,
-or are under common control with that organization.  **Control**
-means ownership of substantially all the assets of an entity,
-or the power to direct its management and policies by vote,
-contract, or otherwise.  Control can be direct or indirect.
-
-**Your licenses** are all the licenses granted to you for the
-software under these terms.
-
-**Use** means anything you do with the software requiring one
-of your licenses.
+END OF LICENSE

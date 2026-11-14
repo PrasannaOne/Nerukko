@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const html = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
+assert.match(html, /const LOCATION_REFRESH_INTERVAL_MS = 300_000/);
+assert.match(html, /lastLocationAttemptAt: 0, locationRequestPromise: null/);
+assert.match(html, /if \(state\.locationRequestPromise\) return state\.locationRequestPromise/);
+assert.match(html, /elapsed < LOCATION_REFRESH_INTERVAL_MS/);
+assert.match(html, /setInterval\(refreshLocation, LOCATION_REFRESH_INTERVAL_MS\)/);
+assert.doesNotMatch(html, /navigator\.geolocation\.watchPosition/);
+console.log('V15 location sampling throttle checks passed.');

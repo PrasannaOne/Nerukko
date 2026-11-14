@@ -1,8 +1,31 @@
-import { generateNerukkoBotReply } from "./nerukko-bot.js";
+import { generateNerukoBotReply } from "./neruko-bot.js";
+
+// Per-isolate abuse guard for the public ICE configuration endpoint.
+const iceRequestWindows = new Map();
+const ICE_REQUEST_LIMIT = 60;
+const ICE_REQUEST_WINDOW_MS = 60_000;
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/api/ice") {
+      if (request.method !== "GET") return new Response("Method not allowed", { status: 405, headers: { Allow: "GET" } });
+      // Only this site's own pages may ask for relay credentials.
+      if (!isSameSiteRequest(request, url)) return jsonResponse({ error: "Forbidden" }, 403);
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      const now = Date.now();
+      const previous = iceRequestWindows.get(ip);
+      const bucket = previous && now - previous.start < ICE_REQUEST_WINDOW_MS
+        ? previous
+        : { start: now, count: 0 };
+      bucket.count += 1;
+      iceRequestWindows.set(ip, bucket);
+      if (iceRequestWindows.size > 5000) {
+        for (const [key, value] of iceRequestWindows) if (now - value.start >= ICE_REQUEST_WINDOW_MS) iceRequestWindows.delete(key);
+      }
+      if (bucket.count > ICE_REQUEST_LIMIT) return jsonResponse({ error: "ICE configuration rate limit reached" }, 429, { "Retry-After": "60" });
+      return getIceConfiguration(request, env, url.searchParams.get("provider") || "combined");
+    }
     if (url.pathname === "/api/ws") {
       if (request.headers.get("Upgrade") !== "websocket") {
         return new Response("Expected WebSocket", { status: 426 });
@@ -25,6 +48,77 @@ export default {
     return response;
   }
 };
+
+function jsonResponse(value, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(value), {
+    status,
+    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...extraHeaders }
+  });
+}
+
+function isSameSiteRequest(request, url) {
+  const site = request.headers.get("Sec-Fetch-Site");
+  if (site) return site === "same-origin";
+  const source = request.headers.get("Origin") || request.headers.get("Referer");
+  if (!source) return false;
+  try { return new URL(source).host === url.host; } catch { return false; }
+}
+
+async function getIceConfiguration(request, env, provider = "combined") {
+  const stun = [
+    { urls: "stun:stun.cloudflare.com:3478" },
+    { urls: "stun:stun.l.google.com:19302" }
+  ];
+  const clientIp = request.headers.get("CF-Connecting-IP");
+  async function turnix() {
+    if (!env.TURNIX_API_TOKEN) throw new Error("Turnix is not configured");
+    const response = await fetch("https://turnix.io/api/v1/credentials/ice", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.TURNIX_API_TOKEN}`, "Content-Type": "application/json", ...(clientIp ? { "X-TURN-CLIENT-IP": clientIp } : {}) },
+      body: JSON.stringify({ ttl: 3600, preferred_region: "india" }), signal: AbortSignal.timeout(8000)
+    });
+    if (!response.ok) throw new Error(`Turnix returned ${response.status}`);
+    const data = await response.json();
+    const servers = Array.isArray(data.iceServers) ? data.iceServers : [];
+    const valid = servers.filter(server => server?.urls && server.username && /turns?:/i.test(String(server.urls)));
+    if (!valid.length) throw new Error("Turnix returned no usable TURN servers");
+    return valid;
+  }
+  async function metered() {
+    if (!env.METERED_APP_NAME || !env.METERED_TURN_API_KEY) throw new Error("Metered is not configured");
+    const endpoint = `https://${encodeURIComponent(env.METERED_APP_NAME)}.metered.live/api/v1/turn/credentials?apiKey=${encodeURIComponent(env.METERED_TURN_API_KEY)}&region=india`;
+    const response = await fetch(endpoint, { signal: AbortSignal.timeout(8000) });
+    if (!response.ok) throw new Error(`Metered returned ${response.status}`);
+    const data = await response.json();
+    const valid = (Array.isArray(data) ? data : []).filter(server => server?.urls && server.username && /turns?:/i.test(String(server.urls)));
+    if (!valid.length) throw new Error("Metered returned no usable TURN servers");
+    return valid;
+  }
+  if (provider === "turnix" || provider === "metered") {
+    try {
+      const servers = provider === "turnix" ? await turnix() : await metered();
+      return jsonResponse({ iceServers: servers, provider, available: true });
+    } catch (error) {
+      return jsonResponse({ iceServers: [], provider, available: false, error: String(error?.message || error) }, 503);
+    }
+  }
+  // Shared group/room ICE policy: use exactly one TURN provider at a time.
+  // Turnix is primary; Metered is requested only if Turnix fails or returns
+  // unusable credentials. STUN remains available alongside the selected TURN.
+  let primaryError = null;
+  try {
+    const servers = await turnix();
+    return jsonResponse({ iceServers: [...stun, ...servers], provider: "turnix", providers: { turnix: true, metered: false } });
+  } catch (error) {
+    primaryError = String(error?.message || error);
+  }
+  try {
+    const servers = await metered();
+    return jsonResponse({ iceServers: [...stun, ...servers], provider: "metered", providers: { turnix: false, metered: true }, fallback: true });
+  } catch (error) {
+    return jsonResponse({ iceServers: stun, provider: null, providers: { turnix: false, metered: false }, error: "Both TURN providers are unavailable", details: { turnix: primaryError, metered: String(error?.message || error) } }, 503);
+  }
+}
 
 const MAX_PEOPLE = 7;
 const IP_LOCATION_HEADER = "x-nerukko-ip-location";
@@ -59,6 +153,7 @@ const DELIVERY_TTL_MS = 7 * 24 * 60 * 60_000;
 const BOT_DAILY_LIMIT = 40;
 const BOT_ROOM_LIMIT = 24;
 const BOT_COOLDOWN_MS = 45_000;
+const BOT_NUDGE_GAP_MS = 15_000; // a quiet-person follow-up may follow a reply after the client's own 20-30 s wait
 
 function deliveryKey(a, b) { return [String(a), String(b)].sort().join(":"); }
 const ROOM_MERGE_PASSES = 12;
@@ -75,6 +170,7 @@ export class Matchmaker {
     this.botRooms = new Set();
     this.botRequestsByRoom = new Map();
     this.botLastRequest = new Map();
+    this.botLastNudge = new Map();
     this.botUsageQueue = Promise.resolve();
     this.botRequestQueues = new Map();
     this.roomJoinAttempts = new Map();
@@ -132,7 +228,7 @@ export class Matchmaker {
       try {
         const packet = JSON.parse(message);
         if (packet?.type === "bot-chat" || packet?.type === "bot-nudge" || packet?.type === "bot-sticker") {
-          this.enqueueBotRequest(ws, packet).catch(() => this.send(ws, { type: "bot-unavailable", stickerId: packet.stickerId || null, message: "Nerukko Bot could not reply just now. Try again in a moment." }));
+          this.enqueueBotRequest(ws, packet).catch(() => this.send(ws, { type: "bot-unavailable", stickerId: packet.stickerId || null, message: "Neruko Bot could not reply just now. Try again in a moment." }));
           return;
         }
       } catch {}
@@ -199,6 +295,18 @@ export class Matchmaker {
     if (data.type === "room-update") { await this.updateNamedRoom(ws, data); return; }
     if (data.type === "room-delete") { await this.deleteNamedRoom(ws); return; }
 
+    if (data.type === "private-signal") {
+      const target = String(data.to || "");
+      if (!target || target === current.id || !data.payload || typeof data.payload !== "object") return;
+      const key = deliveryKey(current.id, target);
+      let until = this.deliveryEligible.get(key) || 0;
+      if (until <= Date.now()) until = Number(await this.ctx.storage.get(`delivery:${key}`) || 0);
+      if (until <= Date.now()) return;
+      const recipient = this.sockets().find(peer => this.attachment(peer).id === target);
+      if (recipient) this.send(recipient, { type: "private-signal", from: current.id, payload: data.payload });
+      return;
+    }
+
     if (data.type === "signal") {
       const target = String(data.to || "");
       if (!target || target === current.id || !data.payload || typeof data.payload !== "object") return;
@@ -255,6 +363,16 @@ export class Matchmaker {
 
     if (data.type === "private-respond") {
       await this.respondPrivateRequest(ws, String(data.requestId || ""), data.accept === true);
+      return;
+    }
+
+    if (data.type === "private-message") {
+      await this.relayPrivateMessage(ws, data);
+      return;
+    }
+
+    if (data.type === "private-action") {
+      await this.relayPrivateAction(ws, data);
       return;
     }
 
@@ -644,7 +762,7 @@ export class Matchmaker {
   }
 
   async refreshBotRooms() {
-    // Nerukko Bot is a global fallback, not a per-room filler. Count every
+    // Neruko Bot is a global fallback, not a per-room filler. Count every
     // connected human session, including named rooms and private chats.
     const onlineHumans = this.sockets().filter(ws => !!this.attachment(ws).id).length;
     const rooms = [...this.roomMap("group").keys()];
@@ -654,6 +772,7 @@ export class Matchmaker {
         this.botRooms.delete(roomId);
         this.botRequestsByRoom.delete(roomId);
         this.botLastRequest.delete(roomId);
+        this.botLastNudge.delete(roomId);
       }
     }
     for (const roomId of rooms) await this.updateBotForRoom(roomId, onlineHumans);
@@ -675,7 +794,7 @@ export class Matchmaker {
     this.botRequestsByRoom.set(roomId, 0);
     this.send(members[0], { type: "bot-start" });
     this.enqueueBotRequest(members[0], { type: "bot-nudge", history: [], prompt: "Give a warm, low-pressure hello with a little personality. Keep it natural, not like a scripted welcome." })
-      .catch(() => this.send(members[0], { type: "bot-unavailable", message: "Nerukko Bot could not join just now. Try again in a moment." }));
+      .catch(() => this.send(members[0], { type: "bot-unavailable", message: "Neruko Bot could not join just now. Try again in a moment." }));
   }
 
   enqueueBotRequest(ws, data) {
@@ -715,16 +834,16 @@ export class Matchmaker {
     // Automatic nudges are rate-limited, but a real message from the person is
     // never silently dropped by this timer. Room requests are queued in order.
     if (data.type === "bot-nudge") {
-      const last = this.botLastRequest.get(member.roomId) || 0;
-      if (now - last < BOT_COOLDOWN_MS) return;
-      this.botLastRequest.set(member.roomId, now);
+      const last = this.botLastNudge.get(member.roomId) || 0;
+      if (now - last < BOT_NUDGE_GAP_MS) return;
+      this.botLastNudge.set(member.roomId, now);
     }
     const roomCount = this.botRequestsByRoom.get(member.roomId) || 0;
-    if (roomCount >= BOT_ROOM_LIMIT) return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Nerukko Bot has reached its chat limit for now." });
+    if (roomCount >= BOT_ROOM_LIMIT) return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Neruko Bot has reached its chat limit for now." });
     const day = new Date().toISOString().slice(0, 10);
     this.botLastRequest.set(member.roomId, now);
     this.botRequestsByRoom.set(member.roomId, roomCount + 1);
-    if (!await this.reserveBotDailySlot(day)) return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Nerukko Bot is resting for today." });
+    if (!await this.reserveBotDailySlot(day)) return this.send(ws, { type: "bot-unavailable", stickerId: data.stickerId || null, message: "Neruko Bot is resting for today." });
     const history = Array.isArray(data.history) ? data.history.slice(-12) : [];
     const latestText = String(data.text || "").slice(0, 700).trim();
     if (data.type === "bot-chat" && latestText && !history.some(item => item?.role === "user" && item?.text === latestText)) {
@@ -735,7 +854,7 @@ export class Matchmaker {
       : data.type === "bot-sticker"
         ? "The user just sent a sticker. You cannot see the image itself, so do not guess what it depicts. React naturally to the gesture, briefly and playfully."
         : String(data.prompt || "Continue naturally. Add a small playful observation or invite them into a low-pressure mini-topic.").slice(0, 700).trim();
-    const reply = await generateNerukkoBotReply(this.env.GEMINI_API_KEY, history, prompt);
+    const reply = await generateNerukoBotReply(this.env.GEMINI_API_KEY, history, prompt);
     const stillAlone = this.sockets().filter(peer => !!this.attachment(peer).id).length === 1 && this.members(member.roomId).filter(peer => this.attachment(peer).mode === "group").length === 1 && this.attachment(ws).id === member.id;
     if (!stillAlone) return;
     this.send(ws, { type: "bot-message", kind: data.type === "bot-chat" || data.type === "bot-sticker" ? "reply" : (history.length ? "nudge" : "greeting"), text: reply, messageId: crypto.randomUUID(), stickerId: data.type === "bot-sticker" && typeof data.stickerId === "string" ? data.stickerId : null });
@@ -1006,8 +1125,8 @@ export class Matchmaker {
     const request = this.pendingPrivate.get(requestId);
     if (!request || request.to !== recipient.id) return;
     this.pendingPrivate.delete(requestId);
-    const requesterSocket = this.members(request.roomId).find(peer => this.attachment(peer).id === request.from);
-    if (Date.now() - request.createdAt > 90_000 || !requesterSocket || recipient.mode !== "group" || recipient.roomId !== request.roomId) {
+    const requesterSocket = this.sockets().find(peer => this.attachment(peer).id === request.from);
+    if (Date.now() - request.createdAt > 90_000 || !requesterSocket || recipient.mode !== "group" || recipient.roomScope === "custom") {
       this.send(ws, { type: "private-request-expired", requestId });
       if (requesterSocket) this.send(requesterSocket, { type: "private-request-expired", requestId });
       return;
@@ -1018,31 +1137,61 @@ export class Matchmaker {
       return;
     }
 
-    const oldRoom = recipient.roomId;
-    const newRoom = crypto.randomUUID();
+    // A one-time approval establishes friendship. It no longer moves either
+    // person out of their current random chat or room.
     const requester = this.attachment(requesterSocket);
-    for (const [otherRequestId, pending] of this.pendingPrivate.entries()) {
-      if (otherRequestId === requestId || ![recipient.id, requester.id].some(id => pending.from === id || pending.to === id)) continue;
-      this.pendingPrivate.delete(otherRequestId);
-      for (const participantId of [pending.from, pending.to]) {
-        const participantSocket = this.sockets().find(peer => this.attachment(peer).id === participantId);
-        if (participantSocket) this.send(participantSocket, { type: "private-request-closed", requestId: otherRequestId });
-      }
-    }
-    for (const peer of this.members(oldRoom)) {
-      if (peer !== ws && peer !== requesterSocket) {
-        this.send(peer, { type: "peer-left", id: recipient.id });
-        this.send(peer, { type: "peer-left", id: requester.id });
-      }
-    }
     await this.allowDelivery(requester.id, recipient.id);
-    ws.serializeAttachment({ ...recipient, roomId: newRoom, mode: "private", roomScope: "random", customRoomId: null });
-    requesterSocket.serializeAttachment({ ...requester, roomId: newRoom, mode: "private", roomScope: "random", customRoomId: null });
-    this.send(ws, { type: "private-start", roomId: newRoom, peer: { id: requester.id, name: requester.name } });
-    this.send(requesterSocket, { type: "private-start", roomId: newRoom, peer: { id: recipient.id, name: recipient.name } });
-    this.broadcastRoomStatus(oldRoom);
-    await this.rebalanceGroupRooms();
-    await this.refreshBotRooms();
+    const left = { id: requester.id, name: requester.name };
+    const right = { id: recipient.id, name: recipient.name };
+    this.send(ws, { type: "friend-added", peer: left });
+    this.send(requesterSocket, { type: "friend-added", peer: right });
+  }
+
+  // Reactions, edits and deletes between friends when no direct channel is open yet.
+  async relayPrivateAction(ws, data) {
+    const sender = this.attachment(ws);
+    const targetId = String(data.to || "").slice(0, 64);
+    const action = String(data.action || "");
+    const messageId = String(data.messageId || "").slice(0, 64);
+    if (!sender.id || !targetId || targetId === sender.id || !messageId || !/^[a-f0-9-]{20,64}$/i.test(targetId)) return;
+    if (!["react", "edit", "delete"].includes(action)) return;
+    const key = deliveryKey(sender.id, targetId);
+    let until = this.deliveryEligible.get(key) || 0;
+    if (until <= Date.now()) {
+      until = Number(await this.ctx.storage.get(`delivery:${key}`) || 0);
+      if (until > Date.now()) this.deliveryEligible.set(key, until);
+    }
+    if (until <= Date.now()) return;
+    const recipient = this.sockets().find(peer => this.attachment(peer).id === targetId);
+    if (!recipient) return;
+    const payload = { type: "private-action", from: sender.id, action, messageId };
+    if (action === "react") payload.emoji = typeof data.emoji === "string" ? data.emoji.slice(0, 8) : null;
+    if (action === "edit") {
+      const text = String(data.text || "").trim().slice(0, 1000);
+      if (!text) return;
+      payload.text = text;
+    }
+    this.send(recipient, payload);
+  }
+
+  async relayPrivateMessage(ws, data) {
+    const sender = this.attachment(ws);
+    const targetId = String(data.to || "").slice(0, 64);
+    const text = String(data.text || "").trim().slice(0, 1000);
+    const messageId = String(data.messageId || "").slice(0, 64);
+    if (!sender.id || !targetId || targetId === sender.id || !text || !messageId || !/^[a-f0-9-]{20,64}$/i.test(targetId)) return;
+    const key = deliveryKey(sender.id, targetId);
+    let until = this.deliveryEligible.get(key) || 0;
+    if (until <= Date.now()) {
+      until = Number(await this.ctx.storage.get(`delivery:${key}`) || 0);
+      if (until > Date.now()) this.deliveryEligible.set(key, until);
+    }
+    if (until <= Date.now()) return this.send(ws, { type: "private-message-error", messageId, message: "You need to become friends before messaging." });
+    const recipient = this.sockets().find(peer => this.attachment(peer).id === targetId);
+    if (!recipient) return this.send(ws, { type: "private-message-error", messageId, message: "They're not online right now. Online-only delivery is enabled." });
+    const recipientData = this.attachment(recipient);
+    this.send(recipient, { type: "private-message", from: sender.id, name: sender.name, messageId, text, replyTo: data.replyTo || null, at: Date.now() });
+    this.send(ws, { type: "private-message-sent", to: targetId, messageId, name: recipientData.name });
   }
 
   async endPrivateRoom(roomId) {

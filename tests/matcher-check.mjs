@@ -1,5 +1,5 @@
 import { Matchmaker } from '../src/worker.js';
-import { clampBotReply } from '../src/nerukko-bot.js';
+import { clampBotReply } from '../src/neruko-bot.js';
 
 function socket(id, roomId, location = null, mode = 'group', name = id) {
   return {
@@ -85,7 +85,7 @@ function matcherWith(sockets = []) {
   if (new Set([...a, ...b].map(person => person.a.roomId)).size !== 2) throw new Error('Rooms must never merge past 7 people');
 }
 
-// Private requests only move the two participants after the recipient accepts.
+// One-time private approval establishes friendship without moving either user.
 {
   const a = socket('1'.repeat(32), 'group', { lat: 12, lon: 77 }, 'group', 'A');
   const b = socket('2'.repeat(32), 'group', { lat: 12.0001, lon: 77 }, 'group', 'B');
@@ -94,12 +94,26 @@ function matcherWith(sockets = []) {
   const requestId = [...matcher.pendingPrivate.keys()][0];
   if (!requestId) throw new Error('Private request should be created');
   await matcher.respondPrivateRequest(b, requestId, true);
-  if (a.a.mode !== 'private' || b.a.mode !== 'private' || a.a.roomId !== b.a.roomId) throw new Error('Accepted participants should move to the same private room');
-  await matcher.endPrivateRoom(a.a.roomId);
-  if (a.a.mode !== 'group' || b.a.mode !== 'group' || a.a.roomId !== b.a.roomId) throw new Error('Ending private chat should return both people to a group room');
+  if (a.a.mode !== 'group' || b.a.mode !== 'group' || a.a.roomId !== b.a.roomId) throw new Error('Accepting friendship must not move either participant out of their current room');
+  if (!a.sent.some(value => JSON.parse(value).type === 'friend-added') || !b.sent.some(value => JSON.parse(value).type === 'friend-added')) throw new Error('Both users should be notified that friendship is established');
 }
 
-// Only one outgoing private invitation can wait at a time; accepting a conversation closes other pending invites.
+// Friends can exchange online-only private messages without sharing a room.
+{
+  const a = socket('1'.repeat(32), 'room-a', null, 'group', 'A');
+  const b = socket('2'.repeat(32), 'room-b', null, 'group', 'B');
+  const { matcher, store } = matcherWith([a, b]);
+  await matcher.allowDelivery(a.a.id, b.a.id);
+  await matcher.handleWebSocketMessage(a, JSON.stringify({ type:'private-message', to:b.a.id, text:'hello from another room', messageId:'message-1234567890' }));
+  const packet = b.sent.map(value => JSON.parse(value)).find(value => value.type === 'private-message');
+  if (packet?.text !== 'hello from another room' || packet.from !== a.a.id) throw new Error('Online friend message should relay across rooms');
+  if ([...store.keys()].some(key => key.includes('message-1234567890'))) throw new Error('Private message contents must not be stored server-side');
+  const offline = socket('3'.repeat(32), 'room-c', null, 'group', 'Offline');
+  await matcher.handleWebSocketMessage(a, JSON.stringify({ type:'private-message', to:offline.a.id, text:'not queued', messageId:'message-0987654321' }));
+  if (!a.sent.some(value => JSON.parse(value).type === 'private-message-error')) throw new Error('Offline recipient must not trigger server-side message storage');
+}
+
+// Only one outgoing friendship request can wait at a time.
 {
   const a = socket('a'.repeat(32), 'invite-room', { lat:12, lon:77 }, 'group', 'A');
   const b = socket('b'.repeat(32), 'invite-room', { lat:12, lon:77 }, 'group', 'B');
@@ -113,8 +127,7 @@ function matcherWith(sockets = []) {
   if (!a.sent.some(value => JSON.parse(value).type === 'private-error')) throw new Error('A second outstanding private invitation should be rejected visibly');
   matcher.createPrivateRequest(c, a.a.id);
   await matcher.respondPrivateRequest(b, firstRequest, true);
-  if (matcher.pendingPrivate.size !== 0) throw new Error('Other pending invitations should close when a participant enters a private conversation');
-  if (!c.sent.some(value => JSON.parse(value).type === 'private-request-closed')) throw new Error('The other requester should be notified that their invitation closed');
+  if (matcher.pendingPrivate.size !== 1) throw new Error('Accepting one friendship should not silently cancel an unrelated pending request');
 }
 
 // Two distinct reports trigger a five-minute, server-side ID cooldown.
@@ -233,8 +246,8 @@ function matcherWith(sockets = []) {
 // Bot output stays tiny and clamps every response to ten words.
 {
   const reply = clampBotReply('One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour');
-  if (reply.split(/\s+/).length !== 10) throw new Error('Nerukko Bot replies must be limited to ten words');
-  if (clampBotReply('  hello\nthere  ') !== 'hello there') throw new Error('Nerukko Bot output should be a single clean line');
+  if (reply.split(/\s+/).length !== 10) throw new Error('Neruko Bot replies must be limited to ten words');
+  if (clampBotReply('  hello\nthere  ') !== 'hello there') throw new Error('Neruko Bot output should be a single clean line');
 }
 
 
@@ -245,7 +258,7 @@ function matcherWith(sockets = []) {
   const { matcher } = matcherWith([randomUser, privateUser]);
   matcher.env.GEMINI_API_KEY = 'test-key';
   await matcher.updateBotForRoom('random-solo');
-  if (matcher.botRooms.has('random-solo')) throw new Error('Bot must stay absent when a second human is online anywhere in Nerukko.');
+  if (matcher.botRooms.has('random-solo')) throw new Error('Bot must stay absent when a second human is online anywhere in Neruko.');
   if (randomUser.sent.some(value => JSON.parse(value).type === 'bot-start')) throw new Error('A random-chat user must not receive the Bot while another human is online elsewhere.');
 }
 
@@ -257,4 +270,4 @@ function matcherWith(sockets = []) {
   if (matcher.botRooms.has('solo') || alone.sent.some(value => JSON.parse(value).type === 'bot-start')) throw new Error('Bot must remain disabled unless its Worker secret exists');
 }
 
-console.log('Nerukko matcher checks passed.');
+console.log('Neruko matcher checks passed.');

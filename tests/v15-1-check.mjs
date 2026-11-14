@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { Matchmaker } from '../src/worker.js';
+const html=fs.readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
+const worker=fs.readFileSync(new URL('../src/worker.js',import.meta.url),'utf8');
+assert.match(worker,/async relayPrivateMessage\(ws, data\)/);
+assert.match(worker,/type: "friend-added"/);
+assert.match(worker,/type: "private-message-error"/);
+assert.match(html,/type:'private-message', to:friend.id/);
+assert.match(html,/case 'private-message':/);
+assert.match(html,/action.addEventListener\('click',\(\)=>enterOfflineDm/);
+assert.match(html,/function storeDirectMessage/);
+assert.ok(!worker.includes('private-message-queue:'),'The Worker must not persist offline private message bodies.');
+console.log('Neruko V15.1 online-only friend messaging checks passed.');

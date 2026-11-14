@@ -27,9 +27,9 @@ assert.match(html, /function leavePrivateChat\(\)/);
 assert.match(html, /function enterOfflineDm\(/);
 assert.match(html, /function exitOfflineDm\(/);
 assert.match(html, /\$\('returnToGroup'\)\.addEventListener\('click', leavePrivateChat\)/);
-assert.match(html, /dm:true, createdAt:Date\.now\(\)/, 'Offline direct messages must be queued with the dm flag.');
+assert.match(html, /type:'private-message', to:friend.id, text, messageId, replyTo/, 'Online direct messages must be relayed through the existing Worker socket.');
 assert.match(html, /!item\.dm && !existing\.has\(item\.id\)/, 'Direct messages must never appear in the group view.');
-assert.match(html, /dm:!!item\.dm/, 'Queued direct messages must be flagged when delivered.');
+assert.match(worker, /async relayPrivateMessage\(ws, data\)/, 'Private messages must be routed online without durable message storage.');
 assert.match(html, /function readStoredArray/, 'Damaged saved data must not drop incoming messages.');
 assert.match(html, /image\\\/\(png\|jpeg\|webp\)/, 'Profile pictures must only accept PNG, JPEG or WebP.');
 assert.match(html, /function allowPeerPacket/);
@@ -83,4 +83,4 @@ assert.match(html, /function allowPeerPacket/);
   assert.ok([...sizes.values()].every(n => n <= 7), 'No room may exceed 7 people.');
 }
 assert.ok(worker.includes('allowDelivery'));
-console.log('Nerukko V14 layout, private-chat, offline-message and matching checks passed.');
+console.log('Neruko V14 layout, private-chat, offline-message and matching checks passed.');

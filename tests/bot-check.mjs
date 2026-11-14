@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { Matchmaker } from "../src/worker.js";
-import { buildGeminiContents, clampBotReply, generateNerukkoBotReply } from "../src/nerukko-bot.js";
+import { buildGeminiContents, clampBotReply, generateNerukoBotReply } from "../src/neruko-bot.js";
 
 assert.equal(
   clampBotReply("One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree"),
@@ -42,7 +42,7 @@ globalThis.fetch = async (url, options) => {
 };
 
 try {
-  const reply = await generateNerukkoBotReply("test-api-key", [
+  const reply = await generateNerukoBotReply("test-api-key", [
     { role: "model", text: "Hey there!" },
     { role: "user", text: "Hlo" }
   ], "");
@@ -171,4 +171,4 @@ try {
   globalThis.fetch = originalFetch;
 }
 
-console.log("Nerukko Bot checks passed.");
+console.log("Neruko Bot checks passed.");

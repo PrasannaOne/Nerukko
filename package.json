@@ -5,5 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "node tests/matcher-check.mjs && node tests/bot-check.mjs && node tests/sticker-check.mjs && node tests/rooms-check.mjs && node tests/profile-check.mjs && node tests/v13-check.mjs && node tests/v14-check.mjs && node tests/v14-1-check.mjs && node tests/ice-config-check.mjs && node tests/ice-runtime-check.mjs && node tests/location-check.mjs && node tests/v15-1-check.mjs && node tests/v15-2-check.mjs && node tests/v16-check.mjs && node tests/v16-1-check.mjs"
+  },
+  "dependencies": {
+    "wrangler": "^4.162.0"
   }
 }

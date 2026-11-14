@@ -231,4 +231,4 @@ function packets(person, type) {
   assert.match(packets(person, 'room-error').at(-1).message, /one-to-one/i);
 }
 
-console.log('Nerukko room lifecycle, location, and 7-member capacity checks passed.');
+console.log('Neruko room lifecycle, location, and 7-member capacity checks passed.');
